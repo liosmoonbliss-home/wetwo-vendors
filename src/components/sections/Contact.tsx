@@ -41,7 +41,6 @@ export function ContactSection({ vendor, links, showToast }: Props) {
 
   const location = [vendor.city, vendor.state].filter(Boolean).join(', ');
 
-  // Contact info items
   const contactInfo = [
     location && { icon: '📍', label: 'Location', value: location, sub: 'Serving all of New Jersey & beyond' },
     vendor.phone && { icon: '📱', label: 'Phone', value: vendor.phone },
@@ -49,7 +48,6 @@ export function ContactSection({ vendor, links, showToast }: Props) {
     vendor.instagram_handle && { icon: '📷', label: 'Instagram', value: `@${vendor.instagram_handle.replace('@', '')}` },
   ].filter(Boolean) as Array<{ icon: string; label: string; value: string; sub?: string }>;
 
-  // Interest options based on category
   const interestOptions = getInterestOptions(vendor.category);
 
   return (
@@ -57,107 +55,41 @@ export function ContactSection({ vendor, links, showToast }: Props) {
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         <div className="section-header">
           <span className="section-label">Get in Touch</span>
-          <h2 className="section-title">
-            Let&apos;s Plan Something Amazing
-          </h2>
+          <h2 className="section-title">Let&apos;s Plan Something Amazing</h2>
           <p className="section-subtitle">
             Ready to start planning? Reach out for a free consultation.
           </p>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: contactInfo.length > 0 ? '1fr 1.2fr' : '1fr',
-          gap: '48px',
-          alignItems: 'start',
-        }}>
+        <div className={`contact-grid${contactInfo.length === 0 ? ' form-only' : ''}`}>
           {/* Left: Contact Info */}
           {contactInfo.length > 0 && (
-            <div>
-              <h3 style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: '24px',
-                fontWeight: 500,
-                marginBottom: '12px',
-              }}>
-                Let&apos;s Talk
-              </h3>
-              <p style={{
-                fontSize: '15px',
-                color: 'var(--text-muted)',
-                lineHeight: 1.7,
-                marginBottom: '32px',
-              }}>
+            <div className="contact-info">
+              <h3>Let&apos;s Talk</h3>
+              <p>
                 Whether you&apos;re planning a wedding, corporate event, or milestone celebration — we&apos;d love to hear about your vision.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {contactInfo.map((info, i) => (
-                  <div key={i} style={{
-                    display: 'flex',
-                    gap: '16px',
-                    alignItems: 'flex-start',
-                  }}>
-                    <div style={{
-                      width: '44px',
-                      height: '44px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: 'var(--primary-dim)',
-                      borderRadius: '12px',
-                      fontSize: '18px',
-                      flexShrink: 0,
-                    }}>
-                      {info.icon}
-                    </div>
-                    <div>
-                      <div style={{
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        color: 'var(--text-dim)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        marginBottom: '4px',
-                      }}>
-                        {info.label}
-                      </div>
-                      <div style={{
-                        fontSize: '15px',
-                        fontWeight: 500,
-                        color: 'var(--text)',
-                      }}>
-                        {info.value}
-                      </div>
-                      {info.sub && (
-                        <div style={{
-                          fontSize: '13px',
-                          color: 'var(--text-dim)',
-                          marginTop: '2px',
-                        }}>
-                          {info.sub}
-                        </div>
-                      )}
-                    </div>
+              {contactInfo.map((info, i) => (
+                <div key={i} className="contact-item">
+                  <div className="contact-icon">{info.icon}</div>
+                  <div>
+                    <div className="contact-item-label">{info.label}</div>
+                    <div className="contact-item-value">{info.value}</div>
+                    {info.sub && <div className="contact-item-sub">{info.sub}</div>}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
 
           {/* Right: Contact Form */}
-          <form onSubmit={handleSubmit} style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: '20px',
-            padding: '36px',
-          }}>
+          <form onSubmit={handleSubmit} className="contact-form">
             <div className="form-row">
               <div className="form-group">
                 <label>Your Name *</label>
                 <input
-                  type="text"
-                  required
+                  type="text" required
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   placeholder="Full name"
@@ -166,8 +98,7 @@ export function ContactSection({ vendor, links, showToast }: Props) {
               <div className="form-group">
                 <label>Email *</label>
                 <input
-                  type="email"
-                  required
+                  type="email" required
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   placeholder="your@email.com"
@@ -219,11 +150,8 @@ export function ContactSection({ vendor, links, showToast }: Props) {
               disabled={submitting}
               className="btn btn-primary"
               style={{
-                width: '100%',
-                justifyContent: 'center',
-                padding: '16px',
-                fontSize: '15px',
-                borderRadius: '12px',
+                width: '100%', justifyContent: 'center',
+                padding: '16px', fontSize: '15px', borderRadius: '12px',
                 opacity: submitting ? 0.7 : 1,
               }}
             >

@@ -21,58 +21,20 @@ export function FAQSection({ vendor }: Props) {
           <h2 className="section-title">Frequently Asked Questions</h2>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="faq-list">
           {faqs.map((faq, i) => {
             const isOpen = openIndex === i;
             return (
-              <div key={faq.id || i} style={{
-                background: 'var(--bg-card)',
-                border: `1px solid ${isOpen ? 'var(--primary)' : 'var(--border)'}`,
-                borderRadius: '12px',
-                overflow: 'hidden',
-                transition: 'all 0.3s ease',
-              }}>
+              <div key={faq.id || i} className={`faq-item${isOpen ? ' open' : ''}`}>
                 <button
+                  className="faq-question"
                   onClick={() => setOpenIndex(isOpen ? null : i)}
-                  style={{
-                    width: '100%',
-                    padding: '20px 24px',
-                    background: 'transparent',
-                    border: 'none',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    textAlign: 'left',
-                  }}
                 >
-                  <span style={{
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    color: isOpen ? 'var(--primary)' : 'var(--text)',
-                    transition: 'color 0.3s',
-                  }}>
-                    {faq.question}
-                  </span>
-                  <span style={{
-                    fontSize: '20px',
-                    color: 'var(--text-dim)',
-                    transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.3s ease',
-                    flexShrink: 0,
-                    marginLeft: '16px',
-                  }}>
-                    +
-                  </span>
+                  <span>{faq.question}</span>
+                  <span className="faq-chevron">+</span>
                 </button>
                 {isOpen && (
-                  <div style={{
-                    padding: '0 24px 20px',
-                    fontSize: '15px',
-                    lineHeight: 1.7,
-                    color: 'var(--text-muted)',
-                  }}>
+                  <div className="faq-answer">
                     {faq.answer}
                   </div>
                 )}

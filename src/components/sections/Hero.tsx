@@ -15,7 +15,6 @@ export function HeroSection({ vendor, theme, links }: Props) {
   const subheadline = heroConfig?.subheadline || vendor.bio || '';
   const badge = heroConfig?.badge || `💍 ${vendor.category || 'Wedding Vendor'}`;
   const bgImage = heroConfig?.backgroundImage || vendor.portfolio_images?.[0] || '';
-
   const location = [vendor.city, vendor.state].filter(Boolean).join(', ');
   const isDark = theme.mode === 'dark';
 
@@ -23,88 +22,45 @@ export function HeroSection({ vendor, theme, links }: Props) {
     ? `linear-gradient(180deg, rgba(10,10,21,0.3) 0%, rgba(10,10,21,0.6) 40%, rgba(10,10,21,0.85) 70%, ${theme.bg} 100%)`
     : `linear-gradient(180deg, rgba(30,25,20,0.25) 0%, rgba(30,25,20,0.5) 40%, rgba(30,25,20,0.75) 70%, ${theme.bg} 100%)`;
 
+  const primaryRgb = hexToRgb(theme.primary);
+
   return (
-    <section id="hero" style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      textAlign: 'center',
-      padding: '120px 40px 100px',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
+    <section id="hero" className="hero">
       {/* Background Image */}
       {bgImage && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `url('${bgImage}')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          transform: 'scale(1.05)',
-        }} />
+        <div
+          className="hero-bg-image"
+          style={{ backgroundImage: `url('${bgImage}')` }}
+        />
       )}
 
       {/* Gradient Overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: overlayGradient,
-      }} />
+      <div className="hero-overlay" style={{ background: overlayGradient }} />
 
-      {/* Decorative grain texture */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        opacity: 0.03,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-      }} />
+      {/* Grain Texture */}
+      <div className="hero-grain" />
 
       {/* Content */}
-      <div style={{
-        position: 'relative',
-        maxWidth: '850px',
-        zIndex: 2,
-      }}>
+      <div className="hero-content">
         {/* Badge */}
-        <div className="animate-fade-in-up" style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: `rgba(${hexToRgb(theme.primary)}, 0.2)`,
-          border: `1px solid rgba(${hexToRgb(theme.primary)}, 0.5)`,
-          color: '#f0e0c8',
-          padding: '10px 24px',
-          borderRadius: '50px',
-          fontSize: '13px',
-          fontWeight: 600,
-          marginBottom: '28px',
-          backdropFilter: 'blur(10px)',
-          letterSpacing: '0.02em',
-        }}>
+        <div
+          className="hero-badge animate-fade-in-up"
+          style={{
+            background: `rgba(${primaryRgb}, 0.2)`,
+            border: `1px solid rgba(${primaryRgb}, 0.5)`,
+          }}
+        >
           {badge}
         </div>
 
         {/* Headline */}
-        <h1 className="animate-fade-in-up delay-1" style={{
-          fontFamily: "'Cormorant Garamond', Georgia, serif",
-          fontSize: 'clamp(42px, 8vw, 72px)',
-          fontWeight: 500,
-          marginBottom: '24px',
-          lineHeight: 1.05,
-          color: '#fff',
-          letterSpacing: '-0.02em',
-        }}>
+        <h1 className="animate-fade-in-up delay-1">
           {renderHeadline(headline)}
         </h1>
 
         {/* Subheadline */}
         {subheadline && (
-          <p className="animate-fade-in-up delay-2" style={{
-            fontSize: '18px',
-            color: 'rgba(212, 207, 200, 0.9)',
-            maxWidth: '620px',
-            margin: '0 auto 36px',
-            lineHeight: 1.7,
-          }}>
+          <p className="hero-subheadline animate-fade-in-up delay-2">
             {subheadline.length > 200
               ? subheadline.slice(0, 200) + '...'
               : subheadline}
@@ -112,37 +68,38 @@ export function HeroSection({ vendor, theme, links }: Props) {
         )}
 
         {/* Buttons */}
-        <div className="animate-fade-in-up delay-3" style={{
-          display: 'flex', gap: '14px',
-          justifyContent: 'center', flexWrap: 'wrap',
-        }}>
+        <div className="hero-buttons animate-fade-in-up delay-3">
           {heroConfig?.buttons ? (
             heroConfig.buttons.map((btn, i) => (
-              <a key={i} href={btn.href} style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: 600,
-                fontSize: '14px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                ...(btn.variant === 'primary' ? {
-                  background: theme.primary,
-                  color: '#fff',
-                  boxShadow: `0 4px 20px rgba(${hexToRgb(theme.primary)}, 0.4)`,
-                } : btn.variant === 'secondary' ? {
-                  background: 'rgba(255,255,255,0.15)',
-                  color: '#fff',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  backdropFilter: 'blur(10px)',
-                } : {
-                  background: 'transparent',
-                  color: '#fff',
-                  border: '1px solid rgba(255,255,255,0.35)',
-                }),
-              }}>
+              <a
+                key={i}
+                href={btn.href}
+                style={{
+                  padding: '14px 28px',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  ...(btn.variant === 'primary' ? {
+                    background: theme.primary,
+                    color: '#fff',
+                    boxShadow: `0 4px 20px rgba(${primaryRgb}, 0.4)`,
+                  } : btn.variant === 'secondary' ? {
+                    background: 'rgba(255,255,255,0.15)',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    backdropFilter: 'blur(10px)',
+                  } : {
+                    background: 'transparent',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.35)',
+                  }),
+                }}
+              >
                 {btn.label}
               </a>
             ))
@@ -153,7 +110,7 @@ export function HeroSection({ vendor, theme, links }: Props) {
                 fontWeight: 600, fontSize: '14px',
                 background: theme.primary, color: '#fff',
                 textDecoration: 'none',
-                boxShadow: `0 4px 20px rgba(${hexToRgb(theme.primary)}, 0.4)`,
+                boxShadow: `0 4px 20px rgba(${primaryRgb}, 0.4)`,
                 transition: 'all 0.3s ease',
               }}>
                 💍 View Packages
@@ -186,17 +143,10 @@ export function HeroSection({ vendor, theme, links }: Props) {
         </div>
 
         {/* Info Items */}
-        <div className="animate-fade-in-up delay-4" style={{
-          marginTop: '52px',
-          display: 'flex', gap: '32px',
-          justifyContent: 'center', flexWrap: 'wrap',
-        }}>
+        <div className="hero-info animate-fade-in-up delay-4">
           {heroConfig?.infoItems ? (
             heroConfig.infoItems.map((item, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                color: 'rgba(255,255,255,0.85)', fontSize: '14px', fontWeight: 500,
-              }}>
+              <div key={i} className="hero-info-item">
                 <span style={{ fontSize: '16px' }}>{item.icon}</span>
                 <span>{item.text}</span>
               </div>
@@ -204,18 +154,12 @@ export function HeroSection({ vendor, theme, links }: Props) {
           ) : (
             <>
               {location && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  color: 'rgba(255,255,255,0.85)', fontSize: '14px', fontWeight: 500,
-                }}>
+                <div className="hero-info-item">
                   <span>📍</span> {location}
                 </div>
               )}
               {vendor.phone && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  color: 'rgba(255,255,255,0.85)', fontSize: '14px', fontWeight: 500,
-                }}>
+                <div className="hero-info-item">
                   <span>📱</span> {vendor.phone}
                 </div>
               )}
@@ -228,11 +172,10 @@ export function HeroSection({ vendor, theme, links }: Props) {
 }
 
 function renderHeadline(text: string) {
-  // Support *italic* in headline text
   const parts = text.split(/(\*[^*]+\*)/);
   return parts.map((part, i) => {
     if (part.startsWith('*') && part.endsWith('*')) {
-      return <em key={i} style={{ fontStyle: 'italic' }}>{part.slice(1, -1)}</em>;
+      return <em key={i}>{part.slice(1, -1)}</em>;
     }
     return part;
   });

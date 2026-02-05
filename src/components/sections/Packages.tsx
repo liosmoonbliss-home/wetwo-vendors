@@ -15,6 +15,10 @@ export function PackagesSection({ vendor, variant }: Props) {
     : variant === 'inventory_grid' ? 'Our Collection'
     : 'Planning Made Simple';
 
+  const colsClass = packages.length === 1 ? 'cols-1'
+    : packages.length === 2 ? 'cols-2'
+    : '';
+
   return (
     <section id="packages" className="section">
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -26,14 +30,7 @@ export function PackagesSection({ vendor, variant }: Props) {
           </p>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: packages.length === 1 ? '1fr'
-            : packages.length === 2 ? 'repeat(2, 1fr)'
-            : 'repeat(3, 1fr)',
-          gap: '24px',
-          alignItems: 'stretch',
-        }}>
+        <div className={`packages-grid ${colsClass}`}>
           {packages.map((pkg, i) => {
             const isFeatured = pkg.featured === true;
             const features = Array.isArray(pkg.features) ? pkg.features : [];
@@ -41,107 +38,51 @@ export function PackagesSection({ vendor, variant }: Props) {
             return (
               <div
                 key={pkg.id || i}
-                className={`package-card ${isFeatured ? 'featured' : ''}`}
-                style={isFeatured ? { paddingTop: '44px' } : undefined}
+                className={`package-card${isFeatured ? ' featured' : ''}`}
               >
-                {/* Package Name */}
-                <h3 style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontSize: '22px',
-                  fontWeight: 600,
-                  marginBottom: '8px',
-                }}>
-                  {pkg.name}
-                </h3>
-
-                {/* Price */}
-                <div style={{
-                  fontSize: '28px',
-                  fontWeight: 700,
-                  color: 'var(--primary)',
-                  marginBottom: '4px',
-                  fontFamily: "'DM Sans', sans-serif",
-                }}>
-                  {pkg.price}
-                </div>
-
+                <h3 className="package-name">{pkg.name}</h3>
+                <div className="package-price">{pkg.price}</div>
                 {pkg.priceNote && (
-                  <div style={{
-                    fontSize: '13px',
-                    color: 'var(--text-dim)',
-                    marginBottom: '16px',
-                  }}>
-                    {pkg.priceNote}
-                  </div>
+                  <div className="package-price-note">{pkg.priceNote}</div>
                 )}
 
-                {/* Description */}
                 {pkg.description && (
-                  <p style={{
-                    fontSize: '14px',
-                    lineHeight: 1.7,
-                    color: 'var(--text-muted)',
-                    marginBottom: '20px',
-                    flex: 1,
-                  }}>
+                  <p className="package-desc">
                     {pkg.description.length > 200
                       ? pkg.description.slice(0, 200) + '...'
                       : pkg.description}
                   </p>
                 )}
 
-                {/* Features */}
                 {features.length > 0 && (
-                  <ul style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    marginBottom: '24px',
-                    flex: 1,
-                  }}>
+                  <ul className="package-features">
                     {features.slice(0, 6).map((feat, fi) => (
-                      <li key={fi} style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '10px',
-                        padding: '6px 0',
-                        fontSize: '14px',
-                        color: 'var(--text-muted)',
-                        lineHeight: 1.5,
-                      }}>
-                        <span style={{
-                          color: 'var(--primary)',
-                          fontSize: '14px',
-                          marginTop: '2px',
-                          flexShrink: 0,
-                        }}>✓</span>
-                        {feat}
-                      </li>
+                      <li key={fi}>{feat}</li>
                     ))}
                     {features.length > 6 && (
-                      <li style={{
-                        fontSize: '13px',
-                        color: 'var(--text-dim)',
-                        paddingTop: '4px',
-                      }}>
+                      <li style={{ fontSize: '13px', color: 'var(--text-dim)', paddingTop: '4px', listStyle: 'none' }}>
                         + {features.length - 6} more included
                       </li>
                     )}
                   </ul>
                 )}
 
-                {/* CTA */}
-                <a href="#contact" className="btn" style={{
-                  background: isFeatured ? 'var(--primary)' : 'transparent',
-                  color: isFeatured ? '#fff' : 'var(--text)',
-                  border: isFeatured ? 'none' : '1.5px solid var(--border)',
-                  width: '100%',
-                  justifyContent: 'center',
-                  borderRadius: '10px',
-                  padding: '14px',
-                  fontWeight: 600,
-                  marginTop: 'auto',
-                  textDecoration: 'none',
-                }}>
+                <a
+                  href="#contact"
+                  className="btn"
+                  style={{
+                    background: isFeatured ? 'var(--primary)' : 'transparent',
+                    color: isFeatured ? '#fff' : 'var(--text)',
+                    border: isFeatured ? 'none' : '1.5px solid var(--border)',
+                    width: '100%',
+                    justifyContent: 'center',
+                    borderRadius: '10px',
+                    padding: '14px',
+                    fontWeight: 600,
+                    marginTop: 'auto',
+                    textDecoration: 'none',
+                  }}
+                >
                   Book Now
                 </a>
               </div>

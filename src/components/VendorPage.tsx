@@ -21,7 +21,7 @@ import { CashbackBanner } from '@/components/sections/CashbackBanner';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { LoginScreen } from '@/components/dashboard/LoginScreen';
 
-// Lightbox
+// UI
 import { Lightbox } from '@/components/ui/Lightbox';
 import { Toast } from '@/components/ui/Toast';
 
@@ -112,97 +112,53 @@ export function VendorPage({ vendor, theme, activeSections = [], sectionOrder = 
     }
   };
 
+  // Nav labels mapping
+  const navLabels: Record<string, string> = {
+    about: 'About',
+    gallery: 'Gallery',
+    gallery_masonry: 'Gallery',
+    services_list: 'Services',
+    features_grid: 'Services',
+    packages: 'Packages',
+    menu_accordion: 'Menu',
+    event_types: 'Events',
+    testimonials: 'Reviews',
+    faq: 'FAQ',
+    contact: 'Contact',
+    venue_details: 'Venue',
+    team_spotlight: 'Team',
+    video_showcase: 'Videos',
+  };
+
   // --- PUBLIC SITE VIEW ---
   if (view === 'public') {
     const navSections = safeSectionOrder.filter(
       s => isActive(s) && !['hero', 'dashboard'].includes(s)
     );
 
-    // Nav labels mapping
-    const navLabels: Record<string, string> = {
-      about: 'About',
-      gallery: 'Gallery',
-      gallery_masonry: 'Gallery',
-      services_list: 'Services',
-      features_grid: 'Services',
-      packages: 'Packages',
-      menu_accordion: 'Menu',
-      event_types: 'Events',
-      testimonials: 'Reviews',
-      faq: 'FAQ',
-      contact: 'Contact',
-      venue_details: 'Venue',
-      team_spotlight: 'Team',
-      video_showcase: 'Videos',
-    };
-
     return (
       <>
-        {/* Navigation */}
-        <nav style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-          padding: scrolled ? '12px 40px' : '16px 40px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          background: scrolled
-            ? (theme.mode === 'dark' ? 'rgba(10, 10, 21, 0.95)' : 'rgba(255, 255, 255, 0.97)')
-            : 'transparent',
-          backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom: scrolled ? `1px solid ${theme.border}` : '1px solid transparent',
-          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}>
-          {/* Logo */}
-          <a href="#hero" style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: '22px', fontWeight: 600,
-            color: scrolled ? 'var(--primary)' : '#fff',
-            display: 'flex', alignItems: 'center', gap: '10px',
-            textDecoration: 'none',
-            transition: 'color 0.4s',
-          }}>
+        {/* Navigation — now using CSS classes for scroll state */}
+        <nav className={`public-nav${scrolled ? ' scrolled' : ''}${theme.mode === 'dark' ? ' dark-mode' : ' light-mode'}`}>
+          <a href="#hero" className="public-nav-logo">
             <span>✨</span> {vendor.business_name}
           </a>
 
-          {/* Nav Links */}
-          <ul style={{
-            display: 'flex', gap: '28px', listStyle: 'none',
-          }}>
+          <ul className="public-nav-links">
             {navSections.slice(0, 5).map(s => (
               <li key={s}>
-                <a href={`#${s}`} style={{
-                  color: scrolled ? 'var(--text-muted)' : 'rgba(255,255,255,0.8)',
-                  fontSize: '14px', fontWeight: 500,
-                  transition: 'color 0.3s',
-                  textDecoration: 'none',
-                }}>
+                <a href={`#${s}`}>
                   {navLabels[s] || s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </a>
               </li>
             ))}
           </ul>
 
-          {/* Right side */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <a href="#contact" style={{
-              background: scrolled ? 'var(--primary)' : 'rgba(255,255,255,0.15)',
-              color: '#fff',
-              padding: '10px 22px', borderRadius: '8px',
-              fontSize: '14px', fontWeight: 600,
-              border: scrolled ? 'none' : '1px solid rgba(255,255,255,0.3)',
-              backdropFilter: 'blur(10px)',
-              textDecoration: 'none',
-              transition: 'all 0.3s',
-            }}>
-              Get a Quote
-            </a>
+          <div className="public-nav-right">
+            <a href="#contact" className="public-nav-cta">Get a Quote</a>
             <button
               onClick={() => setView('login')}
-              style={{
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                color: scrolled ? 'var(--text-muted)' : 'rgba(255,255,255,0.7)',
-                fontSize: '14px', fontWeight: 500, padding: '10px 16px',
-                fontFamily: 'inherit',
-                transition: 'color 0.3s',
-              }}
+              className="public-nav-login"
             >
               Login →
             </button>
@@ -217,25 +173,15 @@ export function VendorPage({ vendor, theme, activeSections = [], sectionOrder = 
         </main>
 
         {/* Footer */}
-        <footer style={{
-          padding: '32px 40px',
-          textAlign: 'center',
-          borderTop: '1px solid var(--border)',
-          background: 'var(--bg)',
-        }}>
-          <p style={{ color: 'var(--text-dim)', fontSize: '13px', lineHeight: 1.8 }}>
+        <footer className="public-footer">
+          <p>
             © {new Date().getFullYear()} {vendor.business_name}.{' '}
             {vendor.city && vendor.state && `${vendor.city}, ${vendor.state}. `}
-            Powered by <a href="https://wetwo.love" style={{ color: 'var(--primary)', textDecoration: 'none' }}>WeTwo</a>
+            Powered by <a href="https://wetwo.love" target="_blank" rel="noopener noreferrer">WeTwo</a>
           </p>
           <button
             onClick={() => setView('login')}
-            style={{
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              color: 'var(--primary)', fontSize: '13px',
-              textDecoration: 'underline',
-              marginTop: '4px', fontFamily: 'inherit',
-            }}
+            className="public-footer-login"
           >
             Vendor Login
           </button>
