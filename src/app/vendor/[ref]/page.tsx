@@ -4,23 +4,67 @@ import { resolveTheme, themeToCSSVariables } from '@/lib/themes';
 import { getDefaultSections } from '@/lib/sections';
 import { getVendorLinks } from '@/lib/links';
 import { VendorPage } from '@/components/VendorPage';
-import type { SectionId } from '@/lib/types';
-import type { ThemePreset } from '@/lib/types';
+import type { SectionId, ThemePreset } from '@/lib/types';
+
 interface Props { params: { ref: string } }
+
 export default async function VendorRoute({ params }: Props) {
-  const vendor = await getVendorByRef(params.ref);
+  let vendor;
+  try {
+    vendor = await getVendorByRef(params.ref);
+  } catch (e) {
+    console.error('Failed to fetch vendor:', e);
+    notFound();
+  }
   if (!vendor) notFound();
-  const theme = resolveTheme((vendor.theme_preset as ThemePreset) || 'light-elegant', vendor.brand_color || undefined, vendor.brand_color_secondary || undefined);
+
+  const theme = resolveTheme(
+    (vendor.theme_preset as ThemePreset) || 'light-elegant',
+    vendor.brand_color || undefined,
+    vendor.brand_color_secondary || undefined
+  );
   const cssVars = themeToCSSVariables(theme);
   const defaults = getDefaultSections(vendor.category);
-  const activeSections: SectionId[] = Array.isArray(vendor.active_sections) && vendor.active_sections.length > 0 ? vendor.active_sections : defaults;
-  const sectionOrder: SectionId[] = Array.isArray(vendor.section_order) && vendor.section_order.length > 0 ? vendor.section_order : activeSections;
-  const links = getVendorLinks(vendor);
-  return (<><style dangerouslySetInnerHTML={{ __html: `:root { ${cssVars} }` }} /><VendorPage vendor={vendor} theme={theme} activeSections={activeSections} sectionOrder={sectionOrder} links={links} /></>);
+  const activeSections: SectionId[] = Array.isArray(vendor.active_sections) && vendor.active_sections.length > 0
+    ? vendor.active_sections : defaults;
+  const sectionOrder: SectionId[] = Array.isArray(vendor.section_order) && vendor.section_order.length > 0
+    ? vendor.section_order : [...activeSections];
+
+  let links: Record<string, string | null> = {};
+  try {
+    links = getVendorLinks(vendor);
+  } catch (e) {
+    console.error('Failed to build links:', e);
+    links = { page: '', pageAbsolute: '', affiliateLink: '#', shopLink: '#', coupleSignup: '#', gateLink: '#' };
+  }
+
+  // Serialize everything safely
+  const safeVendor = JSON.parse(JSON.stringify(vendor));
+  const safeTheme = JSON.parse(JSON.stringify(theme));
+  const safeLinks = JSON.parse(JSON.stringify(links));
+  const safeSections = [...activeSections];
+  const safeOrder = [...sectionOrder];
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: `:root { ${cssVars} }` }} />
+      <VendorPage
+        vendor={safeVendor}
+        theme={safeTheme}
+        activeSections={safeSections}
+        sectionOrder={safeOrder}
+        links={safeLinks}
+      />
+    </>
+  );
 }
+
 export async function generateMetadata({ params }: Props) {
   const vendor = await getVendorByRef(params.ref);
   if (!vendor) return { title: 'Not Found' };
   const loc = [vendor.city, vendor.state].filter(Boolean).join(', ');
-  return { title: `${vendor.business_name} | ${vendor.category || 'Wedding Vendor'} | ${loc}`, description: vendor.bio || `${vendor.business_name} in ${loc}` };
+  return {
+    title: `${vendor.business_name} | ${vendor.category || 'Wedding Vendor'} | ${loc}`,
+    description: vendor.bio || `${vendor.business_name} in ${loc}`
+  };
 }
