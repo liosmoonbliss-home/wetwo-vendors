@@ -48,7 +48,7 @@ export default function BuilderPage() {
       setVendor(data.vendor);
       setStep('review');
     } catch (err) {
-      setError(String(err));
+      setError(err instanceof Error ? err.message : JSON.stringify(err));
       setStep('input');
     }
   }, [url, pasteHtml]);
@@ -74,7 +74,7 @@ export default function BuilderPage() {
       setLiveUrl(data.url);
       setStep('done');
     } catch (err) {
-      setError(String(err));
+      setError(err instanceof Error ? err.message : JSON.stringify(err));
       setStep('review');
     }
   }, [vendor]);

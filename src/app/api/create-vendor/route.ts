@@ -53,6 +53,6 @@ export async function POST(req: NextRequest) {
       isUpdate: !!existing,
     });
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : JSON.stringify(err) }, { status: 500 });
   }
 }
