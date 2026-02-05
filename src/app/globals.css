@@ -384,6 +384,48 @@ a { color: inherit; text-decoration: none; }
   content: '✓'; color: var(--primary); font-weight: 700;
 }
 
+/* Package expand button for long feature lists */
+.package-expand-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+.package-expand-btn:hover {
+  opacity: 0.8;
+}
+
+/* Package CTA button */
+.package-cta {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-weight: 600;
+  margin-top: auto;
+  text-decoration: none;
+}
+.package-cta:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.package-cta.featured {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+}
+.package-cta.featured:hover {
+  filter: brightness(1.1);
+}
+
 /* ============ EVENT TYPES / PARTY TYPES ============ */
 .event-types-grid {
   display: flex; flex-wrap: wrap; justify-content: center;

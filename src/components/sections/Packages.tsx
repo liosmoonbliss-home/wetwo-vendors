@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { Vendor, SectionId, PricingPackage } from '@/lib/types';
 
 interface Props {
@@ -37,6 +38,7 @@ export function PackagesSection({ vendor, variant }: Props) {
 }
 
 function PackageCard({ pkg }: { pkg: PricingPackage }) {
+  const [expanded, setExpanded] = useState(false);
   const isFeatured = pkg.featured === true;
 
   // Extract features: prefer pkg.features array, fallback to parsing bullets from description
@@ -52,6 +54,11 @@ function PackageCard({ pkg }: { pkg: PricingPackage }) {
 
   // Parse price for display
   const { mainPrice, priceNote } = parsePrice(pkg.price, pkg.priceNote);
+
+  // Determine if we need "See more" - show max 6 features when collapsed
+  const MAX_FEATURES_COLLAPSED = 6;
+  const hasMoreFeatures = features.length > MAX_FEATURES_COLLAPSED;
+  const displayedFeatures = expanded ? features : features.slice(0, MAX_FEATURES_COLLAPSED);
 
   return (
     <div className={`package-card${isFeatured ? ' featured' : ''}`}>
@@ -70,28 +77,28 @@ function PackageCard({ pkg }: { pkg: PricingPackage }) {
         <p className="package-desc">{shortDesc}</p>
       )}
 
-      {features.length > 0 && (
+      {displayedFeatures.length > 0 && (
         <ul className="package-features">
-          {features.map((feat, fi) => (
+          {displayedFeatures.map((feat, fi) => (
             <li key={fi}>{feat}</li>
           ))}
         </ul>
       )}
 
+      {/* See more / See less toggle */}
+      {hasMoreFeatures && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="package-expand-btn"
+        >
+          {expanded ? '← See less' : `See all ${features.length} features →`}
+        </button>
+      )}
+
       <a
         href="#contact"
-        className="btn"
-        style={{
-          background: isFeatured ? 'var(--primary)' : 'transparent',
-          color: isFeatured ? '#fff' : 'var(--text)',
-          border: isFeatured ? 'none' : '1px solid var(--border)',
-          width: '100%',
-          justifyContent: 'center',
-          padding: '12px',
-          fontWeight: 600,
-          marginTop: 'auto',
-          textDecoration: 'none',
-        }}
+        className={`btn package-cta${isFeatured ? ' featured' : ''}`}
       >
         {isFeatured ? 'Inquire Now' : 'Book Now'}
       </a>
@@ -123,23 +130,16 @@ function getShortDescription(text: string, hasBullets: boolean): string {
   const bulletStart = text.search(/\n\s*[•\-\*]\s/);
   let desc = bulletStart > 0 ? text.slice(0, bulletStart).trim() : text.trim();
 
-  if (hasBullets && desc.length > 200) {
-    const lastPeriod = desc.lastIndexOf('.', 200);
+  // Keep descriptions shorter when we have bullet features
+  const maxLen = hasBullets ? 150 : 180;
+  
+  if (desc.length > maxLen) {
+    const lastPeriod = desc.lastIndexOf('.', maxLen);
     if (lastPeriod > 50) {
       desc = desc.slice(0, lastPeriod + 1);
     } else {
-      const lastSpace = desc.lastIndexOf(' ', 200);
-      desc = desc.slice(0, lastSpace > 0 ? lastSpace : 200) + '…';
-    }
-  }
-
-  if (!hasBullets && desc.length > 180) {
-    const lastPeriod = desc.lastIndexOf('.', 180);
-    if (lastPeriod > 50) {
-      desc = desc.slice(0, lastPeriod + 1);
-    } else {
-      const lastSpace = desc.lastIndexOf(' ', 180);
-      desc = desc.slice(0, lastSpace > 0 ? lastSpace : 180) + '…';
+      const lastSpace = desc.lastIndexOf(' ', maxLen);
+      desc = desc.slice(0, lastSpace > 0 ? lastSpace : maxLen) + '…';
     }
   }
 
