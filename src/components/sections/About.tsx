@@ -14,6 +14,8 @@ export function AboutSection({ vendor }: Props) {
 
   const firstName = name.split(' ')[0];
   const roleTitle = getRoleTitle(vendor.category);
+  
+  // Get first 4 services for the feature pills
   const highlights = services.slice(0, 4).map(s => ({
     icon: s.icon || '✨',
     name: s.name,
@@ -42,13 +44,11 @@ export function AboutSection({ vendor }: Props) {
           <span className="section-label">Meet {firstName}</span>
           <h2>{roleTitle}</h2>
 
-          <div>
-            {bio.split('\n').map((paragraph, i) => (
-              <p key={i}>{paragraph}</p>
-            ))}
-          </div>
+          {bio.split('\n').map((paragraph, i) => (
+            <p key={i}>{paragraph}</p>
+          ))}
 
-          {/* Service Highlights as pills */}
+          {/* Service Highlights as 2-column grid */}
           {highlights.length > 0 && (
             <div className="about-features">
               {highlights.map((h, i) => (

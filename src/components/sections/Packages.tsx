@@ -15,16 +15,8 @@ export function PackagesSection({ vendor, variant }: Props) {
     : variant === 'inventory_grid' ? 'Our Collection'
     : 'Planning Made Simple';
 
-  // For grid layout: if 4+ packages, show first 3 in a row, rest below
-  const mainPackages = packages.slice(0, 3);
-  const extraPackages = packages.slice(3);
-
-  const colsClass = mainPackages.length === 1 ? 'cols-1'
-    : mainPackages.length === 2 ? 'cols-2'
-    : '';
-
   return (
-    <section id="packages" className="section">
+    <section id="packages" className="section section-alt">
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div className="section-header">
           <span className="section-label">Our Packages</span>
@@ -34,24 +26,11 @@ export function PackagesSection({ vendor, variant }: Props) {
           </p>
         </div>
 
-        {/* Main packages grid (up to 3) */}
-        <div className={`packages-grid ${colsClass}`}>
-          {mainPackages.map((pkg, i) => (
+        <div className="packages-grid">
+          {packages.map((pkg, i) => (
             <PackageCard key={pkg.id || i} pkg={pkg} />
           ))}
         </div>
-
-        {/* Extra packages (4th+) shown in a narrower grid below */}
-        {extraPackages.length > 0 && (
-          <div
-            className={`packages-grid ${extraPackages.length === 1 ? 'cols-1' : 'cols-2'}`}
-            style={{ marginTop: '24px' }}
-          >
-            {extraPackages.map((pkg, i) => (
-              <PackageCard key={pkg.id || (i + 3)} pkg={pkg} />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
@@ -78,21 +57,14 @@ function PackageCard({ pkg }: { pkg: PricingPackage }) {
     <div className={`package-card${isFeatured ? ' featured' : ''}`}>
       {/* Icon */}
       {pkg.icon && (
-        <div style={{
-          width: '48px', height: '48px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'var(--primary-dim)', borderRadius: '12px',
-          fontSize: '22px', marginBottom: '16px',
-        }}>
-          {pkg.icon}
-        </div>
+        <div className="package-icon">{pkg.icon}</div>
       )}
 
       <h3 className="package-name">{pkg.name}</h3>
-      <div className="package-price">{mainPrice}</div>
-      {priceNote && (
-        <div className="package-price-note">{priceNote}</div>
-      )}
+      <div className="package-price">
+        {mainPrice}
+        {priceNote && <span> {priceNote}</span>}
+      </div>
 
       {shortDesc && (
         <p className="package-desc">{shortDesc}</p>
@@ -112,11 +84,10 @@ function PackageCard({ pkg }: { pkg: PricingPackage }) {
         style={{
           background: isFeatured ? 'var(--primary)' : 'transparent',
           color: isFeatured ? '#fff' : 'var(--text)',
-          border: isFeatured ? 'none' : '1.5px solid var(--border)',
+          border: isFeatured ? 'none' : '1px solid var(--border)',
           width: '100%',
           justifyContent: 'center',
-          borderRadius: '10px',
-          padding: '14px',
+          padding: '12px',
           fontWeight: 600,
           marginTop: 'auto',
           textDecoration: 'none',
@@ -128,21 +99,16 @@ function PackageCard({ pkg }: { pkg: PricingPackage }) {
   );
 }
 
-/**
- * Extract bullet points from a description string.
- * Handles •, -, * prefixed lines and numbered lists.
- */
 function extractBulletPoints(text: string): string[] {
   const lines = text.split('\n');
   const bullets: string[] = [];
 
   for (const line of lines) {
     const trimmed = line.trim();
-    // Match lines starting with •, -, *, or numbered (1., 2., etc.)
     const match = trimmed.match(/^[•\-\*]\s*(.+)/) || trimmed.match(/^\d+[.)]\s*(.+)/);
     if (match) {
       const clean = match[1].trim();
-      if (clean.length > 5) { // Skip very short fragments
+      if (clean.length > 5) {
         bullets.push(clean);
       }
     }
@@ -151,17 +117,12 @@ function extractBulletPoints(text: string): string[] {
   return bullets;
 }
 
-/**
- * Get the first sentence/paragraph before bullet points start.
- */
 function getShortDescription(text: string, hasBullets: boolean): string {
   if (!text) return '';
 
-  // Split at first bullet indicator
   const bulletStart = text.search(/\n\s*[•\-\*]\s/);
   let desc = bulletStart > 0 ? text.slice(0, bulletStart).trim() : text.trim();
 
-  // If we extracted bullets, keep description short
   if (hasBullets && desc.length > 200) {
     const lastPeriod = desc.lastIndexOf('.', 200);
     if (lastPeriod > 50) {
@@ -172,7 +133,6 @@ function getShortDescription(text: string, hasBullets: boolean): string {
     }
   }
 
-  // If no bullets were found and desc is the full text, truncate more aggressively
   if (!hasBullets && desc.length > 180) {
     const lastPeriod = desc.lastIndexOf('.', 180);
     if (lastPeriod > 50) {
@@ -186,16 +146,11 @@ function getShortDescription(text: string, hasBullets: boolean): string {
   return desc;
 }
 
-/**
- * Parse price string for cleaner display.
- * "$1400 - $2000" → mainPrice: "$1,400", priceNote: "– $2,000"
- */
 function parsePrice(price: string, existingNote?: string): { mainPrice: string; priceNote: string } {
   if (existingNote) {
     return { mainPrice: formatPrice(price), priceNote: existingNote };
   }
 
-  // Handle range: "$1400 - $2000"
   const rangeMatch = price.match(/^\$?([\d,]+)\s*[-–]\s*\$?([\d,]+)$/);
   if (rangeMatch) {
     return {
@@ -204,7 +159,6 @@ function parsePrice(price: string, existingNote?: string): { mainPrice: string; 
     };
   }
 
-  // Handle "plus" prices: "$4000+"
   const plusMatch = price.match(/^\$?([\d,]+)\+$/);
   if (plusMatch) {
     return {
@@ -213,7 +167,6 @@ function parsePrice(price: string, existingNote?: string): { mainPrice: string; 
     };
   }
 
-  // Handle prices with notes: "$1400 / up to 5 hrs"
   const slashMatch = price.match(/^\$?([\d,]+)\s*\/\s*(.+)$/);
   if (slashMatch) {
     return {
@@ -226,10 +179,9 @@ function parsePrice(price: string, existingNote?: string): { mainPrice: string; 
 }
 
 function formatPrice(price: string): string {
-  // Add commas to numbers in the price string
   return price.replace(/\$?(\d+)/g, (match, num) => {
     return '$' + addCommas(num);
-  }).replace(/\$\$/g, '$'); // Fix double dollar signs
+  }).replace(/\$\$/g, '$');
 }
 
 function addCommas(numStr: string): string {
