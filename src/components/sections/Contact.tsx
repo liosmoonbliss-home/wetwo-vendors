@@ -1,28 +1,254 @@
 'use client';
+
 import { useState } from 'react';
 import type { Vendor } from '@/lib/types';
-export function ContactSection({ vendor }: { vendor: Vendor }) {
-  const [form, setForm] = useState({ name:'', email:'', phone:'', event_date:'', interest:'', message:'' });
-  const [status, setStatus] = useState<'idle'|'sending'|'sent'|'error'>('idle');
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault(); setStatus('sending');
+
+interface Props {
+  vendor: Vendor;
+  links: { affiliateLink: string };
+  showToast: (msg: string) => void;
+}
+
+export function ContactSection({ vendor, links, showToast }: Props) {
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    name: '', email: '', phone: '',
+    event_date: '', interest: '', message: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
     try {
-      const res = await fetch('/api/leads', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ vendor_id: vendor.id, ...form }) });
-      if (res.ok) { setStatus('sent'); setForm({ name:'',email:'',phone:'',event_date:'',interest:'',message:'' }); } else setStatus('error');
-    } catch { setStatus('error'); }
-  }
-  return (<section id="contact" className="section" style={{padding:'100px 40px'}}>
-    <div style={{maxWidth:'700px',margin:'0 auto'}}>
-      <div className="section-header"><div className="section-label">Get In Touch</div><h2 className="section-title">Contact Us</h2><p className="section-subtitle">Tell us about your event and we will get back to you shortly.</p></div>
-      {status==='sent' ? (<div style={{textAlign:'center',padding:'40px',background:'var(--bg-card)',borderRadius:'16px',border:'1px solid var(--border)'}}><div style={{fontSize:'48px',marginBottom:'16px'}}>&#10003;</div><h3 style={{fontSize:'24px',marginBottom:'8px'}}>Message Sent!</h3><p style={{color:'var(--text-muted)'}}>We will be in touch soon.</p></div>) : (
-      <form onSubmit={handleSubmit}>
-        <div className="form-row"><div className="form-group"><label>Name *</label><input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} /></div><div className="form-group"><label>Email *</label><input required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} /></div></div>
-        <div className="form-row"><div className="form-group"><label>Phone</label><input value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} /></div><div className="form-group"><label>Event Date</label><input type="date" value={form.event_date} onChange={e=>setForm({...form,event_date:e.target.value})} /></div></div>
-        <div className="form-group"><label>Interest</label><select value={form.interest} onChange={e=>setForm({...form,interest:e.target.value})}><option value="">Select...</option><option>Wedding</option><option>Corporate Event</option><option>Private Party</option><option>Other</option></select></div>
-        <div className="form-group"><label>Message</label><textarea rows={4} value={form.message} onChange={e=>setForm({...form,message:e.target.value})} /></div>
-        <button type="submit" className="btn btn-primary" disabled={status==='sending'} style={{width:'100%',padding:'16px',fontSize:'16px'}}>{status==='sending'?'Sending...':'Send Message'}</button>
-        {status==='error' && <p style={{color:'var(--red)',marginTop:'12px',textAlign:'center'}}>Something went wrong. Please try again.</p>}
-      </form>)}
-    </div>
-  </section>);
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, vendor_id: vendor.id }),
+      });
+
+      if (res.ok) {
+        showToast('Message sent! We\'ll be in touch soon.');
+        setForm({ name: '', email: '', phone: '', event_date: '', interest: '', message: '' });
+      } else {
+        showToast('Something went wrong. Please try again.');
+      }
+    } catch {
+      showToast('Network error. Please try again.');
+    }
+    setSubmitting(false);
+  };
+
+  const location = [vendor.city, vendor.state].filter(Boolean).join(', ');
+
+  // Contact info items
+  const contactInfo = [
+    location && { icon: '📍', label: 'Location', value: location, sub: 'Serving all of New Jersey & beyond' },
+    vendor.phone && { icon: '📱', label: 'Phone', value: vendor.phone },
+    vendor.email && { icon: '✉️', label: 'Email', value: vendor.email },
+    vendor.instagram_handle && { icon: '📷', label: 'Instagram', value: `@${vendor.instagram_handle.replace('@', '')}` },
+  ].filter(Boolean) as Array<{ icon: string; label: string; value: string; sub?: string }>;
+
+  // Interest options based on category
+  const interestOptions = getInterestOptions(vendor.category);
+
+  return (
+    <section id="contact" className="section">
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div className="section-header">
+          <span className="section-label">Get in Touch</span>
+          <h2 className="section-title">
+            Let&apos;s Plan Something Amazing
+          </h2>
+          <p className="section-subtitle">
+            Ready to start planning? Reach out for a free consultation.
+          </p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: contactInfo.length > 0 ? '1fr 1.2fr' : '1fr',
+          gap: '48px',
+          alignItems: 'start',
+        }}>
+          {/* Left: Contact Info */}
+          {contactInfo.length > 0 && (
+            <div>
+              <h3 style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: '24px',
+                fontWeight: 500,
+                marginBottom: '12px',
+              }}>
+                Let&apos;s Talk
+              </h3>
+              <p style={{
+                fontSize: '15px',
+                color: 'var(--text-muted)',
+                lineHeight: 1.7,
+                marginBottom: '32px',
+              }}>
+                Whether you&apos;re planning a wedding, corporate event, or milestone celebration — we&apos;d love to hear about your vision.
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {contactInfo.map((info, i) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    gap: '16px',
+                    alignItems: 'flex-start',
+                  }}>
+                    <div style={{
+                      width: '44px',
+                      height: '44px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'var(--primary-dim)',
+                      borderRadius: '12px',
+                      fontSize: '18px',
+                      flexShrink: 0,
+                    }}>
+                      {info.icon}
+                    </div>
+                    <div>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: 'var(--text-dim)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        marginBottom: '4px',
+                      }}>
+                        {info.label}
+                      </div>
+                      <div style={{
+                        fontSize: '15px',
+                        fontWeight: 500,
+                        color: 'var(--text)',
+                      }}>
+                        {info.value}
+                      </div>
+                      {info.sub && (
+                        <div style={{
+                          fontSize: '13px',
+                          color: 'var(--text-dim)',
+                          marginTop: '2px',
+                        }}>
+                          {info.sub}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Right: Contact Form */}
+          <form onSubmit={handleSubmit} style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: '20px',
+            padding: '36px',
+          }}>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Your Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  placeholder="Full name"
+                />
+              </div>
+              <div className="form-group">
+                <label>Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  placeholder="your@email.com"
+                />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Phone</label>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={e => setForm({ ...form, phone: e.target.value })}
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+              <div className="form-group">
+                <label>Event Date</label>
+                <input
+                  type="date"
+                  value={form.event_date}
+                  onChange={e => setForm({ ...form, event_date: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>I&apos;m Interested In</label>
+              <select
+                value={form.interest}
+                onChange={e => setForm({ ...form, interest: e.target.value })}
+              >
+                <option value="">Select an option...</option>
+                {interestOptions.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Tell Us More</label>
+              <textarea
+                rows={4}
+                value={form.message}
+                onChange={e => setForm({ ...form, message: e.target.value })}
+                placeholder="Tell us about your event..."
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn btn-primary"
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                padding: '16px',
+                fontSize: '15px',
+                borderRadius: '12px',
+                opacity: submitting ? 0.7 : 1,
+              }}
+            >
+              {submitting ? 'Sending...' : 'Send Message ✨'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function getInterestOptions(category?: string): string[] {
+  const base = ['Something Else'];
+  const categoryOptions: Record<string, string[]> = {
+    'Planner': ['Wedding Planning', 'Day-of Coordination', 'DJ Services', 'Photo / Video', 'Decor & Backdrops', 'Corporate Event'],
+    'Day-of Coordinator': ['Wedding Planning', 'Day-of Coordination', 'DJ Services', 'Photo / Video', 'Decor & Backdrops', 'Corporate Event'],
+    'Event Planner': ['Wedding Planning', 'Day-of Coordination', 'DJ Services', 'Photo / Video', 'Decor & Backdrops', 'Balloon Designs', 'Corporate Event'],
+    'Photographer': ['Wedding Photography', 'Engagement Session', 'Event Coverage', 'Portrait Session', 'Corporate Headshots'],
+    'Videographer': ['Wedding Film', 'Highlight Reel', 'Event Coverage', 'Corporate Video'],
+    'DJ': ['Wedding DJ', 'Corporate Event', 'Birthday Party', 'Holiday Party', 'MC Services'],
+    'Caterer': ['Wedding Catering', 'Corporate Catering', 'Private Event', 'Tasting Request'],
+    'Florist': ['Wedding Flowers', 'Event Florals', 'Custom Arrangement', 'Consultation'],
+    'Venue': ['Wedding Venue', 'Corporate Event', 'Private Party', 'Venue Tour'],
+    'Hair & Makeup': ['Bridal Beauty', 'Bridesmaid Services', 'Special Event', 'Trial Session'],
+  };
+  return [...(categoryOptions[category || ''] || ['Wedding Services', 'Event Services', 'Consultation']), ...base];
 }

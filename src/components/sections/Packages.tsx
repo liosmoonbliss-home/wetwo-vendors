@@ -1,19 +1,154 @@
 'use client';
-import type { Vendor } from '@/lib/types';
-export function PackagesSection({ vendor }: { vendor: Vendor }) {
-  const pkgs = Array.isArray(vendor.pricing_packages) ? vendor.pricing_packages : [];
-  if (pkgs.length === 0) return null;
-  return (<section id="packages" className="section section-alt" style={{padding:'100px 40px',background:'var(--bg-hover)'}}>
-    <div className="section-header"><div className="section-label">Our Packages</div><h2 className="section-title">Packages &amp; Pricing</h2></div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:'24px',maxWidth:'1100px',margin:'0 auto'}}>
-      {pkgs.map(pkg => (<div key={pkg.id} style={{background:'var(--bg-card)',border:`1px solid ${pkg.featured?'var(--primary)':'var(--border)'}`,borderRadius:'16px',padding:'32px',transition:'all 0.3s'}}>
-        <div style={{fontSize:'36px',marginBottom:'16px'}}>{pkg.icon}</div>
-        <div style={{fontSize:'20px',fontWeight:700,marginBottom:'8px'}}>{pkg.name}</div>
-        <div style={{fontSize:'28px',fontWeight:700,color:'var(--primary)',marginBottom:'16px'}}>{pkg.price}</div>
-        <p style={{color:'var(--text-muted)',fontSize:'14px',marginBottom:'20px',lineHeight:1.6}}>{pkg.description}</p>
-        <ul style={{listStyle:'none',marginBottom:'24px'}}>{(pkg.features||[]).map((f,i) => (<li key={i} style={{padding:'8px 0',fontSize:'14px',color:'var(--text-muted)',display:'flex',alignItems:'flex-start',gap:'10px'}}><span style={{color:'var(--primary)',fontWeight:700}}>✓</span>{f}</li>))}</ul>
-        <a href="#contact" style={{display:'block',textAlign:'center',width:'100%',padding:'12px',background:pkg.featured?'var(--primary)':'transparent',color:pkg.featured?'#fff':'var(--text)',border:pkg.featured?'none':'1px solid var(--border)',borderRadius:'8px',fontWeight:600,fontSize:'14px'}}>Book Now</a>
-      </div>))}
-    </div>
-  </section>);
+
+import type { Vendor, SectionId } from '@/lib/types';
+
+interface Props {
+  vendor: Vendor;
+  variant?: SectionId;
+}
+
+export function PackagesSection({ vendor, variant }: Props) {
+  const packages = Array.isArray(vendor.pricing_packages) ? vendor.pricing_packages : [];
+  if (packages.length === 0) return null;
+
+  const sectionTitle = variant === 'fleet_showcase' ? 'Our Fleet'
+    : variant === 'inventory_grid' ? 'Our Collection'
+    : 'Planning Made Simple';
+
+  return (
+    <section id="packages" className="section">
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="section-header">
+          <span className="section-label">Our Packages</span>
+          <h2 className="section-title">{sectionTitle}</h2>
+          <p className="section-subtitle">
+            From day-of coordination to complete event planning — choose the level of support that&apos;s right for you.
+          </p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: packages.length === 1 ? '1fr'
+            : packages.length === 2 ? 'repeat(2, 1fr)'
+            : 'repeat(3, 1fr)',
+          gap: '24px',
+          alignItems: 'stretch',
+        }}>
+          {packages.map((pkg, i) => {
+            const isFeatured = pkg.featured === true;
+            const features = Array.isArray(pkg.features) ? pkg.features : [];
+
+            return (
+              <div
+                key={pkg.id || i}
+                className={`package-card ${isFeatured ? 'featured' : ''}`}
+                style={isFeatured ? { paddingTop: '44px' } : undefined}
+              >
+                {/* Package Name */}
+                <h3 style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontSize: '22px',
+                  fontWeight: 600,
+                  marginBottom: '8px',
+                }}>
+                  {pkg.name}
+                </h3>
+
+                {/* Price */}
+                <div style={{
+                  fontSize: '28px',
+                  fontWeight: 700,
+                  color: 'var(--primary)',
+                  marginBottom: '4px',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>
+                  {pkg.price}
+                </div>
+
+                {pkg.priceNote && (
+                  <div style={{
+                    fontSize: '13px',
+                    color: 'var(--text-dim)',
+                    marginBottom: '16px',
+                  }}>
+                    {pkg.priceNote}
+                  </div>
+                )}
+
+                {/* Description */}
+                {pkg.description && (
+                  <p style={{
+                    fontSize: '14px',
+                    lineHeight: 1.7,
+                    color: 'var(--text-muted)',
+                    marginBottom: '20px',
+                    flex: 1,
+                  }}>
+                    {pkg.description.length > 200
+                      ? pkg.description.slice(0, 200) + '...'
+                      : pkg.description}
+                  </p>
+                )}
+
+                {/* Features */}
+                {features.length > 0 && (
+                  <ul style={{
+                    listStyle: 'none',
+                    padding: 0,
+                    marginBottom: '24px',
+                    flex: 1,
+                  }}>
+                    {features.slice(0, 6).map((feat, fi) => (
+                      <li key={fi} style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px',
+                        padding: '6px 0',
+                        fontSize: '14px',
+                        color: 'var(--text-muted)',
+                        lineHeight: 1.5,
+                      }}>
+                        <span style={{
+                          color: 'var(--primary)',
+                          fontSize: '14px',
+                          marginTop: '2px',
+                          flexShrink: 0,
+                        }}>✓</span>
+                        {feat}
+                      </li>
+                    ))}
+                    {features.length > 6 && (
+                      <li style={{
+                        fontSize: '13px',
+                        color: 'var(--text-dim)',
+                        paddingTop: '4px',
+                      }}>
+                        + {features.length - 6} more included
+                      </li>
+                    )}
+                  </ul>
+                )}
+
+                {/* CTA */}
+                <a href="#contact" className="btn" style={{
+                  background: isFeatured ? 'var(--primary)' : 'transparent',
+                  color: isFeatured ? '#fff' : 'var(--text)',
+                  border: isFeatured ? 'none' : '1.5px solid var(--border)',
+                  width: '100%',
+                  justifyContent: 'center',
+                  borderRadius: '10px',
+                  padding: '14px',
+                  fontWeight: 600,
+                  marginTop: 'auto',
+                  textDecoration: 'none',
+                }}>
+                  Book Now
+                </a>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }
