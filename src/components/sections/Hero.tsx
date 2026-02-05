@@ -1,6 +1,6 @@
 'use client';
 import type { Vendor } from '@/lib/types';
-import type { ThemeConfig } from '@/lib/themes';
+import type { ThemeConfig } from '@/lib/types';
 function hexToRgb(hex: string) { return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`; }
 export function HeroSection({ vendor, theme, links }: { vendor: Vendor; theme: ThemeConfig; links: { affiliateLink: string } }) {
   const hc = vendor.hero_config;

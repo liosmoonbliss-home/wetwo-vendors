@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import type { Vendor, SectionId } from '@/lib/types';
-import type { ThemeConfig } from '@/lib/themes';
+import type { ThemeConfig } from '@/lib/types';
 import { HeroSection } from './sections/Hero';
 import { GallerySection } from './sections/Gallery';
 import { PackagesSection } from './sections/Packages';
