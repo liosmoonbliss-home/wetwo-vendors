@@ -6,17 +6,16 @@ export async function getVendorByRef(ref: string): Promise<Vendor | null> {
   return normalizeVendor(data);
 }
 function normalizeVendor(raw: Record<string, unknown>): Vendor {
-  const vendor = { ...raw } as unknown as Vendor;
+  const vendor: any = { ...raw };
   const jsonFields = ['pricing_packages','services_included','event_types','testimonials','faqs','team_members','venue_info','menu_categories','hero_config'];
   for (const field of jsonFields) {
-    const val = (vendor as Record<string,unknown>)[field];
-    if (typeof val === 'string') { try { (vendor as Record<string,unknown>)[field] = JSON.parse(val); } catch { (vendor as Record<string,unknown>)[field] = []; } }
+    if (typeof vendor[field] === 'string') { try { vendor[field] = JSON.parse(vendor[field]); } catch { vendor[field] = []; } }
   }
   if (!Array.isArray(vendor.portfolio_images)) vendor.portfolio_images = [];
   if (!Array.isArray(vendor.pricing_packages)) vendor.pricing_packages = [];
   if (!Array.isArray(vendor.active_sections)) vendor.active_sections = [];
   if (!Array.isArray(vendor.section_order)) vendor.section_order = [];
-  return vendor;
+  return vendor as Vendor;
 }
 export async function submitLead(lead: Lead): Promise<Lead | null> {
   const { data, error } = await supabase.from('leads').insert(lead).select().single();
