@@ -91,6 +91,7 @@ export default function BuilderPage() {
   const [tab, setTab] = useState<Tab>('images');
   const [images, setImages] = useState<ImageSelection[]>([]);
   const [previewScale, setPreviewScale] = useState(0.5);
+  const [newImageUrl, setNewImageUrl] = useState('');
 
   // ── Analyze ───────────────────────────────────
   const analyze = useCallback(async () => {
@@ -302,6 +303,33 @@ export default function BuilderPage() {
             {/* ── TAB: Images ── */}
             {tab === 'images' && (
               <div>
+                {/* Add image by URL */}
+                <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
+                  <input
+                    type="url"
+                    placeholder="Paste image URL to add..."
+                    value={newImageUrl}
+                    onChange={e => setNewImageUrl(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && newImageUrl.trim()) {
+                        setImages(prev => [...prev, { url: newImageUrl.trim(), isHero: prev.length === 0, inGallery: true }]);
+                        setNewImageUrl('');
+                      }
+                    }}
+                    style={{ ...S.fieldInput, flex: 1, fontSize: '0.75rem', padding: '0.4rem 0.6rem' }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (newImageUrl.trim()) {
+                        setImages(prev => [...prev, { url: newImageUrl.trim(), isHero: prev.length === 0, inGallery: true }]);
+                        setNewImageUrl('');
+                      }
+                    }}
+                    style={{ padding: '0.4rem 0.75rem', background: S.gold, color: '#0a0a15', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}
+                  >
+                    + Add
+                  </button>
+                </div>
                 <div style={{ fontSize: '0.7rem', color: '#a09888', marginBottom: '0.75rem' }}>
                   Click ⭐ to set hero image. Click eye to include/exclude from gallery. {images.length} images found.
                 </div>
@@ -565,36 +593,39 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
           </div>
         </div>
 
-        {/* Cashback banner */}
-        <div style={{ background: 'linear-gradient(135deg, #00d084, #00b37a)', color: '#fff', textAlign: 'center', padding: '0.5rem', fontSize: '0.8rem' }}>
-          ✨ Shop with us and get 25% cashback on everything — Unlock Cashback →
-        </div>
+        {/* Cashback banner renders after hero inside the sections loop */}
 
         {sections.map(sectionId => {
           switch (sectionId) {
             case 'hero':
               return (
-                <div key="hero" style={{
-                  position: 'relative', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-                  backgroundImage: heroImage ? `url(${heroImage})` : undefined,
-                  backgroundSize: 'cover', backgroundPosition: 'center',
-                  backgroundColor: heroImage ? undefined : (isDark ? '#1a1a2e' : '#e8e4de'),
-                }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
-                  <div style={{ position: 'relative', zIndex: 1, color: '#fff', padding: '2rem' }}>
-                    <div style={{ display: 'inline-block', padding: '0.3rem 1rem', background: 'rgba(255,255,255,0.15)', borderRadius: '20px', fontSize: '0.8rem', marginBottom: '1rem', backdropFilter: 'blur(4px)' }}>
-                      {(heroConfig?.badge as string) || `✦ ${vendor.category || 'Vendor'}`}
+                <div key="hero">
+                  <div style={{
+                    position: 'relative', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                    backgroundImage: heroImage ? `url(${heroImage})` : undefined,
+                    backgroundSize: 'cover', backgroundPosition: 'center',
+                    backgroundColor: heroImage ? undefined : (isDark ? '#1a1a2e' : '#e8e4de'),
+                  }}>
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
+                    <div style={{ position: 'relative', zIndex: 1, color: '#fff', padding: '2rem' }}>
+                      <div style={{ display: 'inline-block', padding: '0.3rem 1rem', background: 'rgba(255,255,255,0.15)', borderRadius: '20px', fontSize: '0.8rem', marginBottom: '1rem', backdropFilter: 'blur(4px)' }}>
+                        {(heroConfig?.badge as string) || `✦ ${vendor.category || 'Vendor'}`}
+                      </div>
+                      <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem', lineHeight: 1.1 }}>
+                        {(heroConfig?.headline as string) || vendor.business_name || 'Your Business'}
+                      </h1>
+                      <p style={{ fontSize: '1rem', opacity: 0.85 }}>
+                        {(heroConfig?.subheadline as string) || `Premium ${vendor.category} Services`}
+                      </p>
+                      <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem' }}>
+                        <div style={{ padding: '0.6rem 1.5rem', background: primary, color: isDark ? '#fff' : '#0a0a15', borderRadius: '8px', fontWeight: 600 }}>View Packages</div>
+                        <div style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.15)', color: '#fff', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.3)' }}>Get in Touch</div>
+                      </div>
                     </div>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem', lineHeight: 1.1 }}>
-                      {(heroConfig?.headline as string) || vendor.business_name || 'Your Business'}
-                    </h1>
-                    <p style={{ fontSize: '1rem', opacity: 0.85 }}>
-                      {(heroConfig?.subheadline as string) || `Premium ${vendor.category} Services`}
-                    </p>
-                    <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem' }}>
-                      <div style={{ padding: '0.6rem 1.5rem', background: primary, color: isDark ? '#fff' : '#0a0a15', borderRadius: '8px', fontWeight: 600 }}>View Packages</div>
-                      <div style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.15)', color: '#fff', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.3)' }}>Get in Touch</div>
-                    </div>
+                  </div>
+                  {/* Cashback banner — always right below hero */}
+                  <div style={{ background: 'linear-gradient(135deg, #00d084, #00b37a)', color: '#fff', textAlign: 'center', padding: '0.5rem', fontSize: '0.8rem' }}>
+                    ✨ Shop with us and get 25% cashback on everything — wedding registries, home, fashion &amp; more — Unlock Cashback →
                   </div>
                 </div>
               );
@@ -653,14 +684,80 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
 
             case 'contact':
               return (
-                <div key="contact" style={{ padding: '3rem 2rem', background: isDark ? '#111' : '#f5f2ed', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Get in Touch</div>
-                  <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Let&apos;s Plan Something Amazing</h2>
-                  <p style={{ color: textMuted, marginBottom: '1.5rem' }}>Ready to start planning? Reach out for a free consultation.</p>
-                  <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', fontSize: '0.9rem', color: textMuted }}>
-                    {vendor.email && <span>📧 {vendor.email}</span>}
-                    {vendor.phone && <span>📞 {vendor.phone}</span>}
-                    {vendor.instagram_handle && <span>📷 @{vendor.instagram_handle}</span>}
+                <div key="contact" style={{ background: isDark ? '#111' : '#f5f2ed' }}>
+                  {/* Header */}
+                  <div style={{ textAlign: 'center', padding: '3rem 2rem 1.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Get in Touch</div>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem', fontFamily: 'Georgia, serif' }}>Let&apos;s Plan Something Amazing</h2>
+                    <p style={{ color: textMuted }}>Ready to start planning? Reach out for a free consultation.</p>
+                  </div>
+                  {/* Split: Info left, Form right */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '2rem', padding: '0 3rem 3rem', maxWidth: '900px', margin: '0 auto' }}>
+                    {/* Left — Let's Talk + Info */}
+                    <div>
+                      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', fontFamily: 'Georgia, serif' }}>Let&apos;s Talk</h3>
+                      <p style={{ color: textMuted, fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                        Whether you&apos;re planning a wedding, corporate event, or milestone celebration — we&apos;d love to hear about your vision. Reach out anytime for a free consultation.
+                      </p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {vendor.city && (
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: isDark ? '#222' : '#f0e8e0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>📍</div>
+                            <div><div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Location</div><div style={{ fontSize: '0.8rem', color: textMuted }}>{vendor.city}{vendor.state ? `, ${vendor.state}` : ''}</div></div>
+                          </div>
+                        )}
+                        {vendor.phone && (
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: isDark ? '#222' : '#f0e8e0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>📞</div>
+                            <div><div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Phone</div><div style={{ fontSize: '0.8rem', color: textMuted }}>{vendor.phone}</div></div>
+                          </div>
+                        )}
+                        {vendor.email && (
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: isDark ? '#222' : '#f0e8e0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>📧</div>
+                            <div><div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Email</div><div style={{ fontSize: '0.8rem', color: textMuted }}>{vendor.email}</div></div>
+                          </div>
+                        )}
+                        {vendor.instagram_handle && (
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: isDark ? '#222' : '#f0e8e0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>📷</div>
+                            <div><div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Instagram</div><div style={{ fontSize: '0.8rem', color: textMuted }}>@{vendor.instagram_handle}</div></div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Right — Contact Form */}
+                    <div style={{ background: bgCard, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${theme?.border || '#e5e1dc'}` }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                        <div>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem', color: text }}>Your Name *</div>
+                          <div style={{ padding: '0.55rem 0.75rem', borderRadius: '8px', border: `1px solid ${theme?.border || '#d8d4ce'}`, background: isDark ? '#1a1a2e' : '#fff', color: textMuted, fontSize: '0.85rem' }}>Full name</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem', color: text }}>Email *</div>
+                          <div style={{ padding: '0.55rem 0.75rem', borderRadius: '8px', border: `1px solid ${theme?.border || '#d8d4ce'}`, background: isDark ? '#1a1a2e' : '#fff', color: textMuted, fontSize: '0.85rem' }}>you@example.com</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem', color: text }}>Phone</div>
+                          <div style={{ padding: '0.55rem 0.75rem', borderRadius: '8px', border: `1px solid ${theme?.border || '#d8d4ce'}`, background: isDark ? '#1a1a2e' : '#fff', color: textMuted, fontSize: '0.85rem' }}>(862) 555-1234</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem', color: text }}>Event Date</div>
+                          <div style={{ padding: '0.55rem 0.75rem', borderRadius: '8px', border: `1px solid ${theme?.border || '#d8d4ce'}`, background: isDark ? '#1a1a2e' : '#fff', color: textMuted, fontSize: '0.85rem' }}>mm/dd/yyyy</div>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: '0.75rem' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem', color: text }}>I&apos;m Interested In</div>
+                        <div style={{ padding: '0.55rem 0.75rem', borderRadius: '8px', border: `1px solid ${theme?.border || '#d8d4ce'}`, background: isDark ? '#1a1a2e' : '#fff', color: textMuted, fontSize: '0.85rem' }}>Select an option...</div>
+                      </div>
+                      <div style={{ marginTop: '0.75rem' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem', color: text }}>Tell Us More</div>
+                        <div style={{ padding: '0.55rem 0.75rem', borderRadius: '8px', border: `1px solid ${theme?.border || '#d8d4ce'}`, background: isDark ? '#1a1a2e' : '#fff', color: textMuted, fontSize: '0.85rem', minHeight: '60px' }}>Share details about your event...</div>
+                      </div>
+                      <div style={{ marginTop: '1rem', padding: '0.7rem', background: primary, color: isDark ? '#fff' : '#0a0a15', borderRadius: '8px', textAlign: 'center', fontWeight: 600, fontSize: '0.9rem' }}>
+                        Send Message ✨
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
