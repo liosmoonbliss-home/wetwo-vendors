@@ -6,7 +6,7 @@ export async function getVendorByRef(ref: string): Promise<Vendor | null> {
   return normalizeVendor(data);
 }
 function normalizeVendor(raw: Record<string, unknown>): Vendor {
-  const vendor = { ...raw } as Vendor;
+  const vendor = { ...raw } as unknown as Vendor;
   const jsonFields = ['pricing_packages','services_included','event_types','testimonials','faqs','team_members','venue_info','menu_categories','hero_config'];
   for (const field of jsonFields) {
     const val = (vendor as Record<string,unknown>)[field];
