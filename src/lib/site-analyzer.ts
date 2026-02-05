@@ -109,8 +109,8 @@ export function analyzeHTML(html: string, sourceUrl: string): AnalysisResult {
     faqs,
     menu_categories: menuCategories,
     video_urls: videoUrls,
-    page_active: true,
-    account_status: 'active',
+    
+    
   };
 
   return { vendor, confidence, themeMatch, suggestedSections: sections, suggestedOrder: order, rawColors, warnings };
