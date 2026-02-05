@@ -19,10 +19,13 @@ export function HeroSection({ vendor, theme, links }: Props) {
   const isDark = theme.mode === 'dark';
 
   const overlayGradient = isDark
-    ? `linear-gradient(180deg, rgba(10,10,21,0.3) 0%, rgba(10,10,21,0.6) 40%, rgba(10,10,21,0.85) 70%, ${theme.bg} 100%)`
-    : `linear-gradient(180deg, rgba(30,25,20,0.25) 0%, rgba(30,25,20,0.5) 40%, rgba(30,25,20,0.75) 70%, ${theme.bg} 100%)`;
+    ? `linear-gradient(180deg, rgba(10,10,21,0.2) 0%, rgba(10,10,21,0.45) 40%, rgba(10,10,21,0.75) 70%, ${theme.bg} 100%)`
+    : `linear-gradient(180deg, rgba(30,25,20,0.15) 0%, rgba(30,25,20,0.4) 40%, rgba(30,25,20,0.7) 70%, ${theme.bg} 100%)`;
 
   const primaryRgb = hexToRgb(theme.primary);
+
+  // Truncate subheadline to ~2 clean lines without mid-word cut
+  const truncatedSub = truncateCleanly(subheadline, 160);
 
   return (
     <section id="hero" className="hero">
@@ -58,12 +61,10 @@ export function HeroSection({ vendor, theme, links }: Props) {
           {renderHeadline(headline)}
         </h1>
 
-        {/* Subheadline */}
-        {subheadline && (
+        {/* Subheadline — cleanly truncated, no mid-word ellipsis */}
+        {truncatedSub && (
           <p className="hero-subheadline animate-fade-in-up delay-2">
-            {subheadline.length > 200
-              ? subheadline.slice(0, 200) + '...'
-              : subheadline}
+            {truncatedSub}
           </p>
         )}
 
@@ -179,6 +180,16 @@ function renderHeadline(text: string) {
     }
     return part;
   });
+}
+
+/** Truncate to maxLen, cutting at the last full word, adding ellipsis only if actually truncated */
+function truncateCleanly(text: string, maxLen: number): string {
+  if (!text) return '';
+  if (text.length <= maxLen) return text;
+  const truncated = text.slice(0, maxLen);
+  const lastSpace = truncated.lastIndexOf(' ');
+  if (lastSpace < 0) return truncated + '…';
+  return truncated.slice(0, lastSpace) + '…';
 }
 
 function hexToRgb(hex: string): string {

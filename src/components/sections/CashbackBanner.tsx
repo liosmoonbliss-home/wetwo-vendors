@@ -11,22 +11,13 @@ export function CashbackBanner({ vendor, links }: BannerProps) {
   return (
     <div className="cashback-banner">
       <div className="cashback-banner-inner">
-        <div style={{ fontSize: '32px', marginBottom: '16px' }}>🎁</div>
-        <h3>
-          Earn <span style={{ color: 'var(--primary)' }}>25% Cashback</span> on Your Wedding
-        </h3>
-        <p>
-          Shop through our WeTwo link and get cashback on wedding essentials.
-        </p>
-        <a
-          href={links.affiliateLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-primary"
-          style={{ padding: '14px 32px', borderRadius: '10px', fontSize: '15px' }}
-        >
-          Start Earning Cashback
-        </a>
+        <span className="cashback-icon">✨</span>
+        <span className="cashback-text">
+          Shop with us and get <strong>25% cashback</strong> on everything — wedding registries, home, fashion &amp; more —{' '}
+          <a href={links.affiliateLink} target="_blank" rel="noopener noreferrer">
+            Unlock Cashback →
+          </a>
+        </span>
       </div>
     </div>
   );
