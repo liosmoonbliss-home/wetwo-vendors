@@ -92,6 +92,7 @@ export default function BuilderPage() {
   const [images, setImages] = useState<ImageSelection[]>([]);
   const [previewScale, setPreviewScale] = useState(0.5);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
 
   // ── Analyze ───────────────────────────────────
   const analyze = useCallback(async () => {
@@ -188,6 +189,87 @@ export default function BuilderPage() {
     [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
     updateField('section_order', order);
     updateField('active_sections', order);
+  };
+
+  // ── Content array helpers ─────────────────────
+  const addPackage = () => {
+    const pkgs = [...(vendor.pricing_packages || [])] as any[];
+    pkgs.push({ name: '', price: '', description: '', features: [], icon: '📋' });
+    updateField('pricing_packages', pkgs);
+  };
+  const updatePackage = (idx: number, field: string, value: unknown) => {
+    const pkgs = [...(vendor.pricing_packages || [])] as any[];
+    pkgs[idx] = { ...pkgs[idx], [field]: value };
+    updateField('pricing_packages', pkgs);
+  };
+  const removePackage = (idx: number) => {
+    const pkgs = [...(vendor.pricing_packages || [])] as any[];
+    pkgs.splice(idx, 1);
+    updateField('pricing_packages', pkgs);
+  };
+
+  const addService = () => {
+    const svcs = [...(vendor.services_included || [])];
+    svcs.push({ icon: '✦', name: '', description: '' });
+    updateField('services_included', svcs);
+  };
+  const updateService = (idx: number, value: string) => {
+    const svcs = [...(vendor.services_included || [])];
+    svcs[idx] = { ...(svcs[idx] as any), name: value };
+    updateField('services_included', svcs);
+  };
+  const removeService = (idx: number) => {
+    const svcs = [...(vendor.services_included || [])];
+    svcs.splice(idx, 1);
+    updateField('services_included', svcs);
+  };
+
+  const addMenuCategory = () => {
+    const cats = [...(vendor.menu_categories || [])] as any[];
+    cats.push({ category: '', items: [] });
+    updateField('menu_categories', cats);
+  };
+  const updateMenuCategory = (idx: number, field: string, value: unknown) => {
+    const cats = [...(vendor.menu_categories || [])] as any[];
+    cats[idx] = { ...cats[idx], [field]: value };
+    updateField('menu_categories', cats);
+  };
+  const removeMenuCategory = (idx: number) => {
+    const cats = [...(vendor.menu_categories || [])] as any[];
+    cats.splice(idx, 1);
+    updateField('menu_categories', cats);
+  };
+
+  const addFaq = () => {
+    const faqs = [...(vendor.faqs || [])] as any[];
+    faqs.push({ question: '', answer: '' });
+    updateField('faqs', faqs);
+  };
+  const updateFaq = (idx: number, field: string, value: string) => {
+    const faqs = [...(vendor.faqs || [])] as any[];
+    faqs[idx] = { ...faqs[idx], [field]: value };
+    updateField('faqs', faqs);
+  };
+  const removeFaq = (idx: number) => {
+    const faqs = [...(vendor.faqs || [])] as any[];
+    faqs.splice(idx, 1);
+    updateField('faqs', faqs);
+  };
+
+  const addTestimonial = () => {
+    const test = [...(vendor.testimonials || [])] as any[];
+    test.push({ name: '', text: '', rating: 5 });
+    updateField('testimonials', test);
+  };
+  const updateTestimonial = (idx: number, field: string, value: unknown) => {
+    const test = [...(vendor.testimonials || [])] as any[];
+    test[idx] = { ...test[idx], [field]: value };
+    updateField('testimonials', test);
+  };
+  const removeTestimonial = (idx: number) => {
+    const test = [...(vendor.testimonials || [])] as any[];
+    test.splice(idx, 1);
+    updateField('testimonials', test);
   };
 
   // ── RENDER: INPUT STEP ────────────────────────
@@ -306,7 +388,7 @@ export default function BuilderPage() {
                 {/* Add image by URL */}
                 <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
                   <input
-                    type="url"
+                    type="text"
                     placeholder="Paste image URL to add..."
                     value={newImageUrl}
                     onChange={e => setNewImageUrl(e.target.value)}
@@ -319,6 +401,7 @@ export default function BuilderPage() {
                     style={{ ...S.fieldInput, flex: 1, fontSize: '0.75rem', padding: '0.4rem 0.6rem' }}
                   />
                   <button
+                    type="button"
                     onClick={() => {
                       if (newImageUrl.trim()) {
                         setImages(prev => [...prev, { url: newImageUrl.trim(), isHero: prev.length === 0, inGallery: true }]);
@@ -415,27 +498,230 @@ export default function BuilderPage() {
             {tab === 'sections' && (
               <div>
                 <div style={{ fontSize: '0.7rem', color: '#a09888', marginBottom: '0.75rem' }}>
-                  Toggle sections on/off. Drag to reorder (use ↑↓ arrows).
+                  Toggle sections on/off. Click to edit content. Use ↑↓ to reorder.
                 </div>
                 {/* Active sections in order */}
                 {sectionOrder.map((sId, idx) => {
                   const def = ALL_SECTIONS.find(s => s.id === sId);
                   if (!def) return null;
+                  const isExpanded = expandedSection === sId;
                   return (
-                    <div key={sId} style={{ ...S.card, display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem' }}>
-                      <span style={{ fontSize: '1.1rem' }}>{def.icon}</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f0ece6' }}>{def.label}</div>
-                        <div style={{ fontSize: '0.65rem', color: S.dim }}>{def.description}</div>
+                    <div key={sId} style={{ ...S.card, padding: 0, overflow: 'hidden' }}>
+                      {/* Section header row */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', cursor: 'pointer' }}
+                        onClick={() => setExpandedSection(isExpanded ? null : sId)}>
+                        <span style={{ fontSize: '1.1rem' }}>{def.icon}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f0ece6' }}>{def.label}</div>
+                          <div style={{ fontSize: '0.65rem', color: S.dim }}>{def.description}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '2px' }} onClick={e => e.stopPropagation()}>
+                          <button type="button" onClick={() => moveSection(sId, 'up')} disabled={idx === 0}
+                            style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: '#1a1a2e', color: idx === 0 ? '#2a2a3a' : '#a09888', cursor: 'pointer', fontSize: '0.7rem' }}>▲</button>
+                          <button type="button" onClick={() => moveSection(sId, 'down')} disabled={idx === sectionOrder.length - 1}
+                            style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: '#1a1a2e', color: idx === sectionOrder.length - 1 ? '#2a2a3a' : '#a09888', cursor: 'pointer', fontSize: '0.7rem' }}>▼</button>
+                        </div>
+                        <button type="button" onClick={e => { e.stopPropagation(); toggleSection(sId); }}
+                          style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem' }}>✕</button>
+                        <span style={{ fontSize: '0.7rem', color: S.dim, transition: 'transform 0.15s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)' }}>▾</span>
                       </div>
-                      <div style={{ display: 'flex', gap: '2px' }}>
-                        <button onClick={() => moveSection(sId, 'up')} disabled={idx === 0}
-                          style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: '#1a1a2e', color: idx === 0 ? '#2a2a3a' : '#a09888', cursor: 'pointer', fontSize: '0.7rem' }}>▲</button>
-                        <button onClick={() => moveSection(sId, 'down')} disabled={idx === sectionOrder.length - 1}
-                          style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: '#1a1a2e', color: idx === sectionOrder.length - 1 ? '#2a2a3a' : '#a09888', cursor: 'pointer', fontSize: '0.7rem' }}>▼</button>
-                      </div>
-                      <button onClick={() => toggleSection(sId)}
-                        style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem' }}>✕</button>
+
+                      {/* Expanded content editor */}
+                      {isExpanded && (
+                        <div style={{ padding: '0.75rem', borderTop: `1px solid ${S.border}`, background: '#0d0d1a' }}>
+                          {/* ── PACKAGES EDITOR ── */}
+                          {sId === 'packages' && (
+                            <div>
+                              {(vendor.pricing_packages || []).map((pkg: any, pi: number) => (
+                                <div key={pi} style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem', border: `1px solid ${S.border}` }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                    <span style={{ fontSize: '0.7rem', color: S.gold, fontWeight: 600 }}>Package {pi + 1}</span>
+                                    <button type="button" onClick={() => removePackage(pi)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem' }}>Remove</button>
+                                  </div>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginBottom: '0.4rem' }}>
+                                    <div>
+                                      <div style={S.fieldLabel}>Name</div>
+                                      <input value={pkg.name || ''} onChange={e => updatePackage(pi, 'name', e.target.value)} placeholder="Day-of Coordination" style={S.fieldInput} />
+                                    </div>
+                                    <div>
+                                      <div style={S.fieldLabel}>Price</div>
+                                      <input value={pkg.price || ''} onChange={e => updatePackage(pi, 'price', e.target.value)} placeholder="$1,400" style={S.fieldInput} />
+                                    </div>
+                                  </div>
+                                  <div style={{ marginBottom: '0.4rem' }}>
+                                    <div style={S.fieldLabel}>Description</div>
+                                    <textarea value={pkg.description || ''} onChange={e => updatePackage(pi, 'description', e.target.value)} placeholder="What's included in this package..." rows={2} style={S.fieldTextarea} />
+                                  </div>
+                                  <div>
+                                    <div style={S.fieldLabel}>Features (one per line)</div>
+                                    <textarea
+                                      value={(pkg.features || []).join('\n')}
+                                      onChange={e => updatePackage(pi, 'features', e.target.value.split('\n').filter((f: string) => f.trim()))}
+                                      placeholder="Pre-event meeting&#10;Shared Google Drive folder&#10;Up to 10 hours day-of coordination"
+                                      rows={4} style={S.fieldTextarea}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                              <button type="button" onClick={addPackage}
+                                style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem' }}>
+                                + Add Package
+                              </button>
+                            </div>
+                          )}
+
+                          {/* ── SERVICES EDITOR ── */}
+                          {sId === 'services_list' && (
+                            <div>
+                              {(vendor.services_included || []).map((svc: any, si: number) => (
+                                <div key={si} style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.35rem', alignItems: 'center' }}>
+                                  <input value={typeof svc === 'string' ? svc : svc?.name || ''} onChange={e => updateService(si, e.target.value)} placeholder="Service name..." style={{ ...S.fieldInput, flex: 1 }} />
+                                  <button type="button" onClick={() => removeService(si)} style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}>✕</button>
+                                </div>
+                              ))}
+                              <button type="button" onClick={addService}
+                                style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                                + Add Service
+                              </button>
+                            </div>
+                          )}
+
+                          {/* ── MENU EDITOR ── */}
+                          {sId === 'menu_accordion' && (
+                            <div>
+                              {(vendor.menu_categories || []).map((cat: any, ci: number) => (
+                                <div key={ci} style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem', border: `1px solid ${S.border}` }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                    <span style={{ fontSize: '0.7rem', color: S.gold, fontWeight: 600 }}>Category {ci + 1}</span>
+                                    <button type="button" onClick={() => removeMenuCategory(ci)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem' }}>Remove</button>
+                                  </div>
+                                  <div style={{ marginBottom: '0.4rem' }}>
+                                    <div style={S.fieldLabel}>Category Name</div>
+                                    <input value={cat.category || ''} onChange={e => updateMenuCategory(ci, 'category', e.target.value)} placeholder="Appetizers" style={S.fieldInput} />
+                                  </div>
+                                  <div>
+                                    <div style={S.fieldLabel}>Items (one per line, use | for price: "Item | $12")</div>
+                                    <textarea
+                                      value={(cat.items || []).map((it: any) => typeof it === 'string' ? it : `${it.name}${it.price ? ' | ' + it.price : ''}`).join('\n')}
+                                      onChange={e => updateMenuCategory(ci, 'items', e.target.value.split('\n').filter((s: string) => s.trim()).map((line: string) => {
+                                        const parts = line.split('|').map((p: string) => p.trim());
+                                        return { name: parts[0], price: parts[1] || '' };
+                                      }))}
+                                      placeholder="Bruschetta | $12&#10;Caesar Salad | $14&#10;Soup of the Day | $10"
+                                      rows={4} style={S.fieldTextarea}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                              <button type="button" onClick={addMenuCategory}
+                                style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem' }}>
+                                + Add Menu Category
+                              </button>
+                            </div>
+                          )}
+
+                          {/* ── FAQ EDITOR ── */}
+                          {sId === 'faq' && (
+                            <div>
+                              {(vendor.faqs || []).map((faq: any, fi: number) => (
+                                <div key={fi} style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem', border: `1px solid ${S.border}` }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                    <span style={{ fontSize: '0.7rem', color: S.gold, fontWeight: 600 }}>FAQ {fi + 1}</span>
+                                    <button type="button" onClick={() => removeFaq(fi)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem' }}>Remove</button>
+                                  </div>
+                                  <div style={{ marginBottom: '0.4rem' }}>
+                                    <div style={S.fieldLabel}>Question</div>
+                                    <input value={faq.question || ''} onChange={e => updateFaq(fi, 'question', e.target.value)} placeholder="How far in advance should I book?" style={S.fieldInput} />
+                                  </div>
+                                  <div>
+                                    <div style={S.fieldLabel}>Answer</div>
+                                    <textarea value={faq.answer || ''} onChange={e => updateFaq(fi, 'answer', e.target.value)} placeholder="We recommend booking at least 6 months..." rows={2} style={S.fieldTextarea} />
+                                  </div>
+                                </div>
+                              ))}
+                              <button type="button" onClick={addFaq}
+                                style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem' }}>
+                                + Add FAQ
+                              </button>
+                            </div>
+                          )}
+
+                          {/* ── TESTIMONIALS EDITOR ── */}
+                          {sId === 'testimonials' && (
+                            <div>
+                              {(vendor.testimonials || []).map((test: any, ti: number) => (
+                                <div key={ti} style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem', border: `1px solid ${S.border}` }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                    <span style={{ fontSize: '0.7rem', color: S.gold, fontWeight: 600 }}>Review {ti + 1}</span>
+                                    <button type="button" onClick={() => removeTestimonial(ti)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem' }}>Remove</button>
+                                  </div>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.4rem', marginBottom: '0.4rem' }}>
+                                    <div>
+                                      <div style={S.fieldLabel}>Client Name</div>
+                                      <input value={test.name || ''} onChange={e => updateTestimonial(ti, 'name', e.target.value)} placeholder="Sarah & James" style={S.fieldInput} />
+                                    </div>
+                                    <div>
+                                      <div style={S.fieldLabel}>Rating</div>
+                                      <select value={test.rating || 5} onChange={e => updateTestimonial(ti, 'rating', Number(e.target.value))}
+                                        style={{ ...S.fieldInput, width: '60px' }}>
+                                        {[5,4,3,2,1].map(n => <option key={n} value={n}>{n}★</option>)}
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div style={S.fieldLabel}>Review Text</div>
+                                    <textarea value={test.text || ''} onChange={e => updateTestimonial(ti, 'text', e.target.value)} placeholder="Working with this team was absolutely amazing..." rows={2} style={S.fieldTextarea} />
+                                  </div>
+                                </div>
+                              ))}
+                              <button type="button" onClick={addTestimonial}
+                                style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem' }}>
+                                + Add Testimonial
+                              </button>
+                            </div>
+                          )}
+
+                          {/* ── EVENT TYPES EDITOR ── */}
+                          {sId === 'event_types' && (
+                            <div>
+                              {(vendor.event_types || []).map((et: any, ei: number) => (
+                                <div key={ei} style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.35rem', alignItems: 'center' }}>
+                                  <input value={et.icon || ''} onChange={e => {
+                                    const ets = [...(vendor.event_types || [])] as any[];
+                                    ets[ei] = { ...ets[ei], icon: e.target.value };
+                                    updateField('event_types', ets);
+                                  }} placeholder="🎀" style={{ ...S.fieldInput, width: '40px', textAlign: 'center' }} />
+                                  <input value={et.name || ''} onChange={e => {
+                                    const ets = [...(vendor.event_types || [])] as any[];
+                                    ets[ei] = { ...ets[ei], name: e.target.value };
+                                    updateField('event_types', ets);
+                                  }} placeholder="Weddings" style={{ ...S.fieldInput, flex: 1 }} />
+                                  <button type="button" onClick={() => {
+                                    const ets = [...(vendor.event_types || [])] as any[];
+                                    ets.splice(ei, 1);
+                                    updateField('event_types', ets);
+                                  }} style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}>✕</button>
+                                </div>
+                              ))}
+                              <button type="button" onClick={() => {
+                                const ets = [...(vendor.event_types || [])] as any[];
+                                ets.push({ icon: '🎉', name: '' });
+                                updateField('event_types', ets);
+                              }}
+                                style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                                + Add Event Type
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Generic message for sections without editors */}
+                          {!['packages', 'services_list', 'menu_accordion', 'faq', 'testimonials', 'event_types'].includes(sId) && (
+                            <div style={{ fontSize: '0.75rem', color: S.dim, textAlign: 'center', padding: '0.5rem' }}>
+                              This section is configured from other tabs or displays automatically.
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -667,15 +953,32 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
 
             case 'packages':
               return (
-                <div key="packages" style={{ padding: '3rem 2rem', background: bg, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Pricing</div>
-                  <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1.5rem' }}>Our Packages</h2>
-                  {(vendor.pricing_packages || []).length === 0 && <div style={{ color: textMuted }}>No packages extracted — add them in Supabase</div>}
-                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min((vendor.pricing_packages || []).length, 3)}, 1fr)`, gap: '1rem', maxWidth: '800px', margin: '0 auto' }}>
-                    {(vendor.pricing_packages || []).slice(0, 3).map((pkg, i) => (
-                      <div key={i} style={{ background: bgCard, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${theme?.border || '#e5e1dc'}`, textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{(pkg as any).name}</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: primary, margin: '0.5rem 0' }}>{(pkg as any).price}</div>
+                <div key="packages" style={{ padding: '3rem 2rem', background: bg }}>
+                  <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Our Packages</div>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Planning Made Simple</h2>
+                    <p style={{ color: textMuted, maxWidth: '500px', margin: '0 auto' }}>From day-of coordination to complete event planning — choose the level of support that&apos;s right for you.</p>
+                  </div>
+                  {(vendor.pricing_packages || []).length === 0 && <div style={{ textAlign: 'center', color: textMuted }}>No packages — click Packages in sections to add</div>}
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min((vendor.pricing_packages || []).length, 3)}, 1fr)`, gap: '1rem', maxWidth: '900px', margin: '0 auto' }}>
+                    {(vendor.pricing_packages || []).slice(0, 3).map((pkg: any, i: number) => (
+                      <div key={i} style={{ background: bgCard, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${theme?.border || '#e5e1dc'}`, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.25rem' }}>{pkg.name || 'Package'}</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: primary, marginBottom: '0.5rem' }}>{pkg.price || '$0'}</div>
+                        {pkg.description && <p style={{ fontSize: '0.85rem', color: textMuted, marginBottom: '0.75rem', lineHeight: 1.5 }}>{pkg.description}</p>}
+                        {(pkg.features || []).length > 0 && (
+                          <div style={{ flex: 1, marginBottom: '1rem' }}>
+                            {pkg.features.map((f: string, fi: number) => (
+                              <div key={fi} style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.35rem', fontSize: '0.8rem', lineHeight: 1.4 }}>
+                                <span style={{ color: primary, flexShrink: 0 }}>✓</span>
+                                <span>{f}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ padding: '0.6rem', background: primary, color: isDark ? '#fff' : '#0a0a15', borderRadius: '8px', textAlign: 'center', fontWeight: 600, fontSize: '0.85rem', marginTop: 'auto' }}>
+                          Inquire Now
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -764,18 +1067,57 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
 
             case 'testimonials':
               return (
-                <div key="testimonials" style={{ padding: '3rem 2rem', background: bg, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Testimonials</div>
-                  <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1.5rem' }}>What Our Clients Say</h2>
-                  {(vendor.testimonials || []).length === 0 && <div style={{ color: textMuted }}>No testimonials found</div>}
+                <div key="testimonials" style={{ padding: '3rem 2rem', background: bg }}>
+                  <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Testimonials</div>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>What Our Clients Say</h2>
+                  </div>
+                  {(vendor.testimonials || []).length === 0 && <div style={{ textAlign: 'center', color: textMuted }}>No testimonials — click Testimonials in sections to add</div>}
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min((vendor.testimonials || []).length, 2)}, 1fr)`, gap: '1rem', maxWidth: '700px', margin: '0 auto' }}>
+                    {(vendor.testimonials || []).map((test: any, ti: number) => (
+                      <div key={ti} style={{ background: bgCard, borderRadius: '12px', padding: '1.25rem', border: `1px solid ${theme?.border || '#e5e1dc'}` }}>
+                        <div style={{ color: primary, marginBottom: '0.5rem' }}>{'★'.repeat(test.rating || 5)}</div>
+                        <p style={{ fontSize: '0.85rem', color: text, lineHeight: 1.5, marginBottom: '0.75rem', fontStyle: 'italic' }}>&ldquo;{test.text}&rdquo;</p>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{test.name}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               );
 
             case 'faq':
               return (
-                <div key="faq" style={{ padding: '3rem 2rem', background: isDark ? '#111' : '#f5f2ed', textAlign: 'center' }}>
-                  <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
-                  {(vendor.faqs || []).length === 0 && <div style={{ color: textMuted }}>No FAQs found</div>}
+                <div key="faq" style={{ padding: '3rem 2rem', background: isDark ? '#111' : '#f5f2ed' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>Frequently Asked Questions</h2>
+                  </div>
+                  {(vendor.faqs || []).length === 0 && <div style={{ textAlign: 'center', color: textMuted }}>No FAQs — click FAQ in sections to add</div>}
+                  <div style={{ maxWidth: '650px', margin: '0 auto' }}>
+                    {(vendor.faqs || []).map((faq: any, fi: number) => (
+                      <div key={fi} style={{ borderBottom: `1px solid ${theme?.border || '#e5e1dc'}`, padding: '1rem 0' }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.4rem' }}>{faq.question}</div>
+                        <div style={{ fontSize: '0.85rem', color: textMuted, lineHeight: 1.5 }}>{faq.answer}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+
+            case 'services_list':
+              return (
+                <div key="services" style={{ padding: '3rem 2rem', background: bg }}>
+                  <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>What We Offer</div>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>Our Services</h2>
+                  </div>
+                  {(vendor.services_included || []).length === 0 && <div style={{ textAlign: 'center', color: textMuted }}>No services — click Services in sections to add</div>}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center', maxWidth: '700px', margin: '0 auto' }}>
+                    {(vendor.services_included || []).map((svc: any, si: number) => (
+                      <div key={si} style={{ padding: '0.5rem 1.25rem', background: bgCard, borderRadius: '8px', border: `1px solid ${theme?.border || '#e5e1dc'}`, fontSize: '0.9rem' }}>
+                        ✦ {typeof svc === 'string' ? svc : svc?.name || ''}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               );
 
