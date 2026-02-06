@@ -10,18 +10,27 @@ export function ServicesSection({ vendor }: Props) {
   const raw = Array.isArray(vendor.services_included) ? vendor.services_included : [];
   if (raw.length === 0) return null;
 
-  // Normalize: support both string[] and ServiceItem[]
+  // Robustly normalize: handle string, object, or stringified JSON
   const services = raw.map((s: any) => {
-    if (typeof s === 'string') return { icon: '✨', name: s, description: '' };
-    return { icon: s.icon || '✨', name: s.name || '', description: s.description || '' };
+    if (typeof s === 'string') {
+      // Try parsing stringified JSON
+      try {
+        const parsed = JSON.parse(s);
+        if (parsed && typeof parsed === 'object') {
+          return { icon: parsed.icon || '✨', name: parsed.name || '', description: parsed.description || '' };
+        }
+      } catch { /* not JSON, treat as plain name */ }
+      return { icon: '✨', name: s, description: '' };
+    }
+    if (s && typeof s === 'object') {
+      return { icon: s.icon || '✨', name: s.name || '', description: s.description || '' };
+    }
+    return { icon: '✨', name: String(s || ''), description: '' };
   }).filter(s => s.name.trim() !== '');
 
   if (services.length === 0) return null;
 
-  // Adapt grid columns
-  const colClass = services.length <= 3
-    ? `repeat(${services.length}, 1fr)`
-    : 'repeat(3, 1fr)';
+  const colCount = Math.min(services.length, 3);
 
   return (
     <section id="services_list" className="section">
@@ -34,7 +43,7 @@ export function ServicesSection({ vendor }: Props) {
           </p>
         </div>
 
-        <div className="services-grid" style={{ gridTemplateColumns: colClass }}>
+        <div className="services-grid" style={{ gridTemplateColumns: `repeat(${colCount}, 1fr)` }}>
           {services.map((service, i) => (
             <div key={i} className="service-card">
               <div className="service-icon">

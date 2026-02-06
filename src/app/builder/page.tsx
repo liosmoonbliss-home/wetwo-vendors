@@ -95,6 +95,8 @@ export default function BuilderPage() {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
   const [editRef, setEditRef] = useState('');
+  const [vendorRef, setVendorRef] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'' | 'saving' | 'saved' | 'error'>('');
 
   // ── Load from URL param on mount ──────────────
   useEffect(() => {
@@ -102,6 +104,7 @@ export default function BuilderPage() {
     const ref = params.get('ref');
     if (ref) {
       setEditRef(ref);
+      setVendorRef(ref);
       loadVendor(ref);
     }
   }, []);
@@ -117,6 +120,10 @@ export default function BuilderPage() {
 
       const v = data.vendor;
       setVendor(v);
+      if (v.ref) {
+        setVendorRef(v.ref);
+        setLiveUrl(`https://wetwo-vendors.vercel.app/vendor/${v.ref}`);
+      }
 
       // Build image selections from existing data
       const imgs: ImageSelection[] = (v.portfolio_images || []).map((u: string, i: number) => ({
@@ -179,24 +186,58 @@ export default function BuilderPage() {
     }
   }, [url, pasteHtml]);
 
-  // ── Create Vendor ─────────────────────────────
+  // ── Build final vendor payload ─────────────────
+  const buildFinalVendor = useCallback(() => {
+    const heroImg = images.find(i => i.isHero);
+    const galleryImgs = images.filter(i => i.inGallery).map(i => i.url);
+    return {
+      ...vendor,
+      photo_url: heroImg?.url || vendor.photo_url || '',
+      portfolio_images: galleryImgs,
+      hero_config: {
+        ...(vendor.hero_config || {}),
+        backgroundImage: heroImg?.url || '',
+      },
+      // Pass ref so API can target the exact vendor for updates
+      ...(vendorRef ? { ref: vendorRef } : {}),
+    };
+  }, [vendor, images, vendorRef]);
+
+  // ── Save (write to Supabase, stay in editor) ──
+  const saveVendor = useCallback(async () => {
+    setError('');
+    setSaveStatus('saving');
+    try {
+      const finalVendor = buildFinalVendor();
+      const res = await fetch('/api/create-vendor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendor: finalVendor }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Save failed'); setSaveStatus('error'); return; }
+
+      // Track the ref for future saves
+      if (data.ref && !vendorRef) {
+        setVendorRef(data.ref);
+        // Update URL so refresh reloads this vendor
+        window.history.replaceState({}, '', `/builder?ref=${data.ref}`);
+      }
+      setLiveUrl(data.url);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : JSON.stringify(err));
+      setSaveStatus('error');
+    }
+  }, [buildFinalVendor, vendorRef]);
+
+  // ── Create/Publish (save + go to done screen) ──
   const createVendor = useCallback(async () => {
     setError('');
     setStep('creating');
     try {
-      // Apply image selections to vendor before saving
-      const heroImg = images.find(i => i.isHero);
-      const galleryImgs = images.filter(i => i.inGallery).map(i => i.url);
-      const finalVendor = {
-        ...vendor,
-        photo_url: heroImg?.url || vendor.photo_url || '',
-        portfolio_images: galleryImgs,
-        hero_config: {
-          ...(vendor.hero_config || {}),
-          backgroundImage: heroImg?.url || '',
-        },
-      };
-
+      const finalVendor = buildFinalVendor();
       const res = await fetch('/api/create-vendor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -204,13 +245,18 @@ export default function BuilderPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Creation failed'); setStep('editor'); return; }
+
+      if (data.ref) {
+        setVendorRef(data.ref);
+        window.history.replaceState({}, '', `/builder?ref=${data.ref}`);
+      }
       setLiveUrl(data.url);
       setStep('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : JSON.stringify(err));
       setStep('editor');
     }
-  }, [vendor, images]);
+  }, [buildFinalVendor]);
 
   // ── Update helpers ────────────────────────────
   const updateField = (field: string, value: unknown) => setVendor(prev => ({ ...prev, [field]: value }));
@@ -432,12 +478,13 @@ export default function BuilderPage() {
             View Live Page →
           </a>
           <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#a09888' }}>{liveUrl}</div>
+          {vendorRef && <div style={{ marginTop: '0.25rem', fontSize: '0.7rem', color: '#666' }}>Edit anytime: /builder?ref={vendorRef}</div>}
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '2rem' }}>
             <button onClick={() => { setStep('editor'); setTab('info'); }}
               style={{ padding: '0.6rem 1.5rem', background: S.bg2, color: S.gold, border: `1px solid ${S.gold}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
               ✏️ Keep Editing
             </button>
-            <button onClick={() => { setStep('input'); setUrl(''); setPasteHtml(''); setAnalysis(null); setVendor({}); setImages([]); setLiveUrl(''); setEditRef(''); }}
+            <button onClick={() => { setStep('input'); setUrl(''); setPasteHtml(''); setAnalysis(null); setVendor({}); setImages([]); setLiveUrl(''); setEditRef(''); setVendorRef(''); setSaveStatus(''); window.history.replaceState({}, '', '/builder'); }}
               style={{ padding: '0.6rem 1.5rem', background: S.bg2, color: '#a09888', border: `1px solid ${S.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
               Build Another →
             </button>
@@ -461,13 +508,19 @@ export default function BuilderPage() {
         <div style={S.brand}>WeTwo</div>
         <div style={S.headerSub}>Builder</div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          {error && <span style={{ fontSize: '0.75rem', color: '#ef4444', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{error}</span>}
+          {saveStatus === 'saved' && <span style={{ fontSize: '0.75rem', color: '#22c55e' }}>✓ Saved</span>}
+          {saveStatus === 'error' && <span style={{ fontSize: '0.75rem', color: '#ef4444' }}>Save failed</span>}
+          {error && <span style={{ fontSize: '0.75rem', color: '#ef4444', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{error}</span>}
           <button onClick={() => { setStep('input'); setError(''); }} style={{ padding: '0.4rem 1rem', background: '#1a1a2e', color: '#a09888', border: `1px solid ${S.border}`, borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>
             ← Back
           </button>
+          <button onClick={saveVendor} disabled={saveStatus === 'saving'}
+            style={{ padding: '0.4rem 1.25rem', background: '#1a1a2e', color: S.gold, border: `1px solid ${S.gold}`, borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, opacity: saveStatus === 'saving' ? 0.5 : 1 }}>
+            {saveStatus === 'saving' ? '⏳ Saving...' : '💾 Save'}
+          </button>
           <button onClick={createVendor} disabled={step === 'creating'}
             style={{ padding: '0.4rem 1.25rem', background: step === 'creating' ? '#2a2a3a' : S.gold, color: '#0a0a15', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700, opacity: step === 'creating' ? 0.5 : 1 }}>
-            {step === 'creating' ? '⏳ Creating...' : '🚀 Create Vendor Page'}
+            {step === 'creating' ? '⏳ Publishing...' : '🚀 Publish Page'}
           </button>
         </div>
       </header>
