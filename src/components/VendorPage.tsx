@@ -457,10 +457,10 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
               return resolvedOrder
                 .filter(s => s !== 'dashboard')
                 .map(sectionId => {
-                  const isHeroOrContact = sectionId === 'hero' || sectionId === 'contact';
+                  const isHero = sectionId === 'hero';
                   const rendered = renderSection(sectionId);
                   if (!rendered) return null;
-                  if (isHeroOrContact) return rendered;
+                  if (isHero) return rendered;
                   const useAlt = visibleIdx % 2 === 1;
                   visibleIdx++;
                   return (
