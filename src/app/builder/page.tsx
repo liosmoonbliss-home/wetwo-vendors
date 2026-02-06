@@ -959,6 +959,34 @@ function Field({ label, value, onChange, span }: { label: string; value?: string
   );
 }
 
+// ── CATEGORY TITLE HELPER ────────────────────────────────────
+
+function getCategoryTitle(category: string): string {
+  const titles: Record<string, string> = {
+    'Planner': 'Event Planner, Coordinator & Visionary',
+    'Day-of Coordinator': 'Event Planner, Coordinator & Visionary',
+    'Event Planner': 'Event Planner, Coordinator & Visionary',
+    'Photographer': 'Photographer & Visual Storyteller',
+    'Videographer': 'Cinematographer & Visual Artist',
+    'DJ': 'DJ, MC & Entertainment Specialist',
+    'Band': 'Musician & Entertainment Director',
+    'Caterer': 'Chef & Culinary Artist',
+    'Florist': 'Floral Designer & Botanical Artist',
+    'Venue': 'Venue Director & Host',
+    'Hair & Makeup': 'Beauty Artist & Stylist',
+    'Photo Booth': 'Photo Experience Specialist',
+    'Decor': 'Décor Designer & Stylist',
+    'Bakery': 'Pastry Chef & Cake Artist',
+    'Transportation': 'Luxury Transportation Specialist',
+    'Rentals': 'Event Rentals & Design Specialist',
+    'Officiant': 'Wedding Officiant & Ceremony Designer',
+    'Jeweler': 'Fine Jewelry Artisan',
+    'Bridal Salon': 'Bridal Fashion Consultant',
+    'Bar Service': 'Mixologist & Bar Service Specialist',
+  };
+  return titles[category] || 'Owner & Creative Director';
+}
+
 // ── PREVIEW PANE ──────────────────────────────────────────────
 
 function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
@@ -1028,6 +1056,38 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                   <div style={{ background: 'linear-gradient(135deg, #00d084, #00b37a)', color: '#fff', textAlign: 'center', padding: '0.5rem', fontSize: '0.8rem' }}>
                     ✨ Shop with us and get 25% cashback on everything — wedding registries, home, fashion &amp; more — Unlock Cashback →
                   </div>
+                  {/* About / Meet section — auto from bio + photo */}
+                  {(vendor.photo_url || heroImage || (vendor.bio && vendor.bio.length >= 80)) && (
+                    <div style={{ padding: '3rem 2rem', background: bg }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: (vendor.photo_url || heroImage) ? '1fr 1.5fr' : '1fr', gap: '2rem', maxWidth: '800px', margin: '0 auto', alignItems: 'center' }}>
+                        {(vendor.photo_url || heroImage) && (
+                          <div style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '3/4', maxHeight: '300px' }}>
+                            <img src={vendor.photo_url || heroImage} alt={vendor.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          </div>
+                        )}
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
+                            Meet {(vendor.contact_name || vendor.business_name || '').split(' ')[0]}
+                          </div>
+                          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+                            {vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director'}
+                          </h2>
+                          {vendor.bio && vendor.bio.split('\n').map((p: string, i: number) => (
+                            <p key={i} style={{ fontSize: '0.85rem', color: textMuted, lineHeight: 1.6, marginBottom: '0.5rem' }}>{p}</p>
+                          ))}
+                          {(vendor.services_included || []).length > 0 && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginTop: '0.75rem' }}>
+                              {(vendor.services_included || []).slice(0, 4).map((s: any, i: number) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.6rem', background: bgCard, borderRadius: '6px', border: `1px solid ${theme?.border || '#e5e1dc'}`, fontSize: '0.8rem' }}>
+                                  <span>{s.icon || '✨'}</span> <span>{s.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
 
