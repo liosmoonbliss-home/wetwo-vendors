@@ -33,7 +33,6 @@ const ALL_SECTIONS: { id: SectionId; label: string; icon: string; description: s
   { id: 'gallery', label: 'Gallery', icon: '🖼️', description: 'Portfolio image grid showcasing work' },
   { id: 'packages', label: 'Packages', icon: '💰', description: 'Pricing cards with features and booking' },
   { id: 'services_list', label: 'Services', icon: '✨', description: 'List of services offered' },
-  { id: 'event_types', label: 'Events', icon: '🎉', description: 'Types of events served' },
   { id: 'testimonials', label: 'Testimonials', icon: '⭐', description: 'Client reviews and ratings' },
   { id: 'faq', label: 'FAQ', icon: '❓', description: 'Frequently asked questions accordion' },
   { id: 'menu_accordion', label: 'Menu', icon: '🍽️', description: 'Food/drink menu categories' },
