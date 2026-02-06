@@ -378,7 +378,7 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
       case 'menu_accordion':
         return <MenuAccordionSection key={key} vendor={vendor} />;
       case 'event_types':
-        return <EventTypesSection key={key} vendor={vendor} />;
+        return null;
       case 'testimonials':
         return <TestimonialsSection key={key} vendor={vendor} />;
       case 'faq':
