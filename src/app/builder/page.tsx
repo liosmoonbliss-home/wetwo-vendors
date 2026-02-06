@@ -726,7 +726,7 @@ export default function BuilderPage() {
                           {/* ── PACKAGES EDITOR ── */}
                           {sId === 'gallery' && (
                             <div>
-                              <div style={{ padding: '0.5rem', color: textMuted, fontSize: '0.8rem', textAlign: 'center', marginBottom: '0.75rem' }}>
+                              <div style={{ padding: '0.5rem', color: '#888', fontSize: '0.8rem', textAlign: 'center', marginBottom: '0.75rem' }}>
                                 Photos are managed in the Images tab. Event types show as pills above the gallery.
                               </div>
                               <div style={S.fieldLabel}>Event Types (shown above photos)</div>
