@@ -839,6 +839,10 @@ export default function BuilderPage() {
                                   <input value={vendor.contact_name || ''} onChange={e => updateField('contact_name', e.target.value)} placeholder="First Last" style={S.fieldInput} />
                                 </div>
                                 <div style={{ marginBottom: '0.4rem' }}>
+                                  <div style={S.fieldLabel}>Role / Title (leave blank for auto from category)</div>
+                                  <input value={(vendor as any).about_title || ''} onChange={e => updateField('about_title' as any, e.target.value)} placeholder={vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director'} style={S.fieldInput} />
+                                </div>
+                                <div style={{ marginBottom: '0.4rem' }}>
                                   <div style={S.fieldLabel}>Photo URL (portrait / headshot)</div>
                                   <input value={vendor.photo_url || ''} onChange={e => updateField('photo_url', e.target.value)} placeholder="https://..." style={S.fieldInput} />
                                 </div>
@@ -847,13 +851,37 @@ export default function BuilderPage() {
                                     <img src={vendor.photo_url} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                                   </div>
                                 )}
-                                <div>
+                                <div style={{ marginBottom: '0.4rem' }}>
                                   <div style={S.fieldLabel}>Bio</div>
                                   <textarea value={vendor.bio || ''} onChange={e => updateField('bio', e.target.value)} placeholder="Tell your story..." rows={4} style={S.fieldTextarea} />
                                 </div>
-                              </div>
-                              <div style={{ fontSize: '0.65rem', color: S.dim, marginTop: '0.25rem' }}>
-                                Category and services also appear here — edit them in the Info and Services sections.
+                                {/* Service highlight pills */}
+                                <div style={{ marginTop: '0.5rem' }}>
+                                  <div style={S.fieldLabel}>Highlight Pills (shown under bio)</div>
+                                  {(vendor.services_included || []).slice(0, 4).map((s: any, si: number) => (
+                                    <div key={si} style={{ display: 'flex', gap: '0.3rem', marginBottom: '0.3rem', alignItems: 'center' }}>
+                                      <input value={s.icon || ''} onChange={e => {
+                                        const svcs = [...(vendor.services_included || [])] as any[];
+                                        svcs[si] = { ...svcs[si], icon: e.target.value };
+                                        updateField('services_included', svcs);
+                                      }} placeholder="✨" style={{ ...S.fieldInput, width: '36px', textAlign: 'center', padding: '0.3rem' }} />
+                                      <input value={s.name || ''} onChange={e => {
+                                        const svcs = [...(vendor.services_included || [])] as any[];
+                                        svcs[si] = { ...svcs[si], name: e.target.value };
+                                        updateField('services_included', svcs);
+                                      }} placeholder="Service name" style={{ ...S.fieldInput, flex: 1 }} />
+                                    </div>
+                                  ))}
+                                  {(vendor.services_included || []).length < 4 && (
+                                    <button type="button" onClick={() => {
+                                      const svcs = [...(vendor.services_included || [])] as any[];
+                                      svcs.push({ icon: '✨', name: '', description: '' });
+                                      updateField('services_included', svcs);
+                                    }} style={{ width: '100%', padding: '0.35rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '6px', color: S.gold, cursor: 'pointer', fontSize: '0.7rem', marginTop: '0.2rem' }}>
+                                      + Add Highlight
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           )}
@@ -1102,7 +1130,7 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                         Meet {(vendor.contact_name || vendor.business_name || '').split(' ')[0]}
                       </div>
                       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-                        {vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director'}
+                        {(vendor as any).about_title || (vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director')}
                       </h2>
                       {vendor.bio && vendor.bio.split('\n').map((p: string, i: number) => (
                         <p key={i} style={{ fontSize: '0.85rem', color: textMuted, lineHeight: 1.6, marginBottom: '0.5rem' }}>{p}</p>
