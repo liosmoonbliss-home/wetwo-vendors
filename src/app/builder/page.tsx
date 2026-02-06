@@ -78,6 +78,33 @@ const S = {
   border: '#1e1e30',
 };
 
+// ── DATA NORMALIZER ──────────────────────────────────────────
+// Supabase JSONB can store arrays of strings instead of objects.
+// This normalizer ensures services, menus, packages etc. are always proper objects.
+function normalizeService(s: any): { icon: string; name: string; description: string } {
+  if (typeof s === 'string') {
+    try { const p = JSON.parse(s); if (p && typeof p === 'object') return { icon: p.icon || '✦', name: p.name || '', description: p.description || '' }; } catch {}
+    return { icon: '✦', name: s, description: '' };
+  }
+  if (s && typeof s === 'object') return { icon: s.icon || '✦', name: s.name || '', description: s.description || '' };
+  return { icon: '✦', name: String(s || ''), description: '' };
+}
+function normalizeMenuCat(c: any): any {
+  if (typeof c === 'string') { try { return JSON.parse(c); } catch {} return { name: c, icon: '🍽️', subtitle: '', imageUrl: '', items: [] }; }
+  return { id: c.id ?? Date.now(), name: c.name || c.category || '', icon: c.icon || '🍽️', subtitle: c.subtitle || c.description || '', imageUrl: c.imageUrl || '', items: c.items || [] };
+}
+function normalizePackage(p: any): any {
+  if (typeof p === 'string') { try { return JSON.parse(p); } catch {} return { id: Date.now(), name: p, price: '', description: '', features: [], icon: '📋' }; }
+  return { id: p.id ?? Date.now(), name: p.name || '', price: p.price || '', description: p.description || '', features: p.features || [], icon: p.icon || '📋' };
+}
+function normalizeVendorData(v: any): any {
+  const out = { ...v };
+  if (Array.isArray(out.services_included)) out.services_included = out.services_included.map(normalizeService);
+  if (Array.isArray(out.menu_categories)) out.menu_categories = out.menu_categories.map(normalizeMenuCat);
+  if (Array.isArray(out.pricing_packages)) out.pricing_packages = out.pricing_packages.map(normalizePackage);
+  return out;
+}
+
 // ── MAIN COMPONENT ────────────────────────────────────────────
 
 export default function BuilderPage() {
@@ -118,7 +145,7 @@ export default function BuilderPage() {
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Failed to load vendor'); setStep('input'); return; }
 
-      const v = data.vendor;
+      const v = normalizeVendorData(data.vendor);
       setVendor(v);
       if (v.ref) {
         setVendorRef(v.ref);
@@ -166,7 +193,7 @@ export default function BuilderPage() {
       if (!res.ok) { setError(data.error || 'Analysis failed'); setStep('input'); return; }
 
       setAnalysis(data);
-      setVendor(data.vendor);
+      setVendor(normalizeVendorData(data.vendor));
 
       // Build image selections — first image defaults to hero
       const imgs: ImageSelection[] = (data.vendor.portfolio_images || []).map((u: string, i: number) => ({
@@ -315,8 +342,8 @@ export default function BuilderPage() {
     updateField('services_included', svcs);
   };
   const updateService = (idx: number, value: string) => {
-    const svcs = [...(vendor.services_included || [])] as any[];
-    svcs[idx] = { ...(svcs[idx] || {}), name: value };
+    const svcs = [...(vendor.services_included || [])].map(normalizeService);
+    svcs[idx] = { ...svcs[idx], name: value };
     updateField('services_included', svcs);
   };
   const removeService = (idx: number) => {
@@ -757,7 +784,7 @@ export default function BuilderPage() {
                             <div>
                               {(vendor.services_included || []).map((svc: any, si: number) => (
                                 <div key={si} style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.35rem', alignItems: 'center' }}>
-                                  <input value={typeof svc === 'string' ? svc : svc?.name || ''} onChange={e => updateService(si, e.target.value)} placeholder="Service name..." style={{ ...S.fieldInput, flex: 1 }} />
+                                  <input value={svc?.name || ''} onChange={e => updateService(si, e.target.value)} placeholder="Service name..." style={{ ...S.fieldInput, flex: 1 }} />
                                   <button type="button" onClick={() => removeService(si)} style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}>✕</button>
                                 </div>
                               ))}
