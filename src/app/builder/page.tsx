@@ -765,7 +765,7 @@ export default function BuilderPage() {
                                     <div style={S.fieldLabel}>Features (one per line)</div>
                                     <textarea
                                       value={(pkg.features || []).join('\n')}
-                                      onChange={e => updatePackage(pi, 'features', e.target.value.split('\n').filter((f: string) => f.trim()))}
+                                      onChange={e => updatePackage(pi, 'features', e.target.value.split('\n'))}
                                       placeholder="Pre-event meeting&#10;Shared Google Drive folder&#10;Up to 10 hours day-of coordination"
                                       rows={4} style={S.fieldTextarea}
                                     />

@@ -13,10 +13,14 @@ export function AboutSection({ vendor }: Props) {
   const customTitle = heroConfig?.about_title as string | undefined;
   const roleTitle = customTitle || getRoleTitle(vendor.category);
 
-  const highlights = services.slice(0, 4).map((s: any) => ({
-    icon: (typeof s === 'string' ? '✨' : s.icon) || '✨',
-    name: typeof s === 'string' ? s : s.name,
-  })).filter(h => h.name && h.name.trim() !== '');
+  const highlights = services.slice(0, 4).map((s: any) => {
+    let parsed = s;
+    if (typeof s === 'string') { try { parsed = JSON.parse(s); } catch { /* plain string */ } }
+    return {
+      icon: (typeof parsed === 'string' ? '✨' : parsed.icon) || '✨',
+      name: typeof parsed === 'string' ? parsed : parsed.name,
+    };
+  }).filter(h => h.name && h.name.trim() !== '');
 
   if (!photo && bio.length < 80) return null;
   return (

@@ -54,7 +54,8 @@ export function PackagesSection({ vendor, variant }: Props) {
 function PackageCard({ pkg }: { pkg: PricingPackage }) {
   const [expanded, setExpanded] = useState(false);
   const MAX_FEATURES = 4;
-  const hasOverflow = pkg.features && pkg.features.length > MAX_FEATURES;
+  const hasLongDesc = (pkg.description?.length || 0) > 120;
+  const hasFeatureOverflow = pkg.features && pkg.features.length > MAX_FEATURES;
   const visibleFeatures = expanded ? pkg.features : (pkg.features || []).slice(0, MAX_FEATURES);
 
   const fmtPrice = (p: string) => {
@@ -89,12 +90,12 @@ function PackageCard({ pkg }: { pkg: PricingPackage }) {
           ))}
         </ul>
       )}
-      {hasOverflow && (
+      {(hasLongDesc || hasFeatureOverflow) && (
         <button
           className="package-expand-btn"
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? '← Show less' : `See all ${pkg.features.length} features →`}
+          {expanded ? '← Show less' : hasFeatureOverflow ? `See all ${pkg.features.length} features →` : 'Read more →'}
         </button>
       )}
       <a
