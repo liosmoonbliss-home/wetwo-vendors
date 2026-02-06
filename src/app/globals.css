@@ -658,3 +658,8 @@ a { color: inherit; text-decoration: none; }
   .hero-buttons { flex-direction: column; align-items: center; }
   .hero-info { flex-direction: column; gap: 16px; }
 }
+
+
+/* Alternating section backgrounds — pure CSS, no JS logic */
+main > .page-section:nth-child(odd) { background: #f3efe9; }
+main > .page-section:nth-child(even) { background: #ffffff; }
