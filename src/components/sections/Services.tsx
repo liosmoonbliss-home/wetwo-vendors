@@ -16,29 +16,29 @@ export function ServicesSection({ vendor }: Props) {
       try {
         const parsed = JSON.parse(s);
         if (parsed && typeof parsed === "object") {
-          return { icon: parsed.icon || "✦", name: parsed.name || "", description: parsed.description || "" };
+          return { icon: parsed.icon || "", name: parsed.name || "", description: parsed.description || "" };
         }
       } catch {}
-      return { icon: "✦", name: s, description: "" };
+      return { icon: "", name: s, description: "" };
     }
     if (s && typeof s === "object") {
-      return { icon: s.icon || "✦", name: s.name || "", description: s.description || "" };
+      return { icon: s.icon || "", name: s.name || "", description: s.description || "" };
     }
-    return { icon: "✦", name: String(s || ""), description: "" };
+    return { icon: "", name: String(s || ""), description: "" };
   }).filter(s => s.name.trim() !== "");
 
   if (services.length === 0) return null;
 
   return (
-    <section id="services_list" className="section" >
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 1.5rem" }}>
+    <section id="services_list" className="section">
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 1.5rem" }}>
         <div className="section-header">
           <span className="section-label">What We Offer</span>
           <h2 className="section-title">Our Services</h2>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {services.map((service, i) => (
-            <ServiceRow key={i} service={service} index={i} isLast={i === services.length - 1} />
+            <ServiceItem key={i} service={service} index={i} total={services.length} />
           ))}
         </div>
       </div>
@@ -46,83 +46,79 @@ export function ServicesSection({ vendor }: Props) {
   );
 }
 
-function ServiceRow({ service, index, isLast }: { service: { icon: string; name: string; description: string }; index: number; isLast: boolean }) {
+function ServiceItem({ service, index, total }: { service: { icon: string; name: string; description: string }; index: number; total: number }) {
   const [expanded, setExpanded] = useState(false);
-  const hasLongDesc = (service.description?.length || 0) > 120;
-  const displayDesc = expanded ? service.description : (service.description || "").slice(0, 120);
-  const even = index % 2 === 0;
+  const hasLongDesc = (service.description?.length || 0) > 150;
+  const displayDesc = expanded ? service.description : (service.description || "").slice(0, 150);
+  const isLast = index === total - 1;
 
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: even ? "row" : "row-reverse",
-        alignItems: "center",
-        gap: "2rem",
         padding: "2rem 0",
-        borderBottom: isLast ? "none" : "1px solid var(--border, #e5e1dc)",
+        borderBottom: isLast ? "none" : "1px solid rgba(0,0,0,0.06)",
       }}
     >
-      <div
-        style={{
-          width: "56px",
-          height: "56px",
-          borderRadius: "50%",
-          background: "var(--accent, #10b981)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.5rem",
-          flexShrink: 0,
-          color: "#fff",
-          opacity: 0.9,
-        }}
-      >
-        {service.icon}
-      </div>
-      <div style={{ flex: 1, textAlign: even ? "left" : "right" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "1rem", marginBottom: service.description ? "0.75rem" : "0" }}>
+        <span
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "0.85rem",
+            fontWeight: 300,
+            color: "var(--primary, #10b981)",
+            minWidth: "1.5rem",
+            letterSpacing: "0.02em",
+          }}
+        >
+          {String(index + 1).padStart(2, "0")}
+        </span>
         <h3
           style={{
-            fontSize: "1.25rem",
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "1.5rem",
             fontWeight: 600,
-            margin: "0 0 0.35rem 0",
+            margin: 0,
             color: "var(--text)",
+            letterSpacing: "-0.01em",
+            lineHeight: 1.2,
           }}
         >
           {service.name}
         </h3>
-        {service.description && (
+      </div>
+      {service.description && (
+        <div style={{ paddingLeft: "2.5rem" }}>
           <p
             style={{
-              fontSize: "0.95rem",
-              lineHeight: 1.6,
+              fontSize: "0.92rem",
+              lineHeight: 1.7,
               color: "var(--text-muted, #6b7280)",
               margin: 0,
+              fontWeight: 400,
             }}
           >
             {displayDesc}{hasLongDesc && !expanded && "…"}
           </p>
-        )}
-        {hasLongDesc && (
-          <button
-            onClick={() => setExpanded(!expanded)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--accent, #10b981)",
-              cursor: "pointer",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              padding: "0.35rem 0 0 0",
-              textAlign: even ? "left" : "right",
-              display: "block",
-              marginLeft: even ? "0" : "auto",
-            }}
-          >
-            {expanded ? "← Show less" : "Read more →"}
-          </button>
-        )}
-      </div>
+          {hasLongDesc && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--primary, #10b981)",
+                cursor: "pointer",
+                fontSize: "0.82rem",
+                fontWeight: 600,
+                padding: "0.5rem 0 0 0",
+                letterSpacing: "0.03em",
+                textTransform: "uppercase",
+              }}
+            >
+              {expanded ? "← Less" : "Read more →"}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
