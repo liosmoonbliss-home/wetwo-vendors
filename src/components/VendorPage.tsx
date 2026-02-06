@@ -464,7 +464,7 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
                   const useAlt = visibleIdx % 2 === 1;
                   visibleIdx++;
                   return (
-                    <div key={sectionId} style={{ background: useAlt ? 'var(--bg-alt, #f3efe9)' : 'var(--bg, #fff)' }}>
+                    <div key={sectionId} style={{ background: useAlt ? '#f3efe9' : '#ffffff' }}>
                       {rendered}
                     </div>
                   );
