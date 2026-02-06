@@ -245,7 +245,7 @@ export default function BuilderPage() {
   // ── Content array helpers ─────────────────────
   const addPackage = () => {
     const pkgs = [...(vendor.pricing_packages || [])] as any[];
-    pkgs.push({ name: '', price: '', description: '', features: [], icon: '📋' });
+    pkgs.push({ id: Date.now(), name: '', price: '', description: '', features: [], icon: '📋' });
     updateField('pricing_packages', pkgs);
   };
   const updatePackage = (idx: number, field: string, value: unknown) => {
@@ -277,7 +277,7 @@ export default function BuilderPage() {
 
   const addMenuCategory = () => {
     const cats = [...(vendor.menu_categories || [])] as any[];
-    cats.push({ category: '', imageUrl: '', description: '' });
+    cats.push({ id: Date.now(), name: '', icon: '🍽️', subtitle: '', imageUrl: '', items: [] });
     updateField('menu_categories', cats);
   };
   const updateMenuCategory = (idx: number, field: string, value: unknown) => {
@@ -711,7 +711,11 @@ export default function BuilderPage() {
                                   </div>
                                   <div style={{ marginBottom: '0.4rem' }}>
                                     <div style={S.fieldLabel}>Menu Name</div>
-                                    <input value={cat.category || ''} onChange={e => updateMenuCategory(ci, 'category', e.target.value)} placeholder="Cafe Menu, Catering Menu, Drinks..." style={S.fieldInput} />
+                                    <input value={cat.name || cat.category || ''} onChange={e => updateMenuCategory(ci, 'name', e.target.value)} placeholder="Cafe Menu, Catering Menu, Drinks..." style={S.fieldInput} />
+                                  </div>
+                                  <div style={{ marginBottom: '0.4rem' }}>
+                                    <div style={S.fieldLabel}>Subtitle (optional)</div>
+                                    <input value={cat.subtitle || ''} onChange={e => updateMenuCategory(ci, 'subtitle', e.target.value)} placeholder="Seasonal selections, prix fixe..." style={S.fieldInput} />
                                   </div>
                                   <div style={{ marginBottom: '0.4rem' }}>
                                     <div style={S.fieldLabel}>Menu Image URL (screenshot or photo of menu)</div>
@@ -719,13 +723,13 @@ export default function BuilderPage() {
                                   </div>
                                   {cat.imageUrl && (
                                     <div style={{ marginTop: '0.4rem', borderRadius: '6px', overflow: 'hidden', border: `1px solid ${S.border}`, maxHeight: '120px' }}>
-                                      <img src={cat.imageUrl} alt={cat.category} style={{ width: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                                      <img src={cat.imageUrl} alt={cat.name} style={{ width: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
                                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                                     </div>
                                   )}
                                   <div style={{ marginTop: '0.4rem' }}>
-                                    <div style={S.fieldLabel}>Description (optional)</div>
-                                    <input value={cat.description || ''} onChange={e => updateMenuCategory(ci, 'description', e.target.value)} placeholder="Everything is vegan!" style={S.fieldInput} />
+                                    <div style={S.fieldLabel}>Icon (emoji)</div>
+                                    <input value={cat.icon || '🍽️'} onChange={e => updateMenuCategory(ci, 'icon', e.target.value)} placeholder="🍽️" style={{ ...S.fieldInput, width: '60px' }} />
                                   </div>
                                 </div>
                               ))}
@@ -840,7 +844,10 @@ export default function BuilderPage() {
                                 </div>
                                 <div style={{ marginBottom: '0.4rem' }}>
                                   <div style={S.fieldLabel}>Role / Title (leave blank for auto from category)</div>
-                                  <input value={(vendor as any).about_title || ''} onChange={e => updateField('about_title' as any, e.target.value)} placeholder={vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director'} style={S.fieldInput} />
+                                  <input value={(vendor.hero_config as any)?.about_title || ''} onChange={e => {
+                                    const hc = { ...(vendor.hero_config || {}), about_title: e.target.value };
+                                    updateField('hero_config', hc);
+                                  }} placeholder={vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director'} style={S.fieldInput} />
                                 </div>
                                 <div style={{ marginBottom: '0.4rem' }}>
                                   <div style={S.fieldLabel}>Photo URL (portrait / headshot)</div>
@@ -1130,7 +1137,7 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                         Meet {(vendor.contact_name || vendor.business_name || '').split(' ')[0]}
                       </div>
                       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-                        {(vendor as any).about_title || (vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director')}
+                        {(vendor as any).hero_config?.about_title || (vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director')}
                       </h2>
                       {vendor.bio && vendor.bio.split('\n').map((p: string, i: number) => (
                         <p key={i} style={{ fontSize: '0.85rem', color: textMuted, lineHeight: 1.6, marginBottom: '0.5rem' }}>{p}</p>
@@ -1366,13 +1373,13 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                     {(vendor.menu_categories || []).map((cat: any, ci: number) => (
                       <div key={ci} style={{ marginBottom: '0.75rem', background: bgCard, borderRadius: '10px', overflow: 'hidden', border: `1px solid ${theme?.border || '#e5e1dc'}` }}>
                         <div style={{ padding: '0.75rem 1rem', fontWeight: 600, fontSize: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                          <span>🍽️ {cat.category || 'Menu'}</span>
+                          <span>{cat.icon || '🍽️'} {cat.name || cat.category || 'Menu'}</span>
                           <span style={{ fontSize: '0.75rem', color: textMuted }}>Click to view ▾</span>
                         </div>
-                        {cat.description && <div style={{ padding: '0 1rem 0.5rem', fontSize: '0.8rem', color: textMuted, fontStyle: 'italic' }}>{cat.description}</div>}
+                        {cat.subtitle && <div style={{ padding: '0 1rem 0.5rem', fontSize: '0.8rem', color: textMuted, fontStyle: 'italic' }}>{cat.subtitle}</div>}
                         {cat.imageUrl && (
                           <div style={{ padding: '0 0.5rem 0.5rem' }}>
-                            <img src={cat.imageUrl} alt={cat.category} style={{ width: '100%', borderRadius: '6px', display: 'block' }}
+                            <img src={cat.imageUrl} alt={cat.name || cat.category} style={{ width: '100%', borderRadius: '6px', display: 'block' }}
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                           </div>
                         )}

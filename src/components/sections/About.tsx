@@ -1,29 +1,25 @@
 'use client';
-
 import type { Vendor } from '@/lib/types';
-
 interface Props {
   vendor: Vendor;
 }
-
 export function AboutSection({ vendor }: Props) {
   const name = vendor.contact_name || vendor.business_name;
   const photo = vendor.photo_url;
   const bio = vendor.bio || '';
   const services = vendor.services_included || [];
-
   const firstName = name.split(' ')[0];
-  const roleTitle = getRoleTitle(vendor.category);
+  const heroConfig = vendor.hero_config as Record<string, unknown> | undefined;
+  const customTitle = heroConfig?.about_title as string | undefined;
+  const roleTitle = customTitle || getRoleTitle(vendor.category);
   
   // Get first 4 services for the feature pills
   const highlights = services.slice(0, 4).map(s => ({
     icon: s.icon || '✨',
     name: s.name,
   }));
-
   // Skip if no photo and no meaningful bio
   if (!photo && bio.length < 80) return null;
-
   return (
     <section id="about" className="section" style={{ background: 'var(--bg)' }}>
       <div className={`about-grid${!photo ? ' no-photo' : ''}`}>
@@ -38,16 +34,13 @@ export function AboutSection({ vendor }: Props) {
             />
           </div>
         )}
-
         {/* Content */}
         <div className="about-content">
           <span className="section-label">Meet {firstName}</span>
           <h2>{roleTitle}</h2>
-
           {bio.split('\n').map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
           ))}
-
           {/* Service Highlights as 2-column grid */}
           {highlights.length > 0 && (
             <div className="about-features">
@@ -64,7 +57,6 @@ export function AboutSection({ vendor }: Props) {
     </section>
   );
 }
-
 function getRoleTitle(category?: string): string {
   const titles: Record<string, string> = {
     'Planner': 'Event Planner, Coordinator & Visionary',

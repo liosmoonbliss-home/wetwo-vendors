@@ -354,8 +354,8 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
             <HeroSection vendor={vendor} theme={theme} links={links} />
             {/* Cashback banner immediately after hero */}
             <CashbackBanner vendor={vendor} links={links} />
-            {/* About section after hero if vendor has photo or long bio */}
-            <AboutSection vendor={vendor} />
+            {/* About: only auto-render here if not in active sections */}
+            {!resolvedActive.includes('about' as SectionId) && <AboutSection vendor={vendor} />}
           </div>
         );
       case 'gallery':
@@ -383,6 +383,8 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
         return <TestimonialsSection key={key} vendor={vendor} />;
       case 'faq':
         return <FAQSection key={key} vendor={vendor} />;
+      case 'about' as SectionId:
+        return <AboutSection key={key} vendor={vendor} />;
       case 'contact':
         return <ContactSection key={key} vendor={vendor} links={links} showToast={showToast} />;
       default:
