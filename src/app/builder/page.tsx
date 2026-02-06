@@ -210,12 +210,12 @@ export default function BuilderPage() {
 
   const addService = () => {
     const svcs = [...(vendor.services_included || [])];
-    svcs.push({ icon: '✦', name: '', description: '' });
+    svcs.push({ icon: '✦', name: '', description: '' } as any);
     updateField('services_included', svcs);
   };
   const updateService = (idx: number, value: string) => {
-    const svcs = [...(vendor.services_included || [])];
-    svcs[idx] = { ...(svcs[idx] as any), name: value };
+    const svcs = [...(vendor.services_included || [])] as any[];
+    svcs[idx] = { ...(svcs[idx] || {}), name: value };
     updateField('services_included', svcs);
   };
   const removeService = (idx: number) => {
@@ -226,7 +226,7 @@ export default function BuilderPage() {
 
   const addMenuCategory = () => {
     const cats = [...(vendor.menu_categories || [])] as any[];
-    cats.push({ category: '', items: [] });
+    cats.push({ category: '', imageUrl: '', description: '' });
     updateField('menu_categories', cats);
   };
   const updateMenuCategory = (idx: number, field: string, value: unknown) => {
@@ -532,6 +532,21 @@ export default function BuilderPage() {
                           {/* ── PACKAGES EDITOR ── */}
                           {sId === 'packages' && (
                             <div>
+                              {/* Section heading */}
+                              <div style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.75rem', border: `1px solid ${S.border}` }}>
+                                <div style={{ fontSize: '0.7rem', color: S.gold, fontWeight: 600, marginBottom: '0.4rem' }}>Section Heading</div>
+                                <div style={{ display: 'grid', gap: '0.4rem' }}>
+                                  <div>
+                                    <div style={S.fieldLabel}>Title</div>
+                                    <input value={((vendor as any).packages_heading) || 'Planning Made Simple'} onChange={e => updateField('packages_heading' as any, e.target.value)} placeholder="Our Packages" style={S.fieldInput} />
+                                  </div>
+                                  <div>
+                                    <div style={S.fieldLabel}>Subtitle</div>
+                                    <input value={((vendor as any).packages_subtitle) || ''} onChange={e => updateField('packages_subtitle' as any, e.target.value)} placeholder="Choose the level of support that's right for you." style={S.fieldInput} />
+                                  </div>
+                                </div>
+                              </div>
+                              {/* Package cards */}
                               {(vendor.pricing_packages || []).map((pkg: any, pi: number) => (
                                 <div key={pi} style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem', border: `1px solid ${S.border}` }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
@@ -592,30 +607,32 @@ export default function BuilderPage() {
                               {(vendor.menu_categories || []).map((cat: any, ci: number) => (
                                 <div key={ci} style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem', border: `1px solid ${S.border}` }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                                    <span style={{ fontSize: '0.7rem', color: S.gold, fontWeight: 600 }}>Category {ci + 1}</span>
+                                    <span style={{ fontSize: '0.7rem', color: S.gold, fontWeight: 600 }}>Menu {ci + 1}</span>
                                     <button type="button" onClick={() => removeMenuCategory(ci)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem' }}>Remove</button>
                                   </div>
                                   <div style={{ marginBottom: '0.4rem' }}>
-                                    <div style={S.fieldLabel}>Category Name</div>
-                                    <input value={cat.category || ''} onChange={e => updateMenuCategory(ci, 'category', e.target.value)} placeholder="Appetizers" style={S.fieldInput} />
+                                    <div style={S.fieldLabel}>Menu Name</div>
+                                    <input value={cat.category || ''} onChange={e => updateMenuCategory(ci, 'category', e.target.value)} placeholder="Cafe Menu, Catering Menu, Drinks..." style={S.fieldInput} />
                                   </div>
-                                  <div>
-                                    <div style={S.fieldLabel}>Items (one per line, use | for price: "Item | $12")</div>
-                                    <textarea
-                                      value={(cat.items || []).map((it: any) => typeof it === 'string' ? it : `${it.name}${it.price ? ' | ' + it.price : ''}`).join('\n')}
-                                      onChange={e => updateMenuCategory(ci, 'items', e.target.value.split('\n').filter((s: string) => s.trim()).map((line: string) => {
-                                        const parts = line.split('|').map((p: string) => p.trim());
-                                        return { name: parts[0], price: parts[1] || '' };
-                                      }))}
-                                      placeholder="Bruschetta | $12&#10;Caesar Salad | $14&#10;Soup of the Day | $10"
-                                      rows={4} style={S.fieldTextarea}
-                                    />
+                                  <div style={{ marginBottom: '0.4rem' }}>
+                                    <div style={S.fieldLabel}>Menu Image URL (screenshot or photo of menu)</div>
+                                    <input value={cat.imageUrl || ''} onChange={e => updateMenuCategory(ci, 'imageUrl', e.target.value)} placeholder="https://..." style={S.fieldInput} />
+                                  </div>
+                                  {cat.imageUrl && (
+                                    <div style={{ marginTop: '0.4rem', borderRadius: '6px', overflow: 'hidden', border: `1px solid ${S.border}`, maxHeight: '120px' }}>
+                                      <img src={cat.imageUrl} alt={cat.category} style={{ width: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                    </div>
+                                  )}
+                                  <div style={{ marginTop: '0.4rem' }}>
+                                    <div style={S.fieldLabel}>Description (optional)</div>
+                                    <input value={cat.description || ''} onChange={e => updateMenuCategory(ci, 'description', e.target.value)} placeholder="Everything is vegan!" style={S.fieldInput} />
                                   </div>
                                 </div>
                               ))}
                               <button type="button" onClick={addMenuCategory}
                                 style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem' }}>
-                                + Add Menu Category
+                                + Add Menu
                               </button>
                             </div>
                           )}
@@ -956,8 +973,8 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                 <div key="packages" style={{ padding: '3rem 2rem', background: bg }}>
                   <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Our Packages</div>
-                    <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Planning Made Simple</h2>
-                    <p style={{ color: textMuted, maxWidth: '500px', margin: '0 auto' }}>From day-of coordination to complete event planning — choose the level of support that&apos;s right for you.</p>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>{(vendor as any).packages_heading || 'Our Packages'}</h2>
+                    {(vendor as any).packages_subtitle && <p style={{ color: textMuted, maxWidth: '500px', margin: '0 auto' }}>{(vendor as any).packages_subtitle}</p>}
                   </div>
                   {(vendor.pricing_packages || []).length === 0 && <div style={{ textAlign: 'center', color: textMuted }}>No packages — click Packages in sections to add</div>}
                   <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min((vendor.pricing_packages || []).length, 3)}, 1fr)`, gap: '1rem', maxWidth: '900px', margin: '0 auto' }}>
@@ -1115,6 +1132,34 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                     {(vendor.services_included || []).map((svc: any, si: number) => (
                       <div key={si} style={{ padding: '0.5rem 1.25rem', background: bgCard, borderRadius: '8px', border: `1px solid ${theme?.border || '#e5e1dc'}`, fontSize: '0.9rem' }}>
                         ✦ {typeof svc === 'string' ? svc : svc?.name || ''}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+
+            case 'menu_accordion':
+              return (
+                <div key="menu" style={{ padding: '3rem 2rem', background: isDark ? '#111' : '#f5f2ed' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Our Menu</div>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>What We Serve</h2>
+                  </div>
+                  {(vendor.menu_categories || []).length === 0 && <div style={{ textAlign: 'center', color: textMuted }}>No menus — click Menu in sections to add</div>}
+                  <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                    {(vendor.menu_categories || []).map((cat: any, ci: number) => (
+                      <div key={ci} style={{ marginBottom: '0.75rem', background: bgCard, borderRadius: '10px', overflow: 'hidden', border: `1px solid ${theme?.border || '#e5e1dc'}` }}>
+                        <div style={{ padding: '0.75rem 1rem', fontWeight: 600, fontSize: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                          <span>🍽️ {cat.category || 'Menu'}</span>
+                          <span style={{ fontSize: '0.75rem', color: textMuted }}>Click to view ▾</span>
+                        </div>
+                        {cat.description && <div style={{ padding: '0 1rem 0.5rem', fontSize: '0.8rem', color: textMuted, fontStyle: 'italic' }}>{cat.description}</div>}
+                        {cat.imageUrl && (
+                          <div style={{ padding: '0 0.5rem 0.5rem' }}>
+                            <img src={cat.imageUrl} alt={cat.category} style={{ width: '100%', borderRadius: '6px', display: 'block' }}
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
