@@ -24,7 +24,7 @@ export function AboutSection({ vendor }: Props) {
 
   if (!photo && bio.length < 80) return null;
   return (
-    <section id="about" className="section" style={{ background: 'var(--bg)' }}>
+    <section id="about" className="section" >
       <div className={`about-grid${!photo ? ' no-photo' : ''}`}>
         {photo && (
           <div className="about-image-wrapper">

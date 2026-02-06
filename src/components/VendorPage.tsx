@@ -461,7 +461,7 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
               const rendered = renderSection(sectionId);
               if (isHeroOrContact) return rendered;
               return (
-                <div key={sectionId} className={useAlt ? 'section-alt' : ''}>
+                <div key={sectionId} style={{ background: useAlt ? 'var(--bg-alt, #f3efe9)' : 'var(--bg, #fff)' }}>
                   {rendered}
                 </div>
               );

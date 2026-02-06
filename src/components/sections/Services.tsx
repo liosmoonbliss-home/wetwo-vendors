@@ -30,7 +30,7 @@ export function ServicesSection({ vendor }: Props) {
   if (services.length === 0) return null;
 
   return (
-    <section id="services_list" className="section" style={{ background: "var(--bg)" }}>
+    <section id="services_list" className="section" >
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 1.5rem" }}>
         <div className="section-header">
           <span className="section-label">What We Offer</span>
