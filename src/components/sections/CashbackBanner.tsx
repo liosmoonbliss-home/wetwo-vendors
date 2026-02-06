@@ -13,9 +13,9 @@ export function CashbackBanner({ vendor, links }: BannerProps) {
       <div className="cashback-banner-inner">
         <span className="cashback-icon">✨</span>
         <span className="cashback-text">
-          Shop with us and get <strong>25% cashback</strong> on everything — wedding registries, home, fashion &amp; more —{' '}
+          Visit the <strong>WeTwo Store</strong> and earn <strong>25% cashback</strong> on wedding registries, home décor, fashion &amp; more —{' '}
           <a href={links.affiliateLink} target="_blank" rel="noopener noreferrer">
-            Unlock Cashback →
+            Shop the Store →
           </a>
         </span>
       </div>
