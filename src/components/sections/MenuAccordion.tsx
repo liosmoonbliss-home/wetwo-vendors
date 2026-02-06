@@ -5,7 +5,7 @@ import type { Vendor } from '@/lib/types';
 
 export function MenuAccordionSection({ vendor }: { vendor: Vendor }) {
   const cats = Array.isArray(vendor.menu_categories) ? vendor.menu_categories : [];
-  const [openId, setOpenId] = useState<number | null>(cats[0]?.id ?? null);
+  const [openId, setOpenId] = useState<number | null>(null);
 
   if (cats.length === 0) return null;
 
@@ -17,19 +17,25 @@ export function MenuAccordionSection({ vendor }: { vendor: Vendor }) {
       </div>
 
       <div className="menu-dropdown">
-        {cats.map(cat => {
-          const isOpen = openId === cat.id;
+        {cats.map((cat, idx) => {
+          // Support both old format (category) and new format (name)
+          const catName = cat.name || (cat as any).category || 'Menu';
+          const catIcon = cat.icon || '🍽️';
+          const catSubtitle = cat.subtitle || (cat as any).description || '';
+          const catId = cat.id ?? idx;
+          const isOpen = openId === catId;
+
           return (
-            <div key={cat.id} style={{ marginBottom: '8px' }}>
+            <div key={catId} style={{ marginBottom: '8px' }}>
               <button
                 className={`menu-toggle${isOpen ? ' open' : ''}`}
-                onClick={() => setOpenId(isOpen ? null : cat.id)}
+                onClick={() => setOpenId(isOpen ? null : catId)}
               >
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <div className="menu-toggle-icon">{cat.icon}</div>
+                  <div className="menu-toggle-icon">{catIcon}</div>
                   <div className="menu-toggle-label">
-                    <strong>{cat.name}</strong>
-                    {cat.subtitle && <span>{cat.subtitle}</span>}
+                    <strong>{catName}</strong>
+                    {catSubtitle && <span>{catSubtitle}</span>}
                   </div>
                 </div>
                 <span className="menu-chevron">▾</span>
@@ -40,12 +46,12 @@ export function MenuAccordionSection({ vendor }: { vendor: Vendor }) {
                   {cat.imageUrl && (
                     <img
                       src={cat.imageUrl}
-                      alt={cat.name}
+                      alt={catName}
                       style={{ width: '100%', maxWidth: '700px', borderRadius: '10px', marginBottom: '16px' }}
                     />
                   )}
                   {/* Menu items */}
-                  {(cat.items || []).map((item, i) => (
+                  {(cat.items || []).map((item: any, i: number) => (
                     <div
                       key={i}
                       style={{
@@ -70,6 +76,12 @@ export function MenuAccordionSection({ vendor }: { vendor: Vendor }) {
                       )}
                     </div>
                   ))}
+                  {/* If no items but has image, the image is the menu */}
+                  {(!cat.items || cat.items.length === 0) && !cat.imageUrl && (
+                    <div style={{ padding: '16px', color: 'var(--text-muted)', textAlign: 'center' }}>
+                      No items listed
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

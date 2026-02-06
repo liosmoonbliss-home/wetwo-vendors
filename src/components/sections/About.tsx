@@ -5,19 +5,21 @@ interface Props {
 }
 export function AboutSection({ vendor }: Props) {
   const name = vendor.contact_name || vendor.business_name;
-  const photo = vendor.photo_url;
+  const heroConfig = vendor.hero_config as Record<string, unknown> | undefined;
+  // About photo: use dedicated about_photo if set, otherwise fall back to photo_url
+  const photo = (heroConfig?.about_photo as string) || vendor.photo_url;
   const bio = vendor.bio || '';
   const services = vendor.services_included || [];
   const firstName = name.split(' ')[0];
-  const heroConfig = vendor.hero_config as Record<string, unknown> | undefined;
   const customTitle = heroConfig?.about_title as string | undefined;
   const roleTitle = customTitle || getRoleTitle(vendor.category);
-  
-  // Get first 4 services for the feature pills
-  const highlights = services.slice(0, 4).map(s => ({
-    icon: s.icon || '✨',
-    name: s.name,
-  }));
+
+  // Get first 4 services for the feature pills — handle both string and object
+  const highlights = services.slice(0, 4).map((s: any) => ({
+    icon: (typeof s === 'string' ? '✨' : s.icon) || '✨',
+    name: typeof s === 'string' ? s : s.name,
+  })).filter(h => h.name && h.name.trim() !== '');
+
   // Skip if no photo and no meaningful bio
   if (!photo && bio.length < 80) return null;
   return (

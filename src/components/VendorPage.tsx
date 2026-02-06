@@ -385,6 +385,8 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
         return <FAQSection key={key} vendor={vendor} />;
       case 'about' as SectionId:
         return <AboutSection key={key} vendor={vendor} />;
+      case 'about' as SectionId:
+        return <AboutSection key={key} vendor={vendor} />;
       case 'contact':
         return <ContactSection key={key} vendor={vendor} links={links} showToast={showToast} />;
       default:

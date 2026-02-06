@@ -221,6 +221,10 @@ export default function BuilderPage() {
   const toggleGallery = (idx: number) => {
     setImages(prev => prev.map((img, i) => i === idx ? { ...img, inGallery: !img.inGallery } : img));
   };
+  const setAboutPhoto = (url: string) => {
+    const hc = { ...(vendor.hero_config || {}), about_photo: url } as any;
+    updateField('hero_config', hc);
+  };
 
   const toggleSection = (sectionId: SectionId) => {
     const current = vendor.active_sections || [];
@@ -538,10 +542,16 @@ export default function BuilderPage() {
                       </div>
                       {/* Controls overlay */}
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', padding: '4px' }}>
-                        <button onClick={() => setHeroImage(idx)} title="Set as hero image"
-                          style={{ width: '28px', height: '28px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', background: img.isHero ? S.gold : 'rgba(0,0,0,0.6)', color: img.isHero ? '#0a0a15' : '#fff' }}>
-                          ⭐
-                        </button>
+                        <div style={{ display: 'flex', gap: '3px' }}>
+                          <button onClick={() => setHeroImage(idx)} title="Set as hero image"
+                            style={{ width: '28px', height: '28px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', background: img.isHero ? S.gold : 'rgba(0,0,0,0.6)', color: img.isHero ? '#0a0a15' : '#fff' }}>
+                            ⭐
+                          </button>
+                          <button onClick={() => setAboutPhoto(img.url)} title="Set as About/Meet photo"
+                            style={{ width: '28px', height: '28px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', background: (vendor.hero_config as any)?.about_photo === img.url ? '#a78bfa' : 'rgba(0,0,0,0.6)', color: '#fff' }}>
+                            👋
+                          </button>
+                        </div>
                         <button onClick={() => toggleGallery(idx)} title={img.inGallery ? 'Remove from gallery' : 'Add to gallery'}
                           style={{ width: '28px', height: '28px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', background: img.inGallery ? 'rgba(34,197,94,0.8)' : 'rgba(0,0,0,0.6)', color: '#fff' }}>
                           {img.inGallery ? '👁' : '✕'}
@@ -552,11 +562,16 @@ export default function BuilderPage() {
                           Hero Image
                         </div>
                       )}
+                      {(vendor.hero_config as any)?.about_photo === img.url && !img.isHero && (
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#a78bfa', color: '#fff', fontSize: '0.6rem', fontWeight: 700, textAlign: 'center', padding: '2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                          About Photo
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
                 <div style={{ marginTop: '0.75rem', fontSize: '0.7rem', color: S.dim }}>
-                  ⭐ = Hero background &nbsp;|&nbsp; 👁 = In gallery &nbsp;|&nbsp; ✕ = Excluded
+                  ⭐ = Hero background &nbsp;|&nbsp; 👋 = About photo &nbsp;|&nbsp; 👁 = In gallery &nbsp;|&nbsp; ✕ = Excluded
                 </div>
               </div>
             )}
@@ -850,12 +865,15 @@ export default function BuilderPage() {
                                   }} placeholder={vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director'} style={S.fieldInput} />
                                 </div>
                                 <div style={{ marginBottom: '0.4rem' }}>
-                                  <div style={S.fieldLabel}>Photo URL (portrait / headshot)</div>
-                                  <input value={vendor.photo_url || ''} onChange={e => updateField('photo_url', e.target.value)} placeholder="https://..." style={S.fieldInput} />
+                                  <div style={S.fieldLabel}>Photo URL (or use 👋 in Images tab)</div>
+                                  <input value={(vendor.hero_config as any)?.about_photo || vendor.photo_url || ''} onChange={e => {
+                                    const hc = { ...(vendor.hero_config || {}), about_photo: e.target.value };
+                                    updateField('hero_config', hc);
+                                  }} placeholder="https://..." style={S.fieldInput} />
                                 </div>
-                                {vendor.photo_url && (
+                                {((vendor.hero_config as any)?.about_photo || vendor.photo_url) && (
                                   <div style={{ marginBottom: '0.4rem', borderRadius: '6px', overflow: 'hidden', maxHeight: '100px', maxWidth: '80px' }}>
-                                    <img src={vendor.photo_url} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                    <img src={(vendor.hero_config as any)?.about_photo || vendor.photo_url} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                                   </div>
                                 )}
                                 <div style={{ marginBottom: '0.4rem' }}>
@@ -1123,13 +1141,14 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                 </div>
               );
 
-            case 'about' as SectionId:
+            case 'about' as SectionId: {
+              const aboutPhoto = (vendor.hero_config as any)?.about_photo || vendor.photo_url || heroImage;
               return (
                 <div key="about" style={{ padding: '3rem 2rem', background: bg }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: (vendor.photo_url || heroImage) ? '1fr 1.5fr' : '1fr', gap: '2rem', maxWidth: '800px', margin: '0 auto', alignItems: 'center' }}>
-                    {(vendor.photo_url || heroImage) && (
+                  <div style={{ display: 'grid', gridTemplateColumns: aboutPhoto ? '1fr 1.5fr' : '1fr', gap: '2rem', maxWidth: '800px', margin: '0 auto', alignItems: 'center' }}>
+                    {aboutPhoto && (
                       <div style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '3/4', maxHeight: '300px' }}>
-                        <img src={vendor.photo_url || heroImage} alt={vendor.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <img src={aboutPhoto} alt={vendor.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       </div>
                     )}
                     <div>
@@ -1146,7 +1165,7 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginTop: '0.75rem' }}>
                           {(vendor.services_included || []).slice(0, 4).map((s: any, i: number) => (
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.6rem', background: bgCard, borderRadius: '6px', border: `1px solid ${theme?.border || '#e5e1dc'}`, fontSize: '0.8rem' }}>
-                              <span>{s.icon || '✨'}</span> <span>{s.name}</span>
+                              <span>{s.icon || '✨'}</span> <span>{typeof s === 'string' ? s : s.name}</span>
                             </div>
                           ))}
                         </div>
@@ -1155,6 +1174,7 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                   </div>
                 </div>
               );
+            }
 
             case 'gallery':
               return (

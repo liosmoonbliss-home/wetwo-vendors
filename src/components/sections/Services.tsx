@@ -7,7 +7,15 @@ interface Props {
 }
 
 export function ServicesSection({ vendor }: Props) {
-  const services = Array.isArray(vendor.services_included) ? vendor.services_included : [];
+  const raw = Array.isArray(vendor.services_included) ? vendor.services_included : [];
+  if (raw.length === 0) return null;
+
+  // Normalize: support both string[] and ServiceItem[]
+  const services = raw.map((s: any) => {
+    if (typeof s === 'string') return { icon: '✨', name: s, description: '' };
+    return { icon: s.icon || '✨', name: s.name || '', description: s.description || '' };
+  }).filter(s => s.name.trim() !== '');
+
   if (services.length === 0) return null;
 
   // Adapt grid columns
@@ -30,7 +38,7 @@ export function ServicesSection({ vendor }: Props) {
           {services.map((service, i) => (
             <div key={i} className="service-card">
               <div className="service-icon">
-                {service.icon || '✨'}
+                {service.icon}
               </div>
               <h3>{service.name}</h3>
               {service.description && <p>{service.description}</p>}
