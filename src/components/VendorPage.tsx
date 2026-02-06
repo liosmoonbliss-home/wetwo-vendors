@@ -450,7 +450,7 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
         {/* Sections */}
         <main>
           {resolvedOrder
-            .filter(s => s !== 'dashboard')
+            .filter(s => s !== 'dashboard' && s !== 'event_types')
             .map(sectionId => {
               const rendered = renderSection(sectionId);
               if (!rendered) return null;
