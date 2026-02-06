@@ -37,10 +37,7 @@ export function ServicesSection({ vendor }: Props) {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div className="section-header">
           <span className="section-label">What We Offer</span>
-          <h2 className="section-title">Full-Service Event Solutions</h2>
-          <p className="section-subtitle">
-            Everything you need for a flawless event, all under one roof.
-          </p>
+          <h2 className="section-title">Our Services</h2>
         </div>
 
         <div className="services-grid" style={{ gridTemplateColumns: `repeat(${colCount}, 1fr)` }}>
