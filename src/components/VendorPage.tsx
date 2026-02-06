@@ -457,6 +457,7 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
             .map(sectionId => {
               const isHeroOrContact = sectionId === 'hero' || sectionId === 'contact';
               const sectionIndex = nonHeroSections.indexOf(sectionId);
+              const useAlt = !isHeroOrContact && sectionIndex >= 0 && sectionIndex % 2 === 1;
               const rendered = renderSection(sectionId);
               if (isHeroOrContact) return rendered;
               return (
