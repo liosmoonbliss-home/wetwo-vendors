@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { notFound } from 'next/navigation';
 import { getVendorByRef } from '@/lib/vendors';
 import { resolveTheme, themeToCSSVariables } from '@/lib/themes';
