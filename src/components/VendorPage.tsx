@@ -452,20 +452,24 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
 
         {/* Sections */}
         <main>
-          {resolvedOrder
-            .filter(s => s !== 'dashboard')
-            .map(sectionId => {
-              const isHeroOrContact = sectionId === 'hero' || sectionId === 'contact';
-              const sectionIndex = nonHeroSections.indexOf(sectionId);
-              const useAlt = !isHeroOrContact && sectionIndex >= 0 && sectionIndex % 2 === 1;
-              const rendered = renderSection(sectionId);
-              if (isHeroOrContact) return rendered;
-              return (
-                <div key={sectionId} style={{ background: useAlt ? 'var(--bg-alt, #f3efe9)' : 'var(--bg, #fff)' }}>
-                  {rendered}
-                </div>
-              );
-            })}
+          {(() => {
+              let visibleIdx = 0;
+              return resolvedOrder
+                .filter(s => s !== 'dashboard')
+                .map(sectionId => {
+                  const isHeroOrContact = sectionId === 'hero' || sectionId === 'contact';
+                  const rendered = renderSection(sectionId);
+                  if (!rendered) return null;
+                  if (isHeroOrContact) return rendered;
+                  const useAlt = visibleIdx % 2 === 1;
+                  visibleIdx++;
+                  return (
+                    <div key={sectionId} style={{ background: useAlt ? 'var(--bg-alt, #f3efe9)' : 'var(--bg, #fff)' }}>
+                      {rendered}
+                    </div>
+                  );
+                });
+            })()}
         </main>
 
         {/* Footer */}
