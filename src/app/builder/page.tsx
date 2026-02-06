@@ -918,18 +918,7 @@ export default function BuilderPage() {
                             </div>
                           )}
 
-                          {/* ── EVENT TYPES EDITOR ── */}
-                          
-                              <button type="button" onClick={() => {
-                                const ets = [...(vendor.event_types || [])] as any[];
-                                ets.push({ icon: '🎉', name: '' });
-                                updateField('event_types', ets);
-                              }}
-                                style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                                + Add Event Type
-                              </button>
-                            </div>
-                          )}
+
 
                           {/* ── ABOUT / MEET EDITOR ── */}
                           {sId === ('about' as SectionId) && (
