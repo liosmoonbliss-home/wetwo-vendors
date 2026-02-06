@@ -17,6 +17,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'vendor.business_name is required' }, { status: 400 });
     }
 
+
+    // Only send fields that exist in the Supabase vendors table
+    const ALLOWED_COLUMNS = new Set([
+      'business_name','category','service_area','service_radius','email','phone',
+      'instagram_handle','website','years_in_business','price_range','bio',
+      'portfolio_images','contact_name','service_states','service_type','city','state',
+      'photo_url','ref','pricing_packages','services_included','page_active',
+      'theme_preset','brand_color','brand_color_secondary','active_sections',
+      'section_order','hero_config','event_types','testimonials','video_urls',
+      'faqs','team_members','venue_info','menu_categories','page_html','page_password',
+      'first_name','account_status','profile_completed',
+    ]);
+    const cleanVendor: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(vendor)) {
+      if (ALLOWED_COLUMNS.has(key)) cleanVendor[key] = value;
+    }
+
     // Check if vendor already exists by business_name
     const { data: existing } = await supabase
       .from('vendors')
@@ -29,7 +46,7 @@ export async function POST(req: NextRequest) {
       // Update existing
       const { data, error } = await supabase
         .from('vendors')
-        .update({ ...vendor, updated_at: new Date().toISOString() })
+        .update({ ...cleanVendor, updated_at: new Date().toISOString() })
         .eq('id', existing.id)
         .select()
         .single();
@@ -39,7 +56,7 @@ export async function POST(req: NextRequest) {
       // Insert new
       const { data, error } = await supabase
         .from('vendors')
-        .insert({ ...vendor, created_at: new Date().toISOString() })
+        .insert({ ...cleanVendor, created_at: new Date().toISOString() })
         .select()
         .single();
       if (error) throw error;
