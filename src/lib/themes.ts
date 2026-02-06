@@ -238,5 +238,5 @@ export function resolveTheme(preset?: string, brandColor?: string, brandColorSec
 
 // ── CSS VARIABLE INJECTION ────────────────────────────────────
 export function themeToCSSVariables(theme: ThemeConfig): string {
-  return `--bg:${theme.bg};--bg-card:${theme.bgCard};--bg-hover:${theme.bgHover};--primary:${theme.primary};--primary-dim:${theme.primaryDim};--secondary:${theme.secondary};--text:${theme.text};--text-muted:${theme.textMuted};--text-dim:${theme.textDim};--border:${theme.border};--mode:${theme.mode};--green:#22c55e;--green-dim:rgba(34,197,94,0.1);--blue:#3b82f6;--blue-dim:rgba(59,130,246,0.1);--red:#ef4444;--red-dim:rgba(239,68,68,0.1);--gold:#c9a050;--gold-dim:rgba(201,160,80,0.1)`;
+  return `--bg:${theme.bg};--bg-alt:${theme.mode === "dark" ? "#1a1a2e" : "#f3efe9"};--bg-card:${theme.bgCard};--bg-hover:${theme.bgHover};--primary:${theme.primary};--primary-dim:${theme.primaryDim};--secondary:${theme.secondary};--text:${theme.text};--text-muted:${theme.textMuted};--text-dim:${theme.textDim};--border:${theme.border};--mode:${theme.mode};--green:#22c55e;--green-dim:rgba(34,197,94,0.1);--blue:#3b82f6;--blue-dim:rgba(59,130,246,0.1);--red:#ef4444;--red-dim:rgba(239,68,68,0.1);--gold:#c9a050;--gold-dim:rgba(201,160,80,0.1)`;
 }
