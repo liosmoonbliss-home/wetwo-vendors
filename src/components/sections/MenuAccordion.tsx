@@ -10,7 +10,7 @@ export function MenuAccordionSection({ vendor }: { vendor: Vendor }) {
   if (cats.length === 0) return null;
 
   return (
-    <section id="menu" className="section section-alt">
+    <section id="menu" className="section">
       <div className="section-header">
         <span className="section-label">Our Menu</span>
         <h2 className="section-title">Cuisine &amp; Menus</h2>

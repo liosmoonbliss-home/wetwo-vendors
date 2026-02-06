@@ -342,8 +342,11 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
 
   const isActive = (section: SectionId) => resolvedActive.includes(section);
 
+  // Track alternating backgrounds for non-hero sections
+  const nonHeroSections = resolvedOrder.filter(s => s !== 'hero' && s !== 'contact' && isActive(s));
+
   // Map section IDs to components
-  const renderSection = (sectionId: SectionId) => {
+  const renderSection = (sectionId: SectionId, altBg?: boolean) => {
     if (!isActive(sectionId)) return null;
 
     const key = sectionId;
@@ -451,7 +454,17 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
         <main>
           {resolvedOrder
             .filter(s => s !== 'dashboard')
-            .map(sectionId => renderSection(sectionId))}
+            .map(sectionId => {
+              const isHeroOrContact = sectionId === 'hero' || sectionId === 'contact';
+              const sectionIndex = nonHeroSections.indexOf(sectionId);
+              const rendered = renderSection(sectionId);
+              if (isHeroOrContact) return rendered;
+              return (
+                <div key={sectionId} className={useAlt ? 'section-alt' : ''}>
+                  {rendered}
+                </div>
+              );
+            })}
         </main>
 
         {/* Footer */}

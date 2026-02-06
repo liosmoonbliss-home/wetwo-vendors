@@ -15,7 +15,7 @@ export function TestimonialsSection({ vendor }: Props) {
     : '';
 
   return (
-    <section id="testimonials" className="section section-alt">
+    <section id="testimonials" className="section">
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         <div className="section-header">
           <span className="section-label">Client Love</span>

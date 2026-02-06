@@ -28,8 +28,8 @@ export function PackagesSection({ vendor, variant }: Props) {
     mainPackages.length === 1 ? 'cols-1' : mainPackages.length === 2 ? 'cols-2' : 'cols-3';
 
   return (
-    <section id="packages" className="vendor-section section-alt">
-      <h2 className="section-title">Packages</h2>
+    <section id="packages" className="section">
+      <div className="section-header"><span className="section-label">Our Packages</span><h2 className="section-title">Packages</h2></div>
       <div className={`packages-grid ${colsClass}`}>
         {mainPackages.map((pkg, i) => (
           <PackageCard key={pkg.id || i} pkg={pkg} />
@@ -69,7 +69,6 @@ function PackageCard({ pkg }: { pkg: PricingPackage }) {
   return (
     <div className={`package-card${pkg.featured ? ' featured' : ''}`}>
       <div className="package-header">
-        <span className="package-icon">{pkg.icon}</span>
         <h3 className="package-name">{pkg.name}</h3>
         <div className="package-price">
           {fmtPrice(pkg.price)}
