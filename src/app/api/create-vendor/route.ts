@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       result = data;
     } else {
       // Insert new
-      const slugBase = (cleanVendor.business_name || "vendor").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+      const slugBase = ((cleanVendor.business_name as string) || "vendor").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
       const slugRand = Math.random().toString(36).slice(2, 6);
       cleanVendor.ref = `${slugBase}-${slugRand}`;
       const { data, error } = await supabase
