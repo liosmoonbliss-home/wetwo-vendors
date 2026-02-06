@@ -93,6 +93,56 @@ export default function BuilderPage() {
   const [previewScale, setPreviewScale] = useState(0.5);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
+  const [editRef, setEditRef] = useState('');
+
+  // ── Load from URL param on mount ──────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setEditRef(ref);
+      loadVendor(ref);
+    }
+  }, []);
+
+  // ── Load existing vendor for editing ──────────
+  const loadVendor = async (ref: string) => {
+    setError('');
+    setStep('analyzing');
+    try {
+      const res = await fetch(`/api/load-vendor?ref=${encodeURIComponent(ref)}`);
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Failed to load vendor'); setStep('input'); return; }
+
+      const v = data.vendor;
+      setVendor(v);
+
+      // Build image selections from existing data
+      const imgs: ImageSelection[] = (v.portfolio_images || []).map((u: string, i: number) => ({
+        url: u, isHero: i === 0 && !v.photo_url, inGallery: true,
+      }));
+      if (v.photo_url) {
+        const existingIdx = imgs.findIndex((im: ImageSelection) => im.url === v.photo_url);
+        if (existingIdx >= 0) {
+          imgs[existingIdx].isHero = true;
+        } else {
+          imgs.unshift({ url: v.photo_url, isHero: true, inGallery: false });
+        }
+        imgs.forEach((im: ImageSelection, i: number) => { if (!im.isHero || (im.isHero && im.url !== v.photo_url)) im.isHero = im.url === v.photo_url; });
+      } else if (imgs.length > 0) {
+        imgs[0].isHero = true;
+      }
+      setImages(imgs);
+
+      // Create a minimal analysis object so theme tab works
+      setAnalysis({ vendor: v, confidence: {}, themeMatch: [], suggestedSections: [], suggestedOrder: [], rawColors: [], warnings: [] });
+      setTab('info');
+      setStep('editor');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : JSON.stringify(err));
+      setStep('input');
+    }
+  };
 
   // ── Analyze ───────────────────────────────────
   const analyze = useCallback(async () => {
@@ -316,6 +366,48 @@ export default function BuilderPage() {
             <textarea placeholder="Paste HTML..." value={pasteHtml} onChange={e => setPasteHtml(e.target.value)}
               style={{ width: '100%', minHeight: '150px', padding: '0.75rem', marginTop: '0.5rem', background: S.bg2, border: `1px solid ${S.border}`, borderRadius: '10px', color: '#f0ece6', fontFamily: 'monospace', fontSize: '0.75rem', resize: 'vertical' }} />
           )}
+
+          {/* ── Edit Existing Vendor ── */}
+          <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: `1px solid ${S.border}` }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f0ece6', marginBottom: '0.5rem' }}>✏️ Edit Existing Vendor</div>
+            <p style={{ color: '#a09888', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+              Paste a vendor page URL or ref code to reload it into the builder.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <input
+                type="text"
+                placeholder="e.g. ljdjs-event-design-e-skbr or full URL"
+                value={editRef}
+                onChange={e => setEditRef(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && editRef.trim()) {
+                    const ref = editRef.trim().replace(/.*\/vendor\//, '').replace(/\?.*/, '');
+                    loadVendor(ref);
+                  }
+                }}
+                style={{ flex: 1, padding: '0.75rem 1rem', fontSize: '0.9rem', background: S.bg2, border: `2px solid ${S.border}`, borderRadius: '10px', color: '#f0ece6', outline: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (editRef.trim()) {
+                    const ref = editRef.trim().replace(/.*\/vendor\//, '').replace(/\?.*/, '');
+                    loadVendor(ref);
+                  }
+                }}
+                disabled={!editRef.trim() || step === 'analyzing'}
+                style={{
+                  padding: '0.75rem 1.5rem', fontSize: '0.9rem', fontWeight: 600,
+                  background: 'transparent', color: S.gold,
+                  border: `2px solid ${S.gold}`, borderRadius: '10px', cursor: 'pointer',
+                  opacity: !editRef.trim() || step === 'analyzing' ? 0.5 : 1,
+                }}
+              >
+                {step === 'analyzing' ? '⏳ Loading...' : '📂 Load'}
+              </button>
+            </div>
+          </div>
+
           {error && <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', color: '#ef4444', fontSize: '0.85rem' }}>{error}</div>}
         </div>
       </div>
@@ -335,10 +427,16 @@ export default function BuilderPage() {
             View Live Page →
           </a>
           <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#a09888' }}>{liveUrl}</div>
-          <button onClick={() => { setStep('input'); setUrl(''); setPasteHtml(''); setAnalysis(null); setVendor({}); setImages([]); setLiveUrl(''); }}
-            style={{ marginTop: '2rem', padding: '0.6rem 1.5rem', background: S.bg2, color: S.gold, border: `1px solid ${S.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
-            Build Another →
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '2rem' }}>
+            <button onClick={() => { setStep('editor'); setTab('info'); }}
+              style={{ padding: '0.6rem 1.5rem', background: S.bg2, color: S.gold, border: `1px solid ${S.gold}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
+              ✏️ Keep Editing
+            </button>
+            <button onClick={() => { setStep('input'); setUrl(''); setPasteHtml(''); setAnalysis(null); setVendor({}); setImages([]); setLiveUrl(''); setEditRef(''); }}
+              style={{ padding: '0.6rem 1.5rem', background: S.bg2, color: '#a09888', border: `1px solid ${S.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
+              Build Another →
+            </button>
+          </div>
         </div>
       </div>
     );

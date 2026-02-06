@@ -1,34 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+// Only these columns exist in the vendors table — anything else gets stripped
+const ALLOWED_COLUMNS = new Set([
+  'business_name','category','service_area','service_radius','email','phone',
+  'instagram_handle','website','years_in_business','price_range','bio',
+  'portfolio_images','contact_name','service_states','service_type','city','state',
+  'photo_url','ref','pricing_packages','services_included','page_active',
+  'theme_preset','brand_color','brand_color_secondary','active_sections',
+  'section_order','hero_config','event_types','testimonials','video_urls',
+  'faqs','team_members','venue_info','menu_categories','page_html','page_password',
+  'first_name','account_status','profile_completed',
+]);
 
 export async function POST(req: NextRequest) {
   try {
     if (!supabaseUrl || !supabaseServiceKey || supabaseServiceKey.includes('placeholder')) {
       return NextResponse.json({ error: 'Supabase not configured. Set SUPABASE_SERVICE_ROLE_KEY in .env.local' }, { status: 500 });
     }
-
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { vendor } = await req.json();
-
     if (!vendor || !vendor.business_name) {
       return NextResponse.json({ error: 'vendor.business_name is required' }, { status: 400 });
     }
 
-
-    // Only send fields that exist in the Supabase vendors table
-    const ALLOWED_COLUMNS = new Set([
-      'business_name','category','service_area','service_radius','email','phone',
-      'instagram_handle','website','years_in_business','price_range','bio',
-      'portfolio_images','contact_name','service_states','service_type','city','state',
-      'photo_url','ref','pricing_packages','services_included','page_active',
-      'theme_preset','brand_color','brand_color_secondary','active_sections',
-      'section_order','hero_config','event_types','testimonials','video_urls',
-      'faqs','team_members','venue_info','menu_categories','page_html','page_password',
-      'first_name','account_status','profile_completed',
-    ]);
+    // Strip any fields not in the table
     const cleanVendor: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(vendor)) {
       if (ALLOWED_COLUMNS.has(key)) cleanVendor[key] = value;
@@ -62,7 +60,6 @@ export async function POST(req: NextRequest) {
       if (error) throw error;
       result = data;
     }
-
     return NextResponse.json({
       success: true,
       ref: result.ref,
