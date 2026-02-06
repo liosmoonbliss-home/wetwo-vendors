@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Vendor, SectionId } from '@/lib/types';
+import OnboardUrl from '@/components/builder/OnboardUrl';
+import { mapOnboardToVendor } from '@/lib/mapOnboardToVendor';
 import { THEME_LIBRARY } from '@/lib/themes';
 
 // ── TYPES ─────────────────────────────────────────────────────
@@ -211,6 +213,29 @@ export default function BuilderPage() {
       setStep('input');
     }
   }, [url, pasteHtml]);
+
+  // ── Creative AI Onboarding Handler ──────────────────────────
+  const handleVendorOnboard = useCallback((claudeOutput: any) => {
+    const mapped = mapOnboardToVendor(claudeOutput);
+    const { _recommended_theme, _custom_brand_color, _creative_notes, ...vendorFields } = mapped;
+    
+    // Populate vendor state with Claude creative output
+    setVendor(prev => ({ ...prev, ...vendorFields }) as Partial<Vendor>);
+    
+    // Build image selections from Claude suggestions
+    const imgs: ImageSelection[] = mapped.portfolio_images.map((u: string, i: number) => ({
+      url: u, isHero: i === 0, inGallery: true,
+    }));
+    setImages(imgs);
+    
+    // Log creative direction
+    if (_creative_notes) console.log("🎨 Creative Direction:", _creative_notes);
+    if (_recommended_theme) console.log("🎨 Recommended theme:", _recommended_theme);
+    
+    // Jump to editor
+    setTab("images");
+    setStep("editor");
+  }, []);
 
   // ── Build final vendor payload ─────────────────
   const buildFinalVendor = useCallback(() => {
@@ -444,6 +469,10 @@ export default function BuilderPage() {
               style={{ width: '100%', minHeight: '150px', padding: '0.75rem', marginTop: '0.5rem', background: S.bg2, border: `1px solid ${S.border}`, borderRadius: '10px', color: '#f0ece6', fontFamily: 'monospace', fontSize: '0.75rem', resize: 'vertical' }} />
           )}
 
+          {/* ── AI Creative Onboarding ── */}
+          <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: `1px solid ${S.border}` }}>
+            <OnboardUrl onVendorReady={handleVendorOnboard} />
+          </div>
           {/* ── Edit Existing Vendor ── */}
           <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: `1px solid ${S.border}` }}>
             <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f0ece6', marginBottom: '0.5rem' }}>✏️ Edit Existing Vendor</div>

@@ -12,6 +12,7 @@ const ALLOWED_COLUMNS = new Set([
   'theme_preset','brand_color','brand_color_secondary','active_sections',
   'section_order','hero_config','event_types','testimonials','video_urls',
   'faqs','team_members','venue_info','menu_categories','page_html','page_password',
+  'trust_badges','tagline','description','vendor_category','vendor_category_icon','about_bio','about_highlights',
   'first_name','account_status','profile_completed',
 ]);
 
