@@ -29,6 +29,7 @@ interface ImageSelection {
 
 const ALL_SECTIONS: { id: SectionId; label: string; icon: string; description: string }[] = [
   { id: 'hero', label: 'Hero', icon: '🏠', description: 'Full-width hero banner with headline and CTA buttons' },
+  { id: 'about' as SectionId, label: 'About / Meet', icon: '👋', description: 'Photo, bio, and role title' },
   { id: 'gallery', label: 'Gallery', icon: '🖼️', description: 'Portfolio image grid showcasing work' },
   { id: 'packages', label: 'Packages', icon: '💰', description: 'Pricing cards with features and booking' },
   { id: 'services_list', label: 'Services', icon: '✨', description: 'List of services offered' },
@@ -829,8 +830,36 @@ export default function BuilderPage() {
                             </div>
                           )}
 
+                          {/* ── ABOUT / MEET EDITOR ── */}
+                          {sId === ('about' as SectionId) && (
+                            <div>
+                              <div style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem', border: `1px solid ${S.border}` }}>
+                                <div style={{ marginBottom: '0.4rem' }}>
+                                  <div style={S.fieldLabel}>Contact / Owner Name</div>
+                                  <input value={vendor.contact_name || ''} onChange={e => updateField('contact_name', e.target.value)} placeholder="First Last" style={S.fieldInput} />
+                                </div>
+                                <div style={{ marginBottom: '0.4rem' }}>
+                                  <div style={S.fieldLabel}>Photo URL (portrait / headshot)</div>
+                                  <input value={vendor.photo_url || ''} onChange={e => updateField('photo_url', e.target.value)} placeholder="https://..." style={S.fieldInput} />
+                                </div>
+                                {vendor.photo_url && (
+                                  <div style={{ marginBottom: '0.4rem', borderRadius: '6px', overflow: 'hidden', maxHeight: '100px', maxWidth: '80px' }}>
+                                    <img src={vendor.photo_url} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  </div>
+                                )}
+                                <div>
+                                  <div style={S.fieldLabel}>Bio</div>
+                                  <textarea value={vendor.bio || ''} onChange={e => updateField('bio', e.target.value)} placeholder="Tell your story..." rows={4} style={S.fieldTextarea} />
+                                </div>
+                              </div>
+                              <div style={{ fontSize: '0.65rem', color: S.dim, marginTop: '0.25rem' }}>
+                                Category and services also appear here — edit them in the Info and Services sections.
+                              </div>
+                            </div>
+                          )}
+
                           {/* Generic message for sections without editors */}
-                          {!['packages', 'services_list', 'menu_accordion', 'faq', 'testimonials', 'event_types'].includes(sId) && (
+                          {!['packages', 'services_list', 'menu_accordion', 'faq', 'testimonials', 'event_types', 'about'].includes(sId as string) && (
                             <div style={{ fontSize: '0.75rem', color: S.dim, textAlign: 'center', padding: '0.5rem' }}>
                               This section is configured from other tabs or displays automatically.
                             </div>
@@ -1056,38 +1085,39 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                   <div style={{ background: 'linear-gradient(135deg, #00d084, #00b37a)', color: '#fff', textAlign: 'center', padding: '0.5rem', fontSize: '0.8rem' }}>
                     ✨ Shop with us and get 25% cashback on everything — wedding registries, home, fashion &amp; more — Unlock Cashback →
                   </div>
-                  {/* About / Meet section — auto from bio + photo */}
-                  {(vendor.photo_url || heroImage || (vendor.bio && vendor.bio.length >= 80)) && (
-                    <div style={{ padding: '3rem 2rem', background: bg }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: (vendor.photo_url || heroImage) ? '1fr 1.5fr' : '1fr', gap: '2rem', maxWidth: '800px', margin: '0 auto', alignItems: 'center' }}>
-                        {(vendor.photo_url || heroImage) && (
-                          <div style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '3/4', maxHeight: '300px' }}>
-                            <img src={vendor.photo_url || heroImage} alt={vendor.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                          </div>
-                        )}
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
-                            Meet {(vendor.contact_name || vendor.business_name || '').split(' ')[0]}
-                          </div>
-                          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-                            {vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director'}
-                          </h2>
-                          {vendor.bio && vendor.bio.split('\n').map((p: string, i: number) => (
-                            <p key={i} style={{ fontSize: '0.85rem', color: textMuted, lineHeight: 1.6, marginBottom: '0.5rem' }}>{p}</p>
-                          ))}
-                          {(vendor.services_included || []).length > 0 && (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginTop: '0.75rem' }}>
-                              {(vendor.services_included || []).slice(0, 4).map((s: any, i: number) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.6rem', background: bgCard, borderRadius: '6px', border: `1px solid ${theme?.border || '#e5e1dc'}`, fontSize: '0.8rem' }}>
-                                  <span>{s.icon || '✨'}</span> <span>{s.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                </div>
+              );
+
+            case 'about' as SectionId:
+              return (
+                <div key="about" style={{ padding: '3rem 2rem', background: bg }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: (vendor.photo_url || heroImage) ? '1fr 1.5fr' : '1fr', gap: '2rem', maxWidth: '800px', margin: '0 auto', alignItems: 'center' }}>
+                    {(vendor.photo_url || heroImage) && (
+                      <div style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '3/4', maxHeight: '300px' }}>
+                        <img src={vendor.photo_url || heroImage} alt={vendor.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       </div>
+                    )}
+                    <div>
+                      <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
+                        Meet {(vendor.contact_name || vendor.business_name || '').split(' ')[0]}
+                      </div>
+                      <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+                        {vendor.category ? getCategoryTitle(vendor.category) : 'Owner & Creative Director'}
+                      </h2>
+                      {vendor.bio && vendor.bio.split('\n').map((p: string, i: number) => (
+                        <p key={i} style={{ fontSize: '0.85rem', color: textMuted, lineHeight: 1.6, marginBottom: '0.5rem' }}>{p}</p>
+                      ))}
+                      {(vendor.services_included || []).length > 0 && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginTop: '0.75rem' }}>
+                          {(vendor.services_included || []).slice(0, 4).map((s: any, i: number) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.6rem', background: bgCard, borderRadius: '6px', border: `1px solid ${theme?.border || '#e5e1dc'}`, fontSize: '0.8rem' }}>
+                              <span>{s.icon || '✨'}</span> <span>{s.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               );
 
