@@ -220,7 +220,7 @@ export default function BuilderPage() {
     const { _recommended_theme, _custom_brand_color, _creative_notes, ...vendorFields } = mapped;
     
     // Populate vendor state with Claude creative output
-    setVendor(prev => ({ ...prev, ...vendorFields }) as Partial<Vendor>);
+    setVendor(prev => ({ ...prev, ...vendorFields } as unknown as Partial<Vendor>));
     
     // Build image selections from Claude suggestions
     const imgs: ImageSelection[] = mapped.portfolio_images.map((u: string, i: number) => ({

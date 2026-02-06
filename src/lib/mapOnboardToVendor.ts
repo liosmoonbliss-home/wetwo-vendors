@@ -46,8 +46,10 @@ export function mapOnboardToVendor(claude: ClaudeOutput) {
   }));
 
   // Normalize packages → pricing_packages (builder field name)
-  const pricing_packages = (claude.packages || []).map((p) => ({
+  const pricing_packages = (claude.packages || []).map((p, i) => ({
     name: p.name || '',
+    id: `pkg-${i}`,
+    icon: '📦',
     price: p.price || 'Contact for Pricing',
     description: p.description || '',
     features: Array.isArray(p.features) ? p.features.filter((f: string) => f?.trim()) : [],
