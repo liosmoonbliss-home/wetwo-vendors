@@ -783,9 +783,12 @@ export default function BuilderPage() {
                           {sId === 'services_list' && (
                             <div>
                               {(vendor.services_included || []).map((svc: any, si: number) => (
-                                <div key={si} style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.35rem', alignItems: 'center' }}>
-                                  <input value={svc?.name || ''} onChange={e => updateService(si, e.target.value)} placeholder="Service name..." style={{ ...S.fieldInput, flex: 1 }} />
-                                  <button type="button" onClick={() => removeService(si)} style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}>✕</button>
+                                <div key={si} style={{ background: '#141420', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem', border: `1px solid ${S.border}` }}>
+                                  <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.35rem', alignItems: 'center' }}>
+                                    <input value={svc?.name || ''} onChange={e => { const svcs = [...(vendor.services_included || [])]; svcs[si] = { ...svcs[si], name: e.target.value }; updateField('services_included', svcs); }} placeholder="Service name..." style={{ ...S.fieldInput, flex: 1 }} />
+                                    <button type="button" onClick={() => removeService(si)} style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}>✕</button>
+                                  </div>
+                                  <textarea value={svc?.description || ''} onChange={e => { const svcs = [...(vendor.services_included || [])]; svcs[si] = { ...svcs[si], description: e.target.value }; updateField('services_included', svcs); }} placeholder="Brief description (optional)..." rows={2} style={{ ...S.fieldInput, resize: 'vertical', fontSize: '0.75rem' }} />
                                 </div>
                               ))}
                               <button type="button" onClick={addService}
