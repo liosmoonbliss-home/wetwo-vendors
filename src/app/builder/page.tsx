@@ -732,12 +732,12 @@ export default function BuilderPage() {
                               <div style={S.fieldLabel}>Event Types (shown above photos)</div>
                               {(vendor.event_types || []).map((evt: any, ei: number) => (
                                 <div key={ei} style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.35rem', alignItems: 'center' }}>
-                                  <input value={evt?.icon || '\u{1F389}'} onChange={e => { const evts = [...(vendor.event_types || [])]; evts[ei] = { ...evts[ei], icon: e.target.value }; updateField('event_types', evts); }} style={{ ...S.fieldInput, width: '40px', textAlign: 'center' }} />
+                                  <input value={evt?.icon || '🎉'} onChange={e => { const evts = [...(vendor.event_types || [])]; evts[ei] = { ...evts[ei], icon: e.target.value }; updateField('event_types', evts); }} style={{ ...S.fieldInput, width: '40px', textAlign: 'center' }} />
                                   <input value={evt?.name || ''} onChange={e => { const evts = [...(vendor.event_types || [])]; evts[ei] = { ...evts[ei], name: e.target.value }; updateField('event_types', evts); }} placeholder="Event type..." style={{ ...S.fieldInput, flex: 1 }} />
-                                  <button type="button" onClick={() => { const evts = [...(vendor.event_types || [])]; evts.splice(ei, 1); updateField('event_types', evts); }} style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}>\u2715</button>
+                                  <button type="button" onClick={() => { const evts = [...(vendor.event_types || [])]; evts.splice(ei, 1); updateField('event_types', evts); }} style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}>✕</button>
                                 </div>
                               ))}
-                              <button type="button" onClick={() => { const evts = [...(vendor.event_types || [])]; evts.push({ icon: '\u{1F389}', name: '' }); updateField('event_types', evts); }}
+                              <button type="button" onClick={() => { const evts = [...(vendor.event_types || [])]; evts.push({ icon: '🎉', name: '' }); updateField('event_types', evts); }}
                                 style={{ width: '100%', padding: '0.5rem', background: 'transparent', border: `1px dashed ${S.gold}`, borderRadius: '8px', color: S.gold, cursor: 'pointer', fontSize: '0.8rem', marginTop: '0.25rem' }}>
                                 + Add Event Type
                               </button>
