@@ -13,7 +13,7 @@ const ALLOWED_COLUMNS = new Set([
   'section_order','hero_config','event_types','testimonials','video_urls',
   'faqs','team_members','venue_info','menu_categories','page_html','page_password',
   
-  'first_name','account_status','profile_completed',
+  'ref','first_name','account_status','profile_completed',
 ]);
 
 export async function POST(req: NextRequest) {
@@ -68,6 +68,9 @@ export async function POST(req: NextRequest) {
       result = data;
     } else {
       // Insert new
+      const slugBase = (cleanVendor.business_name || "vendor").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+      const slugRand = Math.random().toString(36).slice(2, 6);
+      cleanVendor.ref = `${slugBase}-${slugRand}`;
       const { data, error } = await supabase
         .from('vendors')
         .insert({ ...cleanVendor, created_at: new Date().toISOString() })
