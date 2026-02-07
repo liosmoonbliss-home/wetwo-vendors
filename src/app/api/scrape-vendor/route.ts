@@ -1,51 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
 export const maxDuration = 30;
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
     const { url } = await req.json();
-
-    if (!url || typeof url !== 'string') {
+    if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
-    let normalizedUrl = url.trim();
-    if (!normalizedUrl.startsWith('http')) {
-      normalizedUrl = 'https://' + normalizedUrl;
-    }
+    let fetchUrl = url.trim();
+    if (!fetchUrl.startsWith('http')) fetchUrl = 'https://' + fetchUrl;
 
-    const response = await fetch(normalizedUrl, {
+    const response = await fetch(fetchUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; WeTwo Vendor Builder/1.0)',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         Accept: 'text/html,application/xhtml+xml',
       },
       redirect: 'follow',
     });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: `Failed to fetch: ${response.status} ${response.statusText}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Failed to fetch: ${response.status}` }, { status: 502 });
     }
 
     const html = await response.text();
+    const title = extractTitle(html);
+    const metaDescription = extractMetaDescription(html);
+    const textContent = extractTextContent(html);
+    const rawImages = extractImages(html, fetchUrl);
+    const images = deduplicateImages(rawImages);
+    const brandColors = extractBrandColors(html);
+    const socialLinks = extractSocialLinks(html);
+    const contactInfo = extractContactInfo(html);
+    const structuredData = extractJsonLd(html);
 
-    const result = {
-      url: normalizedUrl,
-      title: extractTitle(html),
-      metaDescription: extractMeta(html, 'description'),
-      ogImage: extractMeta(html, 'og:image'),
-      textContent: extractTextContent(html),
-      images: extractImages(html, normalizedUrl),
-      brandColors: extractBrandColors(html),
-      socialLinks: extractSocialLinks(html),
-      contactInfo: extractContactInfo(html),
-      structuredData: extractJsonLd(html),
-    };
-
-    return NextResponse.json(result);
+    return NextResponse.json({
+      success: true,
+      data: {
+        url: fetchUrl, title, metaDescription,
+        textContent: textContent.slice(0, 10000),
+        images, brandColors, socialLinks, contactInfo, structuredData,
+      },
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Scrape failed';
     console.error('Scrape error:', message);
@@ -53,130 +52,124 @@ export async function POST(req: NextRequest) {
   }
 }
 
+function deduplicateImages(images: string[]): string[] {
+  const baseMap = new Map<string, string[]>();
+  for (const img of images) {
+    try {
+      const parsed = new URL(img);
+      const base = parsed.origin + parsed.pathname;
+      if (!baseMap.has(base)) baseMap.set(base, []);
+      baseMap.get(base)!.push(img);
+    } catch {
+      baseMap.set(img, [img]);
+    }
+  }
+  const deduped: string[] = [];
+  for (const [, variants] of baseMap) {
+    const best = variants.reduce((a, b) => {
+      const aW = extractWidthParam(a);
+      const bW = extractWidthParam(b);
+      if (aW && bW) return aW > bW ? a : b;
+      if (aW) return a;
+      if (bW) return b;
+      return a.length >= b.length ? a : b;
+    });
+    deduped.push(best);
+  }
+  return deduped;
+}
+
+function extractWidthParam(url: string): number | null {
+  try {
+    const parsed = new URL(url);
+    const w = parsed.searchParams.get('w') || parsed.searchParams.get('width') || parsed.searchParams.get('size');
+    if (w) { const n = parseInt(w, 10); return isNaN(n) ? null : n; }
+    const pathMatch = url.match(/[/._-]w[_-]?(\d+)/i);
+    if (pathMatch) return parseInt(pathMatch[1], 10);
+    return null;
+  } catch { return null; }
+}
+
 function extractTitle(html: string): string {
   const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   return match ? decodeEntities(match[1].trim()) : '';
 }
 
-function extractMeta(html: string, name: string): string {
-  const propMatch = html.match(
-    new RegExp(`<meta[^>]*property=["']${name}["'][^>]*content=["']([^"']*)["']`, 'i')
-  );
-  if (propMatch) return propMatch[1];
-
-  const nameMatch = html.match(
-    new RegExp(`<meta[^>]*name=["']${name}["'][^>]*content=["']([^"']*)["']`, 'i')
-  );
-  if (nameMatch) return nameMatch[1];
-
-  const revMatch = html.match(
-    new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*(?:name|property)=["']${name}["']`, 'i')
-  );
-  return revMatch ? revMatch[1] : '';
+function extractMetaDescription(html: string): string {
+  const match = html.match(/<meta[^>]*name=["']description["'][^>]*content=["'](.*?)["']/i);
+  return match ? decodeEntities(match[1].trim()) : '';
 }
 
 function extractTextContent(html: string): string {
   let text = html
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<nav[\s\S]*?<\/nav>/gi, ' ')
-    .replace(/<footer[\s\S]*?<\/footer>/gi, ' ')
-    .replace(/<!--[\s\S]*?-->/g, ' ');
-
-  text = text
-    .replace(/<\/?(h[1-6]|p|div|section|article|li|br|tr)[^>]*>/gi, '\n')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+    .replace(/<footer[\s\S]*?<\/footer>/gi, '')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#?\w+;/g, ' ');
-
+    .replace(/\s+/g, ' ')
+    .trim();
   text = text
-    .split('\n')
-    .map((line) => line.replace(/\s+/g, ' ').trim())
-    .filter((line) => line.length > 2)
-    .join('\n');
-
-  return text.slice(0, 8000);
+    .replace(/cookie[s]?\s*(policy|consent|notice)/gi, '')
+    .replace(/accept\s*all\s*cookies/gi, '')
+    .replace(/privacy\s*policy/gi, '');
+  return text;
 }
 
 function extractImages(html: string, baseUrl: string): string[] {
   const images: string[] = [];
   const seen = new Set<string>();
 
-  const ogImage = extractMeta(html, 'og:image');
-  if (ogImage) {
-    const resolved = resolveUrl(ogImage, baseUrl);
-    if (resolved) { images.push(resolved); seen.add(resolved); }
-  }
-
-  const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*/gi;
-  let match;
-  while ((match = imgRegex.exec(html)) !== null) {
+  const imgMatches = html.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*/gi);
+  for (const match of imgMatches) {
     const src = match[1];
-    if (src.includes('1x1') || src.includes('pixel') || src.includes('favicon') ||
-        src.includes('.svg') || src.includes('data:image') || src.includes('gravatar')) continue;
+    if (src.includes('1x1') || src.includes('pixel') || src.includes('.svg') || src.includes('.ico') || src.includes('data:image') || src.includes('facebook.com') || src.includes('google-analytics') || src.length < 10) continue;
+    const widthAttr = match[0].match(/width=["']?(\d+)/i);
+    if (widthAttr && parseInt(widthAttr[1], 10) < 80) continue;
+    const heightAttr = match[0].match(/height=["']?(\d+)/i);
+    if (heightAttr && parseInt(heightAttr[1], 10) < 80) continue;
     const resolved = resolveUrl(src, baseUrl);
-    if (resolved && !seen.has(resolved)) { images.push(resolved); seen.add(resolved); }
+    if (resolved && !seen.has(resolved)) { seen.add(resolved); images.push(resolved); }
   }
 
-  const bgRegex = /background-image:\s*url\(["']?([^"')]+)["']?\)/gi;
-  while ((match = bgRegex.exec(html)) !== null) {
+  const bgMatches = html.matchAll(/background(?:-image)?:\s*url\(['"]?([^'")\s]+)['"]?\)/gi);
+  for (const match of bgMatches) {
     const resolved = resolveUrl(match[1], baseUrl);
-    if (resolved && !seen.has(resolved)) { images.push(resolved); seen.add(resolved); }
+    if (resolved && !seen.has(resolved)) { seen.add(resolved); images.push(resolved); }
   }
 
-  const srcsetRegex = /srcset=["']([^"']+)["']/gi;
-  while ((match = srcsetRegex.exec(html)) !== null) {
-    const sources = match[1].split(',');
-    for (const source of sources) {
-      const srcUrl = source.trim().split(/\s+/)[0];
-      if (srcUrl) {
-        const resolved = resolveUrl(srcUrl, baseUrl);
-        if (resolved && !seen.has(resolved)) { images.push(resolved); seen.add(resolved); }
-      }
-    }
+  const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+  if (ogMatch) {
+    const resolved = resolveUrl(ogMatch[1], baseUrl);
+    if (resolved && !seen.has(resolved)) { seen.add(resolved); images.unshift(resolved); }
   }
 
-  return images.slice(0, 30);
+  return images;
 }
 
 function extractBrandColors(html: string): string[] {
   const colors = new Set<string>();
-
-  const themeColor = extractMeta(html, 'theme-color');
-  if (themeColor) colors.add(themeColor);
-
-  const hexRegex = /#([0-9a-fA-F]{6})\b/g;
-  let match;
-  const styleContent = html.match(/<style[\s\S]*?<\/style>/gi) || [];
-  const styleText = styleContent.join(' ');
-
-  while ((match = hexRegex.exec(styleText)) !== null) {
-    const hex = `#${match[1]}`;
-    if (!isBoringColor(hex)) colors.add(hex);
-  }
-
-  return Array.from(colors).slice(0, 5);
+  const themeMatch = html.match(/<meta[^>]*name=["']theme-color["'][^>]*content=["'](#[0-9a-fA-F]{3,8})["']/i);
+  if (themeMatch) colors.add(themeMatch[1]);
+  const cssVarMatches = html.matchAll(/--[a-zA-Z-]*(?:color|brand|primary|accent)[a-zA-Z-]*:\s*(#[0-9a-fA-F]{3,8})/gi);
+  for (const match of cssVarMatches) { if (!isBoringColor(match[1])) colors.add(match[1]); }
+  return [...colors].slice(0, 6);
 }
 
 function extractSocialLinks(html: string): Record<string, string> {
   const social: Record<string, string> = {};
   const patterns: [string, RegExp][] = [
-    ['instagram', /https?:\/\/(www\.)?instagram\.com\/[^\s"'<>]+/gi],
-    ['facebook', /https?:\/\/(www\.)?facebook\.com\/[^\s"'<>]+/gi],
-    ['tiktok', /https?:\/\/(www\.)?tiktok\.com\/@[^\s"'<>]+/gi],
-    ['youtube', /https?:\/\/(www\.)?youtube\.com\/[^\s"'<>]+/gi],
-    ['pinterest', /https?:\/\/(www\.)?pinterest\.com\/[^\s"'<>]+/gi],
-    ['twitter', /https?:\/\/(www\.)?(twitter|x)\.com\/[^\s"'<>]+/gi],
+    ['instagram', /https?:\/\/(?:www\.)?instagram\.com\/[a-zA-Z0-9._]+/i],
+    ['facebook', /https?:\/\/(?:www\.)?facebook\.com\/[a-zA-Z0-9.]+/i],
+    ['tiktok', /https?:\/\/(?:www\.)?tiktok\.com\/@[a-zA-Z0-9._]+/i],
+    ['youtube', /https?:\/\/(?:www\.)?youtube\.com\/(?:@|channel\/|c\/)[a-zA-Z0-9._-]+/i],
+    ['twitter', /https?:\/\/(?:www\.)?(?:twitter|x)\.com\/[a-zA-Z0-9_]+/i],
+    ['pinterest', /https?:\/\/(?:www\.)?pinterest\.com\/[a-zA-Z0-9._]+/i],
   ];
-
-  for (const [name, regex] of patterns) {
+  for (const [platform, regex] of patterns) {
     const match = html.match(regex);
-    if (match) social[name] = match[0].replace(/["'<>]/g, '');
+    if (match) social[platform] = match[0];
   }
-
   return social;
 }
 
@@ -207,9 +200,11 @@ function resolveUrl(src: string, baseUrl: string): string | null {
 }
 
 function isBoringColor(hex: string): boolean {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
   if (r > 230 && g > 230 && b > 230) return true;
   if (r < 30 && g < 30 && b < 30) return true;
   if (Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && Math.abs(r - b) < 15) return true;

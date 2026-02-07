@@ -216,21 +216,24 @@ export default function BuilderPage() {
 
   // ── Creative AI Onboarding Handler ──────────────────────────
   const handleVendorOnboard = useCallback((claudeOutput: any) => {
-    const mapped = mapOnboardToVendor(claudeOutput);
-    const { _recommended_theme, _custom_brand_color, _creative_notes, ...vendorFields } = mapped;
+    const result = mapOnboardToVendor(claudeOutput);
     
     // Populate vendor state with Claude creative output
-    setVendor(prev => ({ ...prev, ...vendorFields } as unknown as Partial<Vendor>));
+    setVendor(prev => ({ ...prev, ...result.vendor } as Partial<Vendor>));
     
     // Build image selections from Claude suggestions
-    const imgs: ImageSelection[] = mapped.portfolio_images.map((u: string, i: number) => ({
-      url: u, isHero: i === 0, inGallery: true,
+    const imgs: ImageSelection[] = result.images.map((img, i) => ({
+      url: img.url, isHero: i === 0, inGallery: true,
     }));
     setImages(imgs);
     
-    // Log creative direction
-    if (_creative_notes) console.log("🎨 Creative Direction:", _creative_notes);
-    if (_recommended_theme) console.log("🎨 Recommended theme:", _recommended_theme);
+    // Auto-apply theme
+    if (result.theme) {
+      console.log("Theme auto-applied:", result.theme.preset);
+    }
+    if (result.designNotes) {
+      console.log("Creative Direction:", result.designNotes);
+    }
     
     // Jump to editor
     setTab("images");

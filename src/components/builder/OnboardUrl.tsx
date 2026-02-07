@@ -85,7 +85,7 @@ export default function OnboardUrl({ onVendorReady }: OnboardUrlProps) {
       const onboardRes = await fetch('/api/onboard-vendor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scrapedData }),
+        body: JSON.stringify({ scrapedData: scrapedData.data }),
       });
 
       setProgress(85);
@@ -98,7 +98,7 @@ export default function OnboardUrl({ onVendorReady }: OnboardUrlProps) {
       const { vendor } = await onboardRes.json();
       setProgress(100);
       setStage('done');
-      setCreativeNotes(vendor.creative_notes || '');
+      setCreativeNotes(vendor.design_notes || vendor.creative_notes || '');
 
       onVendorReady(vendor);
     } catch (err: unknown) {

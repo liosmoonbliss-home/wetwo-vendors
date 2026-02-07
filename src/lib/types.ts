@@ -104,6 +104,13 @@ export interface HeroConfig {
   backgroundImage?: string;
   buttons?: HeroButton[];
   infoItems?: HeroInfoItem[];
+  // Freestyle hero fields (set by Claude creative engine)
+  heroStyle?: string;
+  accentWord?: string;
+  heroTypography?: string;
+  heroMood?: string;
+  about_photo?: string;
+  about_title?: string;
 }
 
 export interface HeroButton {
@@ -153,6 +160,7 @@ export interface Vendor {
   faqs?: FAQItem[];
   team_members?: TeamMember[];
   venue_info?: VenueInfo;
+  trust_badges?: Array<{ icon: string; text: string }>;
   menu_categories?: MenuCategory[];
   created_at?: string;
   updated_at?: string;

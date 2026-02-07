@@ -1,0 +1,187 @@
+/* ============================================================
+   Hero Styles — Freestyle Layout System
+   Split, stacked, cinematic, asymmetric + trust badges
+   ============================================================ */
+
+/* ─── SPLIT LAYOUT ─── */
+.hero-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+.hero-split-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 120px 60px 80px;
+}
+.hero-split-text .hero-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+.hero-split-text h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 500;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.hero-split-text h1 em {
+  font-style: italic;
+}
+.hero-split-text .hero-subheadline {
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 440px;
+  margin-bottom: 28px;
+}
+.hero-split-text .hero-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.hero-split-image {
+  background-size: cover;
+  background-position: center;
+  min-height: 400px;
+}
+
+/* ─── STACKED LAYOUT ─── */
+.hero-stacked-layout {
+  display: flex;
+  flex-direction: column;
+}
+.hero-stacked-image {
+  height: 50vh;
+  min-height: 350px;
+  background-size: cover;
+  background-position: center;
+}
+.hero-stacked-text {
+  padding: 48px 40px 60px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-stacked-text .hero-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.hero-stacked-text h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 500;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.hero-stacked-text h1 em { font-style: italic; }
+.hero-stacked-text .hero-subheadline {
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 600px;
+  margin: 0 auto 28px;
+}
+.hero-stacked-text .hero-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ─── CINEMATIC LAYOUT ─── */
+.hero-cinematic-layout {
+  min-height: 100vh;
+  align-items: flex-end !important;
+}
+.hero-cinematic-layout .hero-content {
+  text-align: left;
+  max-width: 900px;
+  padding-bottom: 60px;
+}
+.hero-cinematic-layout .hero-buttons {
+  justify-content: flex-start;
+}
+
+/* ─── ASYMMETRIC LAYOUT ─── */
+.hero-asymmetric-layout .hero-content {
+  text-align: left;
+  max-width: 550px;
+  margin-right: auto;
+}
+.hero-asymmetric-layout .hero-buttons {
+  justify-content: flex-start;
+}
+
+/* ─── TRUST BADGES ─── */
+.hero-trust-badges {
+  margin-top: 32px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-split-text .hero-trust-badges,
+.hero-cinematic-layout .hero-trust-badges,
+.hero-asymmetric-layout .hero-trust-badges {
+  justify-content: flex-start;
+}
+.trust-badge-pill {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.hero-split-text .trust-badge-pill {
+  color: inherit;
+  opacity: 0.6;
+}
+
+/* ─── GRAND style refinements ─── */
+.hero-grand h1 {
+  letter-spacing: 0.015em;
+}
+
+/* ─── MINIMAL style refinements ─── */
+.hero-minimal .hero-content {
+  max-width: 650px;
+}
+
+/* ─── Responsive: Split stacks on mobile ─── */
+@media (max-width: 768px) {
+  .hero-split-layout {
+    grid-template-columns: 1fr;
+  }
+  .hero-split-text {
+    padding: 100px 24px 40px;
+    order: 2;
+  }
+  .hero-split-image {
+    min-height: 280px;
+    order: 1;
+  }
+  .hero-stacked-image {
+    height: 40vh;
+    min-height: 250px;
+  }
+  .hero-stacked-text {
+    padding: 32px 20px 48px;
+  }
+  .hero-cinematic-layout .hero-content,
+  .hero-asymmetric-layout .hero-content {
+    max-width: 100%;
+    padding: 0 20px 40px;
+  }
+  .hero-trust-badges {
+    gap: 10px;
+  }
+}

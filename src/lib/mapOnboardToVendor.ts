@@ -1,123 +1,163 @@
-interface ClaudeOutput {
-  business_name: string;
-  tagline: string;
-  accent_word: string;
-  hero_style: string;
-  description: string;
-  vendor_category: string;
-  vendor_category_icon: string;
-  recommended_theme: string;
-  custom_brand_color: string | null;
-  trust_badges: Array<{ icon: string; text: string }>;
-  about_title: string;
-  about_bio: string;
-  about_highlights: Array<{ icon: string; name: string; description: string }>;
-  services: Array<{ icon: string; name: string; description: string }>;
-  packages: Array<{ name: string; price: string; description: string; features: string[] }>;
-  event_types: Array<{ icon: string; name: string }>;
-  contact_info: Record<string, string | null>;
-  suggested_hero_image: string;
-  suggested_about_image: string;
-  suggested_gallery_images: string[];
-  menu_categories: Array<{ name: string; subtitle: string; items: unknown[] }>;
-  creative_notes: string;
+// ============================================================
+// mapOnboardToVendor.ts
+// ============================================================
+// Translates Claude's creative output into builder state.
+// Handles theme auto-apply + section auto-activation.
+// ============================================================
+
+import type { Vendor, SectionId } from './types';
+
+const VALID_PRESETS = new Set([
+  'midnight-gold', 'dark-royal', 'dark-luxury', 'dark-forest',
+  'warm-copper', 'blush-romance', 'soft-sage', 'light-champagne',
+  'light-clean', 'ocean-breeze', 'sunset-glow', 'earth-tone',
+  'modern-mono', 'bright-coral', 'deep-plum', 'dusty-rose',
+  'terracotta', 'lavender-haze', 'ice-blue', 'noir',
+]);
+
+export interface OnboardResult {
+  vendor: Partial<Vendor>;
+  images: { url: string; selected: boolean }[];
+  theme: {
+    preset: string;
+    primaryColor: string;
+    secondaryColor: string;
+    mood: string;
+  } | null;
+  designNotes: string;
 }
 
-export function mapOnboardToVendor(claude: ClaudeOutput) {
-  // Build portfolio_images array (what the builder expects)
-  const portfolio_images: string[] = [];
-  if (claude.suggested_hero_image) portfolio_images.push(claude.suggested_hero_image);
-  if (claude.suggested_about_image && !portfolio_images.includes(claude.suggested_about_image)) {
-    portfolio_images.push(claude.suggested_about_image);
-  }
-  if (claude.suggested_gallery_images) {
-    for (const img of claude.suggested_gallery_images) {
-      if (!portfolio_images.includes(img)) portfolio_images.push(img);
-    }
-  }
+export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): OnboardResult {
+  const c = claudeOutput;
 
-  const contact = claude.contact_info || {};
-
-  // Normalize services → services_included (builder field name)
-  const services_included = (claude.services || []).map((s) => ({
-    icon: s.icon || '✦',
-    name: s.name || '',
-    description: s.description || '',
-  }));
-
-  // Normalize packages → pricing_packages (builder field name)
-  const pricing_packages = (claude.packages || []).map((p, i) => ({
-    name: p.name || '',
-    id: `pkg-${i}`,
-    icon: '📦',
-    price: p.price || 'Contact for Pricing',
-    description: p.description || '',
-    features: Array.isArray(p.features) ? p.features.filter((f: string) => f?.trim()) : [],
-  }));
-
-  const about_highlights = (claude.about_highlights || []).map((h) => ({
-    icon: h.icon || '✦',
-    name: h.name || '',
-    description: h.description || '',
-  }));
-
-  const event_types = (claude.event_types || []).map((e) => ({
-    icon: e.icon || '🎉',
-    name: e.name || '',
-  }));
-
-  const menu_categories = (claude.menu_categories || []).map((m) => ({
-    name: m.name || '',
-    subtitle: m.subtitle || '',
-    icon: '📋',
-    imageUrl: '',
-    items: Array.isArray(m.items) ? m.items : [],
-  }));
-
-  const trust_badges = (claude.trust_badges || []).map((b) => ({
-    icon: b.icon || '✦',
-    text: b.text || '',
-  }));
-
-  return {
-    // Core identity — using BUILDER field names
-    business_name: claude.business_name || '',
-    category: claude.vendor_category || '',
-    bio: claude.about_bio || '',
-
-    // Hero config — headline, subheadline, badge are what the builder reads
-    hero_config: {
-      backgroundImage: claude.suggested_hero_image || portfolio_images[0] || '',
-      about_photo: claude.suggested_about_image || portfolio_images[1] || '',
-      about_title: claude.about_title || '',
-      headline: claude.tagline || '',
-      subheadline: claude.description || '',
-      badge: `${claude.vendor_category_icon || '✨'} ${claude.vendor_category || ''}`.trim(),
-      heroStyle: claude.hero_style || 'classic',
-      accentWord: claude.accent_word || '',
-    },
-
-    // Images — builder uses portfolio_images
-    portfolio_images,
-    photo_url: claude.suggested_hero_image || '',
-
-    // Content sections — builder field names
-    services_included,
-    pricing_packages,
-    about_highlights,
-    event_types,
-    menu_categories,
-    trust_badges,
-
-    // Contact — builder field names
-    phone: contact.phone || '',
-    email: contact.email || '',
-    instagram_handle: (contact.instagram || '').replace('@', ''),
-    contact_name: '',
-
-    // Meta (not saved to vendor, used by handler)
-    _recommended_theme: claude.recommended_theme || 'light-elegant',
-    _custom_brand_color: claude.custom_brand_color || null,
-    _creative_notes: claude.creative_notes || '',
+  // Hero Config
+  const heroConfig = {
+    headline: (c.tagline as string) || '',
+    subheadline: (c.description as string) || '',
+    badge: c.vendor_category_icon
+      ? `${c.vendor_category_icon} ${c.vendor_category || ''}`
+      : `\u2726 ${c.vendor_category || 'Vendor'}`,
+    backgroundImage: (c.suggested_hero_image as string) || '',
+    about_photo: (c.suggested_about_image as string) || '',
+    about_title: (c.about_title as string) || '',
+    heroStyle: (c.hero_style as string) || 'editorial',
+    accentWord: (c.accent_word as string) || undefined,
+    heroTypography: (c.hero_typography as string) || 'mixed',
+    heroMood: (c.hero_mood as string) || '',
   };
+
+  // Services
+  const services = Array.isArray(c.services)
+    ? (c.services as Array<Record<string, string>>).map(s => ({
+        icon: s.icon || '\u2726',
+        name: s.name || '',
+        description: s.description || '',
+      }))
+    : [];
+
+  // Packages
+  const packages = Array.isArray(c.packages)
+    ? (c.packages as Array<Record<string, unknown>>).map((p, i) => ({
+        id: Number((p.id as string)?.replace(/\D/g, '')) || i + 1,
+        icon: (p.icon as string) || '\u{1F4E6}',
+        name: (p.name as string) || `Package ${i + 1}`,
+        price: (p.price as string) || 'Contact for Pricing',
+        description: (p.description as string) || '',
+        features: Array.isArray(p.features) ? p.features as string[] : [],
+      }))
+    : [];
+
+  // Contact info
+  const contact = (c.contact_info || {}) as Record<string, string>;
+
+  // Instagram cleanup
+  let instagram = contact.instagram || '';
+  if (instagram.startsWith('@')) instagram = instagram.slice(1);
+  if (instagram.includes('instagram.com/')) {
+    instagram = instagram.split('instagram.com/').pop()?.replace(/\/$/, '') || '';
+  }
+
+  // Gallery images
+  const galleryImages = Array.isArray(c.suggested_gallery_images)
+    ? (c.suggested_gallery_images as string[])
+    : [];
+
+  // Section activation
+  const activeSections = buildActiveSections(c);
+  const sectionOrder = Array.isArray(c.section_order)
+    ? (c.section_order as string[])
+    : activeSections;
+
+  // Trust badges
+  const trustBadges = Array.isArray(c.trust_badges) ? c.trust_badges : [];
+
+  // Theme recommendation
+  const themeRec = c.theme_recommendation as Record<string, string> | undefined;
+  let theme: OnboardResult['theme'] = null;
+  if (themeRec) {
+    const preset = VALID_PRESETS.has(themeRec.preset) ? themeRec.preset : 'light-clean';
+    theme = {
+      preset,
+      primaryColor: themeRec.primary_color || '',
+      secondaryColor: themeRec.secondary_color || '',
+      mood: themeRec.mood || 'light',
+    };
+  }
+
+  // Event types
+  const eventTypes = Array.isArray(c.event_types)
+    ? (c.event_types as string[]).map(e => typeof e === 'string' ? { icon: '\u{1F48D}', name: e } : e)
+    : [{ icon: '\u{1F48D}', name: 'Weddings' }];
+
+  // Build vendor data
+  const vendor: Partial<Vendor> = {
+    business_name: (c.business_name as string) || '',
+    contact_name: (c.contact_name as string) || '',
+    category: (c.vendor_category as string) || '',
+    bio: (c.about_bio as string) || '',
+    email: contact.email || '',
+    phone: contact.phone || '',
+    website: contact.website || '',
+    instagram_handle: instagram,
+    city: contact.city || '',
+    state: contact.state || '',
+    photo_url: (c.suggested_hero_image as string) || '',
+    portfolio_images: galleryImages,
+    services_included: services,
+    pricing_packages: packages,
+    hero_config: heroConfig,
+    active_sections: activeSections as SectionId[],
+    section_order: sectionOrder as SectionId[],
+    event_types: eventTypes,
+    trust_badges: trustBadges as Array<{ icon: string; text: string }>,
+    // Theme auto-apply
+    theme_preset: theme?.preset || 'light-clean',
+    brand_color: theme?.primaryColor || '',
+    brand_color_secondary: theme?.secondaryColor || '',
+  };
+
+  // Image selections for builder image tab
+  const allImages = new Set<string>();
+  if (c.suggested_hero_image) allImages.add(c.suggested_hero_image as string);
+  if (c.suggested_about_image) allImages.add(c.suggested_about_image as string);
+  galleryImages.forEach(img => allImages.add(img));
+
+  const images = [...allImages].map(url => ({ url, selected: true }));
+
+  return { vendor, images, theme, designNotes: (c.design_notes as string) || '' };
+}
+
+function buildActiveSections(c: Record<string, unknown>): string[] {
+  // If Claude provided them, use those
+  if (Array.isArray(c.active_sections) && c.active_sections.length > 0) {
+    return c.active_sections as string[];
+  }
+  // Auto-detect from content
+  const sections: string[] = ['hero'];
+  if (c.about_bio) sections.push('about');
+  if (Array.isArray(c.services) && c.services.length > 0) sections.push('services_list');
+  if (Array.isArray(c.suggested_gallery_images) && c.suggested_gallery_images.length > 0) sections.push('gallery');
+  if (Array.isArray(c.packages) && c.packages.length > 0) sections.push('packages');
+  sections.push('contact');
+  return sections;
 }

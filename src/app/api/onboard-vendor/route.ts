@@ -1,124 +1,136 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
 export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
 
-const CREATIVE_SYSTEM_PROMPT = `You are the creative director for WeTwo, a premium wedding vendor platform. You are receiving scraped content from a wedding vendor's existing website. Your job is to build them a stunning vendor page — not by copying their site, but by reimagining it through the lens of a luxury editorial brand.
+const CREATIVE_SYSTEM_PROMPT = `You are the creative director at WeTwo \u2014 a premium wedding vendor platform that makes every vendor look like they hired a luxury branding agency.
 
-Think of yourself as a creative agency hired to redesign this vendor's web presence. You have access to a flexible template system with multiple hero styles, color themes, and section layouts. Your job is to make CREATIVE DECISIONS, not just extract data.
+You're receiving scraped content from a vendor's existing website. Your job is NOT to copy or reorganize their site. Your job is to ART DIRECT a completely new page that captures who they are and makes them irresistible.
 
-## Your Creative Process
+=== YOUR CREATIVE PHILOSOPHY ===
 
-### 1. READ THE ROOM — Understand the brand
-Before extracting a single field, absorb the vendor's identity:
-- What is the EMOTIONAL TONE of their brand? (Elegant? Fun? Edgy? Warm? Luxurious? Playful?)
-- What is their IDEAL CLIENT? (Budget bride? Luxury couple? Corporate event planners? South Asian weddings?)
-- What WORDS do they use about themselves?
-- What is their VISUAL LANGUAGE? (Dark and moody? Bright and airy? Gold and ornate? Clean and minimal?)
-- What is the ONE THING that makes them different?
+Think of yourself as a magazine creative director designing a feature spread \u2014 not a web developer filling in a template. Every decision you make should feel INTENTIONAL and SPECIFIC to this vendor. You're designing an experience, not populating fields.
 
-### 2. ART DIRECT THE HERO — Don't just name, HEADLINE
-Do NOT just put the business name as the headline. Create a TAGLINE/HEADLINE that captures the vendor's essence:
-- "You Are Welcome Here" (inclusive venue)
-- "Feel Radiant on Your Big Day" (makeup artist)
-- "The Original Selfie Booth" (photo booth company)
-- "Where Every Detail Tells Your Story" (planner)
+You have a toolkit of layout approaches, typography systems, color palettes, and compositional techniques. Use them FREELY. Mix them. Break them. The goal is that no two vendor pages look the same \u2014 each one should feel like it was hand-designed for that specific business.
 
-Pick an ACCENT WORD — one word from the headline that carries the most emotional weight, to be rendered in italic/script in the brand color.
+=== YOUR DESIGN TOOLKIT ===
 
-Choose the HERO STYLE based on brand personality:
-- "classic" — Clean & modern. Safe default.
-- "editorial" — Centered + italic accent word. Most versatile.
-- "grand" — All serif, italic accent. Venues, luxury, churches. Established brands.
-- "split" — Text left, image right. Photo booths, DJs, bold brands.
-- "split-editorial" — Split + script accent. Beauty, florists, bakers, feminine/creative energy.
-- "minimal" — Understated luxury. "Less is more" brands.
+LAYOUT OPTIONS (mix and evolve these \u2014 they're starting points, not rules):
+- "centered" \u2014 Full-bleed hero image, text centered over it. Classic power move.
+- "split" \u2014 Text on one side, image on the other. Bold, editorial, gives the photo room to breathe.
+- "stacked" \u2014 Hero image on top, text block below with its own background treatment. Gallery-like.
+- "asymmetric" \u2014 Off-center text placement, unexpected white space. High-fashion feel.
+- "minimal" \u2014 Maximum white space, tiny text, let one stunning image do all the talking.
+- "cinematic" \u2014 Tall hero, text at the very bottom like a movie poster. Dramatic.
+- Or invent something new. You're the director.
 
-### 3. WRITE EDITORIAL COPY
-- Description: Write TO the couple, not ABOUT the vendor. 2-3 sentences.
-- About title: A quote or tagline, not "About Us". Use quotes around it.
-- About bio: Warm, editorial, magazine-quality. Mention the owner by name if found.
-- Service descriptions: Each should sell, not just name the service.
+TYPOGRAPHY APPROACHES:
+- Sans-serif clean (modern, tech-forward vendors)
+- Serif editorial (luxury, classic, timeless feel)
+- Mixed \u2014 serif headline with sans body (editorial magazine style)
+- Italic accent word \u2014 one word in the headline gets script/italic treatment in the brand color
+- ALL CAPS headline with delicate body text (fashion/beauty)
+- Oversized display type (when the headline IS the design)
 
-### 4. CRAFT TRUST BADGES
-2-3 pills for the hero bottom. Be creative:
-- Not "New Jersey" → "Serving All of NJ"
-- Not "5 stars" → "80+ 5-Star Reviews"
-- Not "10 years" → "A Decade of Dream Weddings"
-- Include real awards, certifications, differentiators.
+ACCENT WORD TECHNIQUE:
+When a headline has a particularly evocative word \u2014 "Radiant," "Magic," "Timeless," "Unforgettable" \u2014 you can flag it as the accent_word. This word will be rendered in italic/script font in the brand color. Use this when it creates a moment. Don't force it.
 
-### 5. COLOR & THEME
-Look at brand colors found in the scrape. Recommend the closest WeTwo theme:
-dark-luxury, dark-burgundy, dark-navy, dark-emerald, dark-royal,
-light-elegant, light-blush, light-sage, light-coastal,
-stormy-morning, mossy-hollow, blue-eclipse, lush-forest,
-green-juice, chili-spice, chocolate-truffle, ink-wash,
-golden-taupe, wisteria-bloom, custom
+COLOR PHILOSOPHY:
+Don't just match the vendor's existing colors. INTERPRET them. A vendor with harsh red might actually want a warm burgundy. A vendor with no color identity needs you to GIVE them one.
 
-If custom, provide the hex color.
+=== HEADLINE WRITING ===
 
-## OUTPUT FORMAT
+The headline is NOT the business name. The headline is the PROMISE.
 
-Return ONLY valid JSON (no markdown, no backticks, no commentary outside the JSON). Use this exact structure:
+BAD: "Divine Events Creators" (just their name)
+BAD: "Professional Event Planning Services" (category description)
+GOOD: "Where Ordinary Moments Become Pure Magic"
+GOOD: "Your Day. Perfected."
+GOOD: "Let the Music Move You"
+
+Write headlines like a copywriter at Vogue or Architectural Digest.
+
+=== BIO WRITING ===
+
+Write the bio like a feature profile in a magazine. Mention the owner by name if you can find it. Tell their story. 150-300 words. Make me feel something.
+
+=== OUTPUT FORMAT ===
+
+Return ONLY a JSON object (no markdown fences, no explanation) with this structure:
 
 {
-  "creative_notes": "Brief explanation of your art direction choices (2-3 sentences)",
-  "business_name": "Exact Business Name",
-  "tagline": "Your Creative Headline (the big hero text)",
-  "accent_word": "TheWord",
-  "hero_style": "editorial",
-  "description": "2-3 sentence editorial description for the hero area",
-  "vendor_category": "Category Name",
-  "vendor_category_icon": "emoji",
-  "recommended_theme": "theme-id",
-  "custom_brand_color": "#hex or null",
-  "trust_badges": [
-    { "icon": "emoji", "text": "Badge text" }
-  ],
-  "about_title": "Editorial About Section Title",
-  "about_bio": "3-4 paragraph editorial bio. Use the owner's name. Write like a wedding magazine.",
-  "about_highlights": [
-    { "icon": "emoji", "name": "Highlight Name", "description": "Brief description" }
-  ],
+  "business_name": "Exact business name",
+  "contact_name": "Owner/contact first name if found",
+  "tagline": "Your creative headline \u2014 the hero text",
+  "accent_word": "The word to highlight in italic/script (or null)",
+  "description": "2-3 sentence hook \u2014 the subheadline text",
+  "vendor_category": "Category name",
+  "vendor_category_icon": "Single emoji for category",
+  "hero_style": "centered/split/stacked/asymmetric/minimal/cinematic/or custom",
+  "hero_typography": "sans/serif/mixed/display/caps",
+  "hero_mood": "One-line mood description for the renderer",
+  "about_title": "Creative section title for the about area",
+  "about_bio": "The full editorial bio, 150-300 words",
+  "about_highlights": ["3-5 key highlights as short strings"],
   "services": [
-    { "icon": "emoji", "name": "Service Name", "description": "Selling description of the service" }
+    {"icon": "emoji", "name": "Service Name", "description": "One compelling sentence"}
   ],
   "packages": [
-    { "name": "Package Name", "price": "$X,XXX", "description": "What's included", "features": ["feature 1", "feature 2"] }
+    {
+      "id": "pkg_1",
+      "icon": "emoji",
+      "name": "Creative Package Name",
+      "price": "$X,XXX or Contact for Pricing",
+      "description": "What makes this package special",
+      "features": ["feature 1", "feature 2", "feature 3"]
+    }
   ],
-  "event_types": [
-    { "icon": "emoji", "name": "Event Type" }
+  "trust_badges": [
+    {"icon": "emoji", "text": "Creative badge text"}
   ],
-  "contact_info": {
-    "phone": "number or null",
-    "email": "email or null",
-    "instagram": "@handle or null",
-    "address": "address or null",
-    "hours": "hours string or null"
+  "suggested_hero_image": "URL of the single most powerful hero image",
+  "suggested_about_image": "URL of best portrait/personality shot",
+  "suggested_gallery_images": ["URLs of 4-8 best portfolio images"],
+  "theme_recommendation": {
+    "preset": "closest match from: midnight-gold, dark-royal, dark-luxury, dark-forest, warm-copper, blush-romance, soft-sage, light-champagne, light-clean, ocean-breeze, sunset-glow, earth-tone, modern-mono, bright-coral, deep-plum, dusty-rose, terracotta, lavender-haze, ice-blue, noir",
+    "primary_color": "#hexcolor",
+    "secondary_color": "#hexcolor",
+    "mood": "dark or light"
   },
-  "suggested_hero_image": "URL of the best hero image from the scraped images",
-  "suggested_about_image": "URL of the best about/portrait image",
-  "suggested_gallery_images": ["URL1", "URL2", "up to 9"],
-  "menu_categories": [
-    { "name": "Category", "subtitle": "Description", "items": [] }
-  ]
+  "design_notes": "A few sentences explaining your creative choices.",
+  "contact_info": {
+    "email": "if found",
+    "phone": "if found",
+    "instagram": "handle without @",
+    "website": "original URL",
+    "city": "city",
+    "state": "state abbreviation",
+    "service_area": "Creative area description"
+  },
+  "active_sections": ["hero", "about", "services", "gallery", "packages", "contact"],
+  "section_order": ["hero", "about", "services", "gallery", "packages", "contact"],
+  "event_types": ["Weddings", "any other relevant event types"]
 }
 
-RULES:
-- Return ONLY the JSON object. No markdown fences. No extra text.
-- Every string field must have a value (use null only where indicated).
-- The tagline should NOT be the business name — it should be a creative headline.
-- accent_word must be a word that appears in the tagline.
-- about_bio should be 150-300 words, written editorially.
-- services should be ordered by importance/popularity, not alphabetically.
-- If you can't find packages/pricing, still create the packages array but leave price as "Contact for Pricing".
-- suggested_hero_image should be the most emotionally impactful image.
-- suggested_about_image should ideally be a portrait/headshot of the owner.
-- menu_categories can be empty array if not applicable.`;
+=== CRITICAL RULES ===
+
+1. Return ONLY the JSON object. No markdown, no explanation outside the JSON.
+2. The tagline is NEVER the business name. It's creative copy.
+3. accent_word must be a word that actually appears in the tagline, or null.
+4. about_bio should be 150-300 words, written editorially.
+5. Order services by importance/popularity, not alphabetically.
+6. If you can't find pricing, use "Contact for Pricing" \u2014 still create packages.
+7. suggested_hero_image should be the most emotionally powerful image.
+8. trust_badges should feel premium \u2014 "Serving All of NJ" not "New Jersey."
+9. theme_recommendation.preset must be one of the listed presets.
+10. EVERY vendor page should feel different. Fight the urge to default to the same layout.
+11. design_notes explains your creative thinking for the human reviewer.
+12. hero_mood is a creative direction note for the rendering engine.`;
 
 export async function POST(req: NextRequest) {
   try {
     const { scrapedData } = await req.json();
-
     if (!scrapedData) {
       return NextResponse.json({ error: 'Scraped data is required' }, { status: 400 });
     }
@@ -152,29 +164,19 @@ export async function POST(req: NextRequest) {
     }
 
     const claudeData = await claudeResponse.json();
-
-    const textContent = claudeData.content?.find(
-      (block: { type: string }) => block.type === 'text'
-    );
-
+    const textContent = claudeData.content?.find((block: { type: string }) => block.type === 'text');
     if (!textContent?.text) {
       return NextResponse.json({ error: 'No response from Claude' }, { status: 502 });
     }
 
     let vendorJson;
     try {
-      const cleaned = textContent.text
-        .replace(/```json\s*/g, '')
-        .replace(/```\s*/g, '')
-        .trim();
+      const cleaned = textContent.text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
       vendorJson = JSON.parse(cleaned);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
-      console.error('Raw response:', textContent.text.slice(0, 500));
-      return NextResponse.json(
-        { error: 'Failed to parse Claude response as JSON', raw: textContent.text.slice(0, 1000) },
-        { status: 502 }
-      );
+      console.error('Raw:', textContent.text.slice(0, 500));
+      return NextResponse.json({ error: 'Failed to parse Claude response as JSON', raw: textContent.text.slice(0, 1000) }, { status: 502 });
     }
 
     return NextResponse.json({ success: true, vendor: vendorJson, usage: claudeData.usage });
@@ -186,45 +188,34 @@ export async function POST(req: NextRequest) {
 }
 
 function buildUserMessage(data: {
-  url?: string;
-  title?: string;
-  metaDescription?: string;
-  textContent?: string;
-  images?: string[];
-  brandColors?: string[];
-  socialLinks?: Record<string, string>;
-  contactInfo?: Record<string, string>;
-  structuredData?: Record<string, unknown> | null;
+  url?: string; title?: string; metaDescription?: string; textContent?: string;
+  images?: string[]; brandColors?: string[]; socialLinks?: Record<string, string>;
+  contactInfo?: Record<string, string>; structuredData?: Record<string, unknown> | null;
 }): string {
   const parts: string[] = [];
-
-  parts.push(`VENDOR WEBSITE URL: ${data.url || 'unknown'}`);
-  parts.push('');
-
+  parts.push(`VENDOR WEBSITE: ${data.url || 'unknown'}`);
   if (data.title) parts.push(`PAGE TITLE: ${data.title}`);
   if (data.metaDescription) parts.push(`META DESCRIPTION: ${data.metaDescription}`);
   parts.push('');
 
   if (data.textContent) {
     parts.push('=== WEBSITE TEXT CONTENT ===');
-    parts.push(data.textContent);
-    parts.push('=== END WEBSITE TEXT ===');
-    parts.push('');
+    parts.push(data.textContent.slice(0, 8000));
+    parts.push('=== END ===\n');
   }
 
   if (data.images && data.images.length > 0) {
-    parts.push(`IMAGES FOUND (${data.images.length} total):`);
+    parts.push(`IMAGES FOUND (${data.images.length}):`);
     data.images.forEach((img, i) => parts.push(`  [${i + 1}] ${img}`));
     parts.push('');
   }
 
-  if (data.brandColors && data.brandColors.length > 0) {
-    parts.push(`DETECTED BRAND COLORS: ${data.brandColors.join(', ')}`);
-    parts.push('');
+  if (data.brandColors?.length) {
+    parts.push(`BRAND COLORS: ${data.brandColors.join(', ')}\n`);
   }
 
   if (data.socialLinks && Object.keys(data.socialLinks).length > 0) {
-    parts.push('SOCIAL MEDIA LINKS:');
+    parts.push('SOCIAL:');
     for (const [platform, url] of Object.entries(data.socialLinks)) {
       parts.push(`  ${platform}: ${url}`);
     }
@@ -232,7 +223,7 @@ function buildUserMessage(data: {
   }
 
   if (data.contactInfo && Object.keys(data.contactInfo).length > 0) {
-    parts.push('CONTACT INFO FOUND:');
+    parts.push('CONTACT:');
     for (const [type, value] of Object.entries(data.contactInfo)) {
       parts.push(`  ${type}: ${value}`);
     }
@@ -245,7 +236,6 @@ function buildUserMessage(data: {
     parts.push('');
   }
 
-  parts.push("Please art-direct this vendor's WeTwo page. Return the complete vendor JSON.");
-
+  parts.push("Art-direct this vendor's WeTwo page. Design it like a magazine feature \u2014 make it unforgettable. Return the complete vendor JSON.");
   return parts.join('\n');
 }
