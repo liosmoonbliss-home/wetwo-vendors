@@ -2,13 +2,18 @@
 // mapOnboardToVendor.ts
 // ============================================================
 // Translates Claude's creative output into builder state.
-// NO WHITELIST — Claude picks any theme from the library,
-// invents new names, or describes a mood. We always resolve.
+// Handles theme auto-apply + section auto-activation.
 // ============================================================
 
 import type { Vendor, SectionId } from './types';
-import { THEME_LIBRARY, findClosestTheme } from './themes';
-import type { ThemeMode } from './types';
+
+const VALID_PRESETS = new Set([
+  'midnight-gold', 'dark-royal', 'dark-luxury', 'dark-forest',
+  'warm-copper', 'blush-romance', 'soft-sage', 'light-champagne',
+  'light-clean', 'ocean-breeze', 'sunset-glow', 'earth-tone',
+  'modern-mono', 'bright-coral', 'deep-plum', 'dusty-rose',
+  'terracotta', 'lavender-haze', 'ice-blue', 'noir',
+]);
 
 export interface OnboardResult {
   vendor: Partial<Vendor>;
@@ -22,57 +27,6 @@ export interface OnboardResult {
   designNotes: string;
 }
 
-/**
- * Resolve a theme name Claude returned to a real THEME_LIBRARY key.
- * Strategy: exact match → fuzzy word match → brand color match → graceful default.
- * No whitelist. No gatekeeping. Claude is free to create.
- */
-function resolvePresetName(name: string, brandColor?: string, mood?: string): string {
-  if (!name) return mood === 'dark' ? 'dark-luxury' : 'light-elegant';
-
-  const normalized = name.toLowerCase().trim();
-
-  // 1. Exact match — Claude picked a real theme
-  if (THEME_LIBRARY[normalized]) return normalized;
-
-  // 2. Fuzzy match — Claude invented something close to a real theme
-  const inputWords = normalized.split(/[-_\s]+/);
-  const allThemes = Object.keys(THEME_LIBRARY);
-  let bestMatch = '';
-  let bestScore = 0;
-
-  for (const themeName of allThemes) {
-    const themeWords = themeName.split(/[-_\s]+/);
-    let score = 0;
-    for (const iw of inputWords) {
-      for (const tw of themeWords) {
-        if (iw === tw) score += 3;           // exact word match
-        else if (tw.includes(iw) || iw.includes(tw)) score += 1; // partial
-      }
-    }
-    // Bonus for matching mood
-    if (mood) {
-      const themeMode = THEME_LIBRARY[themeName].mode;
-      if (mood === themeMode) score += 1;
-    }
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = themeName;
-    }
-  }
-
-  if (bestScore >= 2) return bestMatch;
-
-  // 3. Brand color match — find the closest palette by hue/saturation
-  if (brandColor && /^#[0-9a-fA-F]{6}$/.test(brandColor)) {
-    const preferMode = (mood === 'dark' || mood === 'light') ? mood as ThemeMode : undefined;
-    return findClosestTheme(brandColor, preferMode);
-  }
-
-  // 4. Mood-based default
-  return mood === 'dark' ? 'dark-luxury' : 'light-elegant';
-}
-
 export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): OnboardResult {
   const c = claudeOutput;
 
@@ -82,7 +36,7 @@ export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): Onboa
     subheadline: (c.description as string) || '',
     badge: c.vendor_category_icon
       ? `${c.vendor_category_icon} ${c.vendor_category || ''}`
-      : `✦ ${c.vendor_category || 'Vendor'}`,
+      : `\u2726 ${c.vendor_category || 'Vendor'}`,
     backgroundImage: (c.suggested_hero_image as string) || '',
     about_photo: (c.suggested_about_image as string) || '',
     about_title: (c.about_title as string) || '',
@@ -95,7 +49,7 @@ export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): Onboa
   // Services
   const services = Array.isArray(c.services)
     ? (c.services as Array<Record<string, string>>).map(s => ({
-        icon: s.icon || '✦',
+        icon: s.icon || '\u2726',
         name: s.name || '',
         description: s.description || '',
       }))
@@ -105,7 +59,7 @@ export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): Onboa
   const packages = Array.isArray(c.packages)
     ? (c.packages as Array<Record<string, unknown>>).map((p, i) => ({
         id: Number((p.id as string)?.replace(/\D/g, '')) || i + 1,
-        icon: (p.icon as string) || '📦',
+        icon: (p.icon as string) || '\u{1F4E6}',
         name: (p.name as string) || `Package ${i + 1}`,
         price: (p.price as string) || 'Contact for Pricing',
         description: (p.description as string) || '',
@@ -137,19 +91,13 @@ export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): Onboa
   // Trust badges
   const trustBadges = Array.isArray(c.trust_badges) ? c.trust_badges : [];
 
-  // Theme recommendation — NO WHITELIST, resolve freely
+  // Theme recommendation
   const themeRec = c.theme_recommendation as Record<string, string> | undefined;
   let theme: OnboardResult['theme'] = null;
-  let resolvedPreset = 'light-elegant';
-
   if (themeRec) {
-    resolvedPreset = resolvePresetName(
-      themeRec.preset || '',
-      themeRec.primary_color,
-      themeRec.mood
-    );
+    const preset = VALID_PRESETS.has(themeRec.preset) ? themeRec.preset : 'light-clean';
     theme = {
-      preset: resolvedPreset,
+      preset,
       primaryColor: themeRec.primary_color || '',
       secondaryColor: themeRec.secondary_color || '',
       mood: themeRec.mood || 'light',
@@ -158,8 +106,8 @@ export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): Onboa
 
   // Event types
   const eventTypes = Array.isArray(c.event_types)
-    ? (c.event_types as string[]).map(e => typeof e === 'string' ? { icon: '💍', name: e } : e)
-    : [{ icon: '💍', name: 'Weddings' }];
+    ? (c.event_types as string[]).map(e => typeof e === 'string' ? { icon: '\u{1F48D}', name: e } : e)
+    : [{ icon: '\u{1F48D}', name: 'Weddings' }];
 
   // Build vendor data
   const vendor: Partial<Vendor> = {
@@ -182,8 +130,8 @@ export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): Onboa
     section_order: sectionOrder as SectionId[],
     event_types: eventTypes,
     trust_badges: trustBadges as Array<{ icon: string; text: string }>,
-    // Theme auto-apply — resolved to a real THEME_LIBRARY key
-    theme_preset: resolvedPreset,
+    // Theme auto-apply
+    theme_preset: theme?.preset || 'light-clean',
     brand_color: theme?.primaryColor || '',
     brand_color_secondary: theme?.secondaryColor || '',
   };
@@ -200,9 +148,11 @@ export function mapOnboardToVendor(claudeOutput: Record<string, unknown>): Onboa
 }
 
 function buildActiveSections(c: Record<string, unknown>): string[] {
+  // If Claude provided them, use those
   if (Array.isArray(c.active_sections) && c.active_sections.length > 0) {
     return c.active_sections as string[];
   }
+  // Auto-detect from content
   const sections: string[] = ['hero'];
   if (c.about_bio) sections.push('about');
   if (Array.isArray(c.services) && c.services.length > 0) sections.push('services_list');

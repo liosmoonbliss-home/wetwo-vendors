@@ -128,20 +128,6 @@ a { color: inherit; text-decoration: none; }
 .public-nav:not(.scrolled) .public-nav-login { color: rgba(255,255,255,0.7); }
 .public-nav.scrolled .public-nav-login { color: var(--text-muted); }
 
-/* Dark-mode nav overrides */
-.public-nav.dark-mode.scrolled {
-  background: rgba(10,10,10,0.95);
-  border-bottom-color: var(--border);
-}
-.public-nav.dark-mode.scrolled .public-nav-links a { color: var(--text-muted); }
-.public-nav.dark-mode.scrolled .public-nav-logo { color: var(--primary); }
-.public-nav.dark-mode.scrolled .public-nav-login { color: var(--text-muted); }
-/* Light-mode nav overrides */
-.public-nav.light-mode.scrolled {
-  background: rgba(255,255,255,0.95);
-  border-bottom-color: var(--border);
-}
-
 /* ============ HERO ============ */
 .hero {
   min-height: 100vh;
@@ -230,8 +216,8 @@ a { color: inherit; text-decoration: none; }
 
 /* ============ SECTIONS ============ */
 .section { padding: 100px 40px; position: relative; }
-.section-alt { background: var(--bg-hover, #f3efe9); }
-.section-alt > .section, .section-alt > section { background: var(--bg-hover, #f3efe9); }
+.section-alt { background: var(--bg-alt, #f3efe9); }
+.section-alt > .section, .section-alt > section { background: var(--bg-alt, #f3efe9); }
 .section-header { text-align: center; margin-bottom: 60px; }
 .section-label {
   color: var(--primary);
@@ -380,7 +366,6 @@ a { color: inherit; text-decoration: none; }
 .package-icon { font-size: 36px; margin-bottom: 16px; display: none; }
 .package-name {
   font-size: 22px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.01em;
-  color: var(--text);
 }
 .package-price {
   font-size: 28px; font-weight: 700; color: var(--primary);
@@ -452,8 +437,8 @@ a { color: inherit; text-decoration: none; }
 }
 .event-pill {
   padding: 10px 20px;
-  background: var(--primary-dim, rgba(200,170,110,0.08));
-  border: 1px solid var(--border);
+  background: rgba(200,170,110,0.08);
+  border: 1px solid rgba(200,170,110,0.2);
   border-radius: 50px;
   font-size: 14px;
   color: var(--text);
@@ -461,9 +446,8 @@ a { color: inherit; text-decoration: none; }
   transition: all 0.2s ease;
 }
 .event-pill:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary);
-  color: var(--primary);
+  background: rgba(200,170,110,0.15);
+  border-color: rgba(200,170,110,0.4);
 }
 
 /* ============ MENU ACCORDION ============ */
@@ -614,7 +598,7 @@ a { color: inherit; text-decoration: none; }
 .form-group select,
 .form-group textarea {
   width: 100%; padding: 14px 16px;
-  background: var(--bg-hover, #f3efe9); border: 1px solid var(--border);
+  background: #f3efe9; border: 1px solid var(--border);
   border-radius: 8px; color: var(--text);
   font-size: 15px; font-family: inherit; transition: all 0.2s ease;
 }
@@ -631,7 +615,6 @@ a { color: inherit; text-decoration: none; }
   background: var(--bg-card);
   padding: 40px; text-align: center;
   border-top: 1px solid var(--border);
-  color: var(--text-dim);
 }
 .public-footer p {
   color: var(--text-dim); font-size: 14px; line-height: 1.8;
@@ -679,6 +662,6 @@ a { color: inherit; text-decoration: none; }
 }
 
 
-/* Alternating section backgrounds — theme-aware */
-main > .page-section:nth-child(odd) { background: var(--bg-hover, #f3efe9); }
-main > .page-section:nth-child(even) { background: var(--bg-card, #ffffff); }
+/* Alternating section backgrounds — pure CSS, no JS logic */
+main > .page-section:nth-child(odd) { background: #f3efe9; }
+main > .page-section:nth-child(even) { background: #ffffff; }

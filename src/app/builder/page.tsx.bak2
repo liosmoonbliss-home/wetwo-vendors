@@ -3,14 +3,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Vendor, SectionId } from '@/lib/types';
 import OnboardUrl from '@/components/builder/OnboardUrl';
-import BuilderChat from '@/components/builder/BuilderChat';
 import { mapOnboardToVendor } from '@/lib/mapOnboardToVendor';
 import { THEME_LIBRARY } from '@/lib/themes';
 
 // ── TYPES ─────────────────────────────────────────────────────
 
 type Step = 'input' | 'analyzing' | 'editor' | 'creating' | 'done';
-type Tab = 'images' | 'info' | 'sections' | 'theme' | 'ai';
+type Tab = 'images' | 'info' | 'sections' | 'theme';
 
 interface AnalysisResult {
   vendor: Partial<Vendor>;
@@ -589,9 +588,9 @@ export default function BuilderPage() {
         {/* ── LEFT PANEL: Editor ── */}
         <div style={S.leftPanel}>
           <div style={S.tabBar}>
-            {(['images', 'info', 'sections', 'theme', 'ai'] as Tab[]).map(t => (
+            {(['images', 'info', 'sections', 'theme'] as Tab[]).map(t => (
               <button key={t} onClick={() => setTab(t)} style={S.tabBtn(tab === t)}>
-                {{ images: '🖼 Images', info: '📝 Info', sections: '📋 Sections', theme: '🎨 Theme', ai: '🤖 AI' }[t]}
+                {{ images: '🖼 Images', info: '📝 Info', sections: '📋 Sections', theme: '🎨 Theme' }[t]}
               </button>
             ))}
           </div>
@@ -1107,28 +1106,6 @@ export default function BuilderPage() {
                     })}
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* ── TAB: AI Chat ── */}
-            {tab === 'ai' && (
-              <div style={{ height: '100%', margin: '-1rem', display: 'flex' }}>
-                <BuilderChat
-                  vendor={vendor}
-                  onApplyChanges={(changes) => {
-                    setVendor(prev => {
-                      const merged = { ...prev };
-                      for (const [key, value] of Object.entries(changes)) {
-                        if (key === 'hero_config' && typeof value === 'object' && value !== null) {
-                          merged.hero_config = { ...(prev.hero_config || {}), ...value } as any;
-                        } else {
-                          (merged as any)[key] = value;
-                        }
-                      }
-                      return merged;
-                    });
-                  }}
-                />
               </div>
             )}
           </div>

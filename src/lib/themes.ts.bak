@@ -225,17 +225,7 @@ export function findTopThemes(brandColor: string, n = 5, preferMode?: ThemeMode)
 
 // ── RESOLVE THEME (backward-compatible) ───────────────────────
 export function resolveTheme(preset?: string, brandColor?: string, brandColorSecondary?: string): ThemeConfig {
-  const key = preset || 'light-elegant';
-  let theme: ThemeConfig;
-  if (THEME_LIBRARY[key]) {
-    theme = { ...THEME_LIBRARY[key] };
-  } else if (brandColor) {
-    // Preset doesn't exist — find closest theme by brand color
-    const closest = findClosestTheme(brandColor);
-    theme = { ...THEME_LIBRARY[closest] };
-  } else {
-    theme = { ...THEME_LIBRARY['light-elegant'] };
-  }
+  const theme = { ...(THEME_LIBRARY[preset || 'dark-luxury'] || THEME_LIBRARY['dark-luxury']) };
   if (brandColor) {
     theme.primary = brandColor;
     theme.primaryDim = hexToRgba(brandColor, theme.mode === 'dark' ? 0.12 : 0.10);
@@ -248,5 +238,5 @@ export function resolveTheme(preset?: string, brandColor?: string, brandColorSec
 
 // ── CSS VARIABLE INJECTION ────────────────────────────────────
 export function themeToCSSVariables(theme: ThemeConfig): string {
-  return `--bg:${theme.bg};--bg-alt:${theme.bgHover};--bg-card:${theme.bgCard};--bg-hover:${theme.bgHover};--primary:${theme.primary};--primary-dim:${theme.primaryDim};--secondary:${theme.secondary};--text:${theme.text};--text-muted:${theme.textMuted};--text-dim:${theme.textDim};--border:${theme.border};--mode:${theme.mode};--green:#22c55e;--green-dim:rgba(34,197,94,0.1);--blue:#3b82f6;--blue-dim:rgba(59,130,246,0.1);--red:#ef4444;--red-dim:rgba(239,68,68,0.1);--gold:#c9a050;--gold-dim:rgba(201,160,80,0.1)`;
+  return `--bg:${theme.bg};--bg-alt:${theme.mode === "dark" ? "#1a1a2e" : "#f3efe9"};--bg-card:${theme.bgCard};--bg-hover:${theme.bgHover};--primary:${theme.primary};--primary-dim:${theme.primaryDim};--secondary:${theme.secondary};--text:${theme.text};--text-muted:${theme.textMuted};--text-dim:${theme.textDim};--border:${theme.border};--mode:${theme.mode};--green:#22c55e;--green-dim:rgba(34,197,94,0.1);--blue:#3b82f6;--blue-dim:rgba(59,130,246,0.1);--red:#ef4444;--red-dim:rgba(239,68,68,0.1);--gold:#c9a050;--gold-dim:rgba(201,160,80,0.1)`;
 }

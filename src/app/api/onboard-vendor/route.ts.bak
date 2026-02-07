@@ -93,7 +93,7 @@ Return ONLY a JSON object (no markdown fences, no explanation) with this structu
   "suggested_about_image": "URL of best portrait/personality shot",
   "suggested_gallery_images": ["URLs of 4-8 best portfolio images"],
   "theme_recommendation": {
-    "preset": "Pick ANY theme from the WeTwo library. Families include: DARK LUXE (dark-luxury, dark-burgundy, dark-navy, dark-emerald, dark-royal, gothic-noir, quiet-luxury, night-sands, ink-wash, chocolate-truffle), LIGHT ELEGANT (light-elegant, light-blush, light-sage, light-coastal, golden-taupe, wisteria-bloom, burnt-sienna), ROMANTIC (blooming-romance, cherry-blossom, evening-rose, lavender-fields, desert-dusk, golden-hour, tuscan-sunset, spiced-chai, hydrangea, lotus-garden, fresh-peach, pastel-garden), COASTAL (charming-seaside, calm-blue, ocean-tide, coastal-morning, beachfront-views), PLAYFUL (zesty-lemon, california-beaches, mango-popsicle, cotton-candy-skies, bubblegum-pop, sunny-day, watermelon-splash), VIBRANT (electropop, neon-jungle, electric-fusion, pop-art, cobalt-sky, jewel-box, tropical-punch), NEUTRAL (salt-and-pepper, yacht-club, cappuccino, breakfast-tea, urban-loft, stone-path, honeycomb, old-photograph), TRANQUIL (emerald-odyssey, mountain-mist, morning-dew, olive-grove, eucalyptus-grove, frozen-lake, lavender-lullaby), SEASONAL (autumn-leaves, pumpkin-spice, winter-berry, summer-breeze, wildflower-meadow, harvest-moon). Or invent a name that captures the mood — our system will fuzzy-match to the closest palette.",
+    "preset": "closest match from: midnight-gold, dark-royal, dark-luxury, dark-forest, warm-copper, blush-romance, soft-sage, light-champagne, light-clean, ocean-breeze, sunset-glow, earth-tone, modern-mono, bright-coral, deep-plum, dusty-rose, terracotta, lavender-haze, ice-blue, noir",
     "primary_color": "#hexcolor",
     "secondary_color": "#hexcolor",
     "mood": "dark or light"
@@ -123,7 +123,7 @@ Return ONLY a JSON object (no markdown fences, no explanation) with this structu
 6. If you can't find pricing, use "Contact for Pricing" \u2014 still create packages.
 7. suggested_hero_image should be the most emotionally powerful image.
 8. trust_badges should feel premium \u2014 "Serving All of NJ" not "New Jersey."
-9. theme_recommendation.preset — pick a real theme name from the library above, or invent one that captures the mood. Our system fuzzy-matches, so be expressive.
+9. theme_recommendation.preset must be one of the listed presets.
 10. EVERY vendor page should feel different. Fight the urge to default to the same layout.
 11. design_notes explains your creative thinking for the human reviewer.
 12. hero_mood is a creative direction note for the rendering engine.
