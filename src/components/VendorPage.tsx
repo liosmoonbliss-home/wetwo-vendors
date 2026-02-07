@@ -416,7 +416,11 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
   if (view === 'public') {
     const navSections = resolvedOrder.filter(
       s => isActive(s) && !['hero', 'dashboard'].includes(s)
-    );
+    ).filter((s, i, arr) => {
+      // Deduplicate by nav label (e.g. services_list + features_grid both = "Services")
+      const label = navLabels[s] || s;
+      return arr.findIndex(x => (navLabels[x] || x) === label) === i;
+    });
 
     return (
       <>

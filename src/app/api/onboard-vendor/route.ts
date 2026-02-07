@@ -126,7 +126,9 @@ Return ONLY a JSON object (no markdown fences, no explanation) with this structu
 9. theme_recommendation.preset must be one of the listed presets.
 10. EVERY vendor page should feel different. Fight the urge to default to the same layout.
 11. design_notes explains your creative thinking for the human reviewer.
-12. hero_mood is a creative direction note for the rendering engine.`;
+12. hero_mood is a creative direction note for the rendering engine.
+13. CONTRAST IS CRITICAL: The accent_word color and all hero text must be readable over images. For dark/busy hero backgrounds, accent_word should be a BRIGHT or WARM tone (gold, coral, blush, champagne) — NEVER dark blue, forest green, or maroon. For light backgrounds, accent colors can be deeper. Think: would this text pass a readability test over a photo?
+14. theme_recommendation.primary_color should be a color that works as BOTH a button color AND an accent-word color on hero images. Avoid dark primaries for dark-mood themes — go warm and luminous instead.`;
 
 export async function POST(req: NextRequest) {
   try {
