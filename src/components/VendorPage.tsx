@@ -452,7 +452,20 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
         </nav>
 
         {/* Sections */}
-        <main>
+        <main style={{
+          '--bg': theme.bg,
+          '--bg-card': theme.bgCard,
+          '--bg-hover': theme.bgHover,
+          '--primary': theme.primary,
+          '--primary-dim': theme.primaryDim,
+          '--secondary': theme.secondary,
+          '--text': theme.text,
+          '--text-muted': theme.textMuted,
+          '--text-dim': theme.textDim,
+          '--border': theme.border,
+          background: theme.bg,
+          color: theme.text,
+        } as React.CSSProperties}>
           {resolvedOrder
             .filter(s => s !== 'dashboard' && s !== 'event_types')
             .map(sectionId => {

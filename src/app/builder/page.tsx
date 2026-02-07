@@ -1046,7 +1046,7 @@ export default function BuilderPage() {
             )}
 
             {/* ── TAB: Theme ── */}
-            {tab === 'theme' && analysis && (
+            {tab === 'theme' && (
               <div>
                 <div style={S.card}>
                   <div style={S.cardTitle}>Detected Brand Color</div>
@@ -1059,7 +1059,7 @@ export default function BuilderPage() {
                 <div style={S.card}>
                   <div style={S.cardTitle}>Theme — Top Matches</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    {analysis.themeMatch.slice(0, 8).map(match => {
+                    {(analysis?.themeMatch || []).slice(0, 8).map(match => {
                       const t = THEME_LIBRARY[match.name];
                       const isSelected = vendor.theme_preset === match.name;
                       return (
