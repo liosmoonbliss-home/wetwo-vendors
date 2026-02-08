@@ -523,9 +523,19 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
       <LoginScreen
         vendorName={vendor.business_name || 'Vendor'}
         onLogin={async (pw) => {
-          if (pw === ADMIN_PASSWORD) { setView('dashboard'); return; }
+          const isAdmin = pw === ADMIN_PASSWORD;
           const hashed = await sha256(pw);
-          if (hashed === vendor.page_password) setView('dashboard');
+          const isVendor = hashed === vendor.page_password;
+          if (isAdmin || isVendor) {
+            // Store session for dashboard — exclude password hash
+            const { page_password, ...vendorData } = vendor;
+            const session = {
+              ...vendorData,
+              plan: vendor.account_status === 'vendor' ? 'free' : (vendor.account_status || 'free'),
+            };
+            localStorage.setItem('wetwo_vendor_session', JSON.stringify(session));
+            window.location.href = '/dashboard';
+          }
         }}
       />
     );
