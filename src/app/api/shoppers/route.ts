@@ -6,43 +6,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-async function createGoAffProCustomer(name: string, email: string, vendorAffiliateRef: string) {
-  const GOAFFPRO_API_KEY = process.env.GOAFFPRO_ACCESS_TOKEN || process.env.GOAFFPRO_API_KEY;
-  if (!GOAFFPRO_API_KEY) {
-    console.error('No GoAffPro API key configured');
-    return null;
-  }
-
-  try {
-    const res = await fetch('https://api.goaffpro.com/admin/customers', {
-      method: 'POST',
-      headers: {
-        'x-access-token': GOAFFPRO_API_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        ref: vendorAffiliateRef,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      console.log('GoAffPro customer created:', data);
-      return data;
-    } else {
-      const errText = await res.text();
-      console.error('GoAffPro customer error:', res.status, errText);
-      if (res.status === 409) return { existing: true };
-      return null;
-    }
-  } catch (err) {
-    console.error('GoAffPro customer network error:', err);
-    return null;
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -64,7 +27,7 @@ export async function POST(request: NextRequest) {
       ? `https://wetwo.love?ref=${affiliateRef}`
       : 'https://wetwo.love';
 
-    // 1. Insert into vendor_clients (what the dashboard reads)
+    // 1. Insert into vendor_clients (what the vendor dashboard reads)
     const { data: client, error: insertError } = await supabase
       .from('vendor_clients')
       .insert({
@@ -89,23 +52,94 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to register' }, { status: 500 });
     }
 
-    // 2. Create GoAffPro customer (ties shopper to vendor's affiliate)
-    let goaffproResult = null;
-    if (affiliateRef) {
-      goaffproResult = await createGoAffProCustomer(name, email, affiliateRef);
+    // 2. Create GoAffPro AFFILIATE for shopper (same pattern as couples/vendors)
+    let shopperAffiliateId: string | null = null;
+    const shopperRefCode = `shopper-${email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')}-${Math.random().toString(36).substring(2, 6)}`;
+
+    try {
+      const goaffproResponse = await fetch('https://api.goaffpro.com/v1/admin/affiliates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goaffpro-access-token': process.env.GOAFFPRO_ACCESS_TOKEN!,
+        },
+        body: JSON.stringify({
+          email: email.toLowerCase().trim(),
+          name: name.trim().replace(/&/g, 'and').replace(/[^\w\s-]/g, '').trim(),
+          ref_code: shopperRefCode,
+        }),
+      });
+
+      const affiliateData = await goaffproResponse.json();
+      console.log('🎯 GoAffPro shopper response:', JSON.stringify(affiliateData));
+
+      if (goaffproResponse.ok && affiliateData?.affiliate_id) {
+        shopperAffiliateId = String(affiliateData.affiliate_id);
+        console.log('✅ GoAffPro shopper affiliate created:', shopperAffiliateId);
+      } else if (affiliateData?.message?.includes('already') || affiliateData?.error?.includes('exists')) {
+        console.log('ℹ️ GoAffPro shopper affiliate already exists');
+      } else {
+        console.error('⚠️ GoAffPro shopper creation unexpected:', affiliateData);
+      }
+
+      // 3. MLM: Assign shopper under vendor's affiliate tree
+      if (shopperAffiliateId && vendor_ref) {
+        console.log('🔗 MLM: Assigning shopper under vendor...');
+
+        const { data: vendorData } = await supabase
+          .from('vendors')
+          .select('goaffpro_affiliate_id, business_name')
+          .eq('ref', vendor_ref)
+          .single();
+
+        if (vendorData?.goaffpro_affiliate_id) {
+          console.log(`🔗 Found vendor GoAffPro ID: ${vendorData.goaffpro_affiliate_id} (${vendorData.business_name})`);
+
+          const mlmResponse = await fetch(
+            `https://api.goaffpro.com/v1/admin/mlm/move/${shopperAffiliateId}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'x-goaffpro-access-token': process.env.GOAFFPRO_ACCESS_TOKEN!,
+              },
+              body: `new_parent=${encodeURIComponent(vendorData.goaffpro_affiliate_id)}`,
+            }
+          );
+
+          const mlmText = await mlmResponse.text();
+          console.log('🔗 MLM response:', mlmResponse.status, mlmText);
+
+          if (mlmResponse.ok) {
+            console.log(`✅ Shopper assigned under vendor ${vendorData.business_name}`);
+          } else {
+            console.error('⚠️ MLM assignment failed:', mlmResponse.status, mlmText);
+          }
+        } else {
+          console.warn('⚠️ Vendor has no GoAffPro affiliate ID, skipping MLM');
+        }
+      }
+    } catch (goaffproError) {
+      console.error('⚠️ GoAffPro affiliate creation failed (non-blocking):', goaffproError);
     }
 
-    // 3. Log to vendor_activity (dashboard activity feed)
+    // 4. Log to vendor_activity (dashboard activity feed)
     try {
       await supabase.from('vendor_activity').insert({
         vendor_ref: vendor_ref,
         type: 'shopper',
         description: `New shopper: ${name} unlocked cashback`,
-        metadata: { client_id: client?.id, name, email, source: source || 'cashback_banner', goaffpro: goaffproResult ? true : false },
+        metadata: {
+          client_id: client?.id,
+          name,
+          email,
+          source: source || 'cashback_banner',
+          goaffpro_affiliate_id: shopperAffiliateId,
+        },
       });
     } catch {}
 
-    // 4. Send admin email to David
+    // 5. Send admin email to David
     try {
       const RESEND_API_KEY = process.env.RESEND_API_KEY;
       if (RESEND_API_KEY) {
@@ -132,7 +166,7 @@ export async function POST(request: NextRequest) {
                     <tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Name:</td><td style="padding: 8px 0; color: #2c2420;">${name}</td></tr>
                     <tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Email:</td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #c9944a;">${email}</a></td></tr>
                     ${phone ? `<tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Phone:</td><td style="padding: 8px 0; color: #2c2420;">${phone}</td></tr>` : ''}
-                    <tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">GoAffPro:</td><td style="padding: 8px 0; color: ${goaffproResult ? '#22c55e' : '#ef4444'};">${goaffproResult ? '✅ Customer created' : '❌ Failed or no key'}</td></tr>
+                    <tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">GoAffPro:</td><td style="padding: 8px 0; color: ${shopperAffiliateId ? '#22c55e' : '#ef4444'};">${shopperAffiliateId ? `✅ Affiliate ${shopperAffiliateId}` : '❌ Not created'}</td></tr>
                   </table>
                   <div style="margin-top: 16px; padding: 12px 16px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
                     <span style="font-size: 14px; color: #166534;">Affiliate ref: <code>${affiliateRef || 'none'}</code></span>
