@@ -400,18 +400,27 @@ export default function DashboardHome() {
           <div className="play">
             <div className="play-number">2</div>
             <div className="play-content">
-              <h4>Reach out to every past client and cold lead</h4>
-              <p>"I just got access to something exclusive and wanted you to be one of the first to know." This isn't a sales pitch — it's a gift that reopens every door.</p>
-              <Link href="/dashboard/links" className="play-link">Get the copy-paste message →</Link>
+              <h4>Warm up your network</h4>
+              <p>Text past clients, cold leads, and current couples: "I just got access to something exclusive and wanted you to be one of the first to know." Gauge interest. Get the "yes, send it!" replies flowing. Don't send links yet.</p>
+              <Link href="/dashboard/assistant" className="play-link">Have Claude write the message →</Link>
+            </div>
+          </div>
+
+          <div className="play highlight">
+            <div className="play-number upgrade">⚡</div>
+            <div className="play-content">
+              <h4>Lock in your commission before you share a single link</h4>
+              <p>You've got people interested. Now before you send your links, make sure every click counts. Upgrade so every purchase from day one earns you trackable commission. The outreach was free — <strong>now get paid for the results.</strong></p>
+              <Link href="/dashboard/earnings" className="play-link upgrade-link">See plans & lock it in →</Link>
             </div>
           </div>
 
           <div className="play">
             <div className="play-number">3</div>
             <div className="play-content">
-              <h4>Text your current and upcoming couples</h4>
-              <p>Every couple who uses the registry puts your name in front of all their guests. One couple = 150+ brand impressions.</p>
-              <Link href="/dashboard/assistant" className="play-link">Have Claude write it →</Link>
+              <h4>Send your links to everyone who said yes</h4>
+              <p>Now that you're covered, share your cashback link and registry link with everyone who showed interest. Every purchase earns you commission from day one.</p>
+              <Link href="/dashboard/links" className="play-link">Get your links →</Link>
             </div>
           </div>
 
@@ -455,11 +464,11 @@ export default function DashboardHome() {
 
         {isFree && (
           <div className="bottom-upgrade">
-            <h4>The system is yours. The commission is spending money.</h4>
+            <h4>The system is free. The commission is how you profit.</h4>
             <p>
-              Everything above works free. Upgrade for the price of a coffee a day, and every purchase 
-              your network makes earns you <strong>trackable commission</strong> — while the real value is 
-              the leads, the bookings, and the network you're building.
+              Your page, your links, your AI assistant — all free, forever. Upgrade for the price of a coffee a day 
+              and every purchase your network makes earns you <strong>trackable commission</strong> — while the real value 
+              is the leads, the bookings, and the network you're building.
             </p>
             <Link href="/dashboard/earnings" className="upgrade-btn">See the math →</Link>
           </div>
@@ -726,6 +735,16 @@ export default function DashboardHome() {
         .play-content h4 { font-size: 15px; font-weight: 700; color: #2c2420; margin: 0 0 6px; }
         .play-content p { font-size: 14px; color: #6b5e52; margin: 0; line-height: 1.6; }
         .play-content em { color: #c9944a; font-style: italic; }
+        .play.highlight {
+          background: linear-gradient(135deg, rgba(201,148,74,0.08), rgba(34,197,94,0.06));
+          border: 1px solid rgba(201,148,74,0.3); border-radius: 12px;
+          padding: 20px; margin: 8px 0; border-bottom: none;
+        }
+        .play-number.upgrade {
+          background: linear-gradient(135deg, #c9944a, #22c55e);
+          font-size: 16px; width: 36px; height: 36px;
+        }
+        .upgrade-link { color: #22c55e !important; font-weight: 700; }
         .play-link { display: inline-block; margin-top: 8px; font-size: 13px; color: #c9944a; text-decoration: none; font-weight: 600; }
         .play-link:hover { text-decoration: underline; }
 
