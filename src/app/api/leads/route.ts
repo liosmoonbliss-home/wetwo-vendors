@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         interest,
         event_date,
       },
-    }).then(() => {}).catch(() => {});
+    }).catch(() => {});
 
     // 3. Send admin email to David
     try {

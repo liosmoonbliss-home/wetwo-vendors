@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         source: source || 'cashback_banner',
         goaffpro: goaffproResult ? true : false,
       },
-    }).then(() => {}).catch(() => {});
+    }).catch(() => {});
 
     // 4. Send admin email to David
     try {
