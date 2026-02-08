@@ -60,7 +60,7 @@ export function ContactSection({ vendor, links, showToast }: ContactSectionProps
     }
   }
 
-  const contactName = vendor.contact_name || vendor.first_name || vendor.business_name;
+  const contactName = vendor.contact_name || vendor.business_name;
   const contactEmail = vendor.email;
   const contactPhone = vendor.phone;
   const contactCity = vendor.city;
