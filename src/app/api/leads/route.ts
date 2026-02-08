@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
     }
 
-    // Resolve vendor_ref if not provided
     let resolvedRef = vendor_ref;
     let resolvedName = vendor_name || 'Unknown Vendor';
 
@@ -64,18 +63,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Log to vendor_activity (dashboard activity feed)
-    await supabase.from('vendor_activity').insert({
-      vendor_ref: resolvedRef,
-      type: 'lead',
-      description: `New inquiry from ${name}${interest ? ` about ${interest}` : ''}`,
-      metadata: {
-        lead_id: lead?.id,
-        name,
-        email,
-        interest,
-        event_date,
-      },
-    }).catch(() => {});
+    try {
+      await supabase.from('vendor_activity').insert({
+        vendor_ref: resolvedRef,
+        type: 'lead',
+        description: `New inquiry from ${name}${interest ? ` about ${interest}` : ''}`,
+        metadata: { lead_id: lead?.id, name, email, interest, event_date },
+      });
+    } catch {}
 
     // 3. Send admin email to David
     try {

@@ -14,7 +14,6 @@ async function createGoAffProCustomer(name: string, email: string, vendorAffilia
   }
 
   try {
-    // Register customer attributed to the vendor's affiliate ref
     const res = await fetch('https://api.goaffpro.com/admin/customers', {
       method: 'POST',
       headers: {
@@ -24,7 +23,7 @@ async function createGoAffProCustomer(name: string, email: string, vendorAffilia
       body: JSON.stringify({
         name,
         email,
-        ref: vendorAffiliateRef, // ties this customer to the vendor's affiliate
+        ref: vendorAffiliateRef,
       }),
     });
 
@@ -35,7 +34,6 @@ async function createGoAffProCustomer(name: string, email: string, vendorAffilia
     } else {
       const errText = await res.text();
       console.error('GoAffPro customer error:', res.status, errText);
-      // 409 = duplicate email, still success for us
       if (res.status === 409) return { existing: true };
       return null;
     }
@@ -85,7 +83,6 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('vendor_clients insert error:', insertError);
-      // Duplicate email — still let them through
       if (insertError.code === '23505') {
         return NextResponse.json({ success: true, existing: true, storeUrl });
       }
@@ -99,18 +96,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Log to vendor_activity (dashboard activity feed)
-    await supabase.from('vendor_activity').insert({
-      vendor_ref: vendor_ref,
-      type: 'shopper',
-      description: `New shopper: ${name} unlocked cashback`,
-      metadata: {
-        client_id: client?.id,
-        name,
-        email,
-        source: source || 'cashback_banner',
-        goaffpro: goaffproResult ? true : false,
-      },
-    }).catch(() => {});
+    try {
+      await supabase.from('vendor_activity').insert({
+        vendor_ref: vendor_ref,
+        type: 'shopper',
+        description: `New shopper: ${name} unlocked cashback`,
+        metadata: { client_id: client?.id, name, email, source: source || 'cashback_banner', goaffpro: goaffproResult ? true : false },
+      });
+    } catch {}
 
     // 4. Send admin email to David
     try {
