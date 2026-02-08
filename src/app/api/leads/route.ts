@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'WeTwo Leads <notifications@wetwo.love>',
+            from: 'WeTwo <notify@noreply.wetwo.love>',
             to: ['david@wetwo.love'],
             subject: `📬 New Inquiry — ${resolvedVendorName}`,
             html: `
