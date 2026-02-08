@@ -194,6 +194,23 @@ export default function DashboardHome() {
           </p>
         </div>
 
+        {/* ===== MONEY GATE: TRANSITION FROM FREE TO EARN ===== */}
+        <div className="money-gate">
+          <div className="money-gate-line" />
+          <div className="money-gate-content">
+            <span className="money-gate-icon">🚀</span>
+            <h2 className="money-gate-headline">Ready to turn your links into income?</h2>
+            <p className="money-gate-sub">
+              Everything above is yours forever — no strings. What follows is <em>completely optional</em>: 
+              a commission engine that turns every registry purchase into money in your pocket.
+            </p>
+          </div>
+          <div className="money-gate-line" />
+        </div>
+
+        {/* ===== EARN ZONE: visually distinct ===== */}
+        <div className="earn-zone">
+
         {/* ===== SECTION 6: THE ONLY TOOL THAT PAYS YOU BACK ===== */}
         <div className="payback-card">
           <div className="payback-header">
@@ -270,6 +287,8 @@ export default function DashboardHome() {
             Name one other tool you pay for that pays you back. This is the only one.
           </p>
         </div>
+
+        </div>{/* end earn-zone */}
 
         {/* Stats */}
         <div className="stats-grid">
@@ -563,7 +582,35 @@ export default function DashboardHome() {
         .free-card {
           background: linear-gradient(135deg, rgba(147,130,220,0.06), rgba(201,148,74,0.04));
           border: 2px solid rgba(147,130,220,0.2); border-radius: 16px;
-          padding: 32px; margin-bottom: 20px;
+          padding: 32px; margin-bottom: 0;
+        }
+
+        /* MONEY GATE */
+        .money-gate {
+          text-align: center; padding: 40px 0; margin-bottom: 0;
+        }
+        .money-gate-line {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(201,148,74,0.4), transparent);
+          margin: 0 40px;
+        }
+        .money-gate-content { padding: 28px 20px; }
+        .money-gate-icon { font-size: 36px; display: block; margin-bottom: 12px; }
+        .money-gate-headline {
+          font-family: 'Playfair Display', serif; font-size: 22px; color: #2c2420;
+          margin: 0 0 10px; font-weight: 700;
+        }
+        .money-gate-sub {
+          font-size: 15px; color: #6b5e52; line-height: 1.7;
+          max-width: 560px; margin: 0 auto;
+        }
+        .money-gate-sub em { color: #7c6bc4; font-style: normal; font-weight: 600; }
+
+        /* EARN ZONE */
+        .earn-zone {
+          background: linear-gradient(180deg, rgba(34,197,94,0.03) 0%, rgba(201,148,74,0.03) 100%);
+          border: 1px solid rgba(34,197,94,0.12);
+          border-radius: 20px; padding: 8px; margin-bottom: 20px;
         }
         .free-header { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; }
         .free-icon { font-size: 32px; }
@@ -710,6 +757,10 @@ export default function DashboardHome() {
           .page-content { padding: 20px; }
           .stats-grid { grid-template-columns: repeat(2, 1fr); }
           .gift-card, .hook-card, .network-card, .reactivate-card, .free-card, .payback-card { padding: 24px 20px; }
+          .money-gate { padding: 28px 0; }
+          .money-gate-headline { font-size: 19px; }
+          .money-gate-sub { font-size: 14px; }
+          .earn-zone { padding: 6px; border-radius: 16px; }
           .upgrade-nudge { flex-direction: column; }
           .claude-header { flex-direction: column; }
           .net-flow { flex-direction: column; gap: 4px; }
