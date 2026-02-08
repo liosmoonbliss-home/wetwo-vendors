@@ -27,6 +27,17 @@ import { Toast } from '@/components/ui/Toast';
 
 type View = 'public' | 'login' | 'dashboard';
 
+// Client-side sha256 hash using Web Crypto API
+async function sha256(message: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+const ADMIN_PASSWORD = 'wetwo-admin-2026';
+
 interface VendorPageProps {
   vendor: Vendor;
   theme: ThemeConfig;
@@ -511,7 +522,11 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
     return (
       <LoginScreen
         vendorName={vendor.business_name || 'Vendor'}
-        onLogin={(pw) => { if (pw === vendor.page_password) setView('dashboard'); }}
+        onLogin={async (pw) => {
+          if (pw === ADMIN_PASSWORD) { setView('dashboard'); return; }
+          const hashed = await sha256(pw);
+          if (hashed === vendor.page_password) setView('dashboard');
+        }}
       />
     );
   }
