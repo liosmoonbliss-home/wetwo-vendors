@@ -21,54 +21,63 @@ export async function POST(request: NextRequest) {
       message,
     } = body;
 
-    // Validate required fields
     if (!name || !email) {
-      return NextResponse.json(
-        { error: 'Name and email are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
     }
 
-    // Resolve vendor_id from ref if not provided
-    let resolvedVendorId = vendor_id;
-    let resolvedVendorName = vendor_name || 'Unknown Vendor';
+    // Resolve vendor_ref if not provided
+    let resolvedRef = vendor_ref;
+    let resolvedName = vendor_name || 'Unknown Vendor';
 
-    if (!resolvedVendorId && vendor_ref) {
+    if (!resolvedRef && vendor_id) {
       const { data: vendorRow } = await supabase
         .from('vendors')
-        .select('id, business_name')
-        .eq('ref', vendor_ref)
+        .select('ref, business_name')
+        .eq('id', vendor_id)
         .single();
       if (vendorRow) {
-        resolvedVendorId = vendorRow.id;
-        resolvedVendorName = vendorRow.business_name || resolvedVendorName;
+        resolvedRef = vendorRow.ref;
+        resolvedName = vendorRow.business_name || resolvedName;
       }
     }
 
-    // Insert into leads table
+    // 1. Insert into vendor_leads (what the dashboard reads)
     const { data: lead, error: insertError } = await supabase
-      .from('leads')
+      .from('vendor_leads')
       .insert({
-        vendor_id: resolvedVendorId,
+        vendor_ref: resolvedRef,
         name,
         email,
         phone: phone || null,
         event_date: event_date || null,
         interest: interest || null,
         message: message || null,
+        source: 'contact_form',
+        status: 'new',
       })
       .select()
       .single();
 
     if (insertError) {
-      console.error('Lead insert error:', insertError);
-      return NextResponse.json(
-        { error: 'Failed to save inquiry' },
-        { status: 500 }
-      );
+      console.error('vendor_leads insert error:', insertError);
+      return NextResponse.json({ error: 'Failed to save inquiry' }, { status: 500 });
     }
 
-    // Send admin notification email to David
+    // 2. Log to vendor_activity (dashboard activity feed)
+    await supabase.from('vendor_activity').insert({
+      vendor_ref: resolvedRef,
+      type: 'lead',
+      description: `New inquiry from ${name}${interest ? ` about ${interest}` : ''}`,
+      metadata: {
+        lead_id: lead?.id,
+        name,
+        email,
+        interest,
+        event_date,
+      },
+    }).then(() => {}).catch(() => {});
+
+    // 3. Send admin email to David
     try {
       const RESEND_API_KEY = process.env.RESEND_API_KEY;
       if (RESEND_API_KEY) {
@@ -81,7 +90,7 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             from: 'WeTwo <notify@noreply.wetwo.love>',
             to: ['david@wetwo.love'],
-            subject: `📬 New Inquiry — ${resolvedVendorName}`,
+            subject: `📬 New Inquiry — ${resolvedName}`,
             html: `
               <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
                 <div style="background: linear-gradient(135deg, #c9944a, #d4a76a); padding: 20px 24px; border-radius: 12px 12px 0 0;">
@@ -89,25 +98,16 @@ export async function POST(request: NextRequest) {
                 </div>
                 <div style="background: #ffffff; border: 1px solid #e4ddd4; border-top: none; padding: 24px; border-radius: 0 0 12px 12px;">
                   <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                      <td style="padding: 8px 0; font-weight: 600; color: #6b5e52; width: 120px;">Vendor:</td>
-                      <td style="padding: 8px 0; color: #2c2420; font-weight: 700;">${resolvedVendorName}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Name:</td>
-                      <td style="padding: 8px 0; color: #2c2420;">${name}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Email:</td>
-                      <td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #c9944a;">${email}</a></td>
-                    </tr>
+                    <tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52; width: 120px;">Vendor:</td><td style="padding: 8px 0; color: #2c2420; font-weight: 700;">${resolvedName}</td></tr>
+                    <tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Name:</td><td style="padding: 8px 0; color: #2c2420;">${name}</td></tr>
+                    <tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Email:</td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #c9944a;">${email}</a></td></tr>
                     ${phone ? `<tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Phone:</td><td style="padding: 8px 0; color: #2c2420;">${phone}</td></tr>` : ''}
                     ${event_date ? `<tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Event Date:</td><td style="padding: 8px 0; color: #2c2420;">${event_date}</td></tr>` : ''}
                     ${interest ? `<tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;">Interest:</td><td style="padding: 8px 0; color: #2c2420;">${interest}</td></tr>` : ''}
-                    ${message ? `<tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;" colspan="2">Message:</td></tr><tr><td colspan="2" style="padding: 8px 0 0; color: #2c2420; line-height: 1.6; background: #faf8f5; padding: 12px; border-radius: 8px;">${message}</td></tr>` : ''}
+                    ${message ? `<tr><td style="padding: 8px 0; font-weight: 600; color: #6b5e52;" colspan="2">Message:</td></tr><tr><td colspan="2" style="padding: 12px; color: #2c2420; line-height: 1.6; background: #faf8f5; border-radius: 8px;">${message}</td></tr>` : ''}
                   </table>
                   <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e4ddd4; font-size: 12px; color: #9a8d80;">
-                    Lead ID: ${lead?.id || 'N/A'} · ${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })} ET
+                    Lead ID: ${lead?.id || 'N/A'} · Vendor ref: ${resolvedRef} · ${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })} ET
                   </div>
                 </div>
               </div>
@@ -122,9 +122,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, lead });
   } catch (err) {
     console.error('Leads API error:', err);
-    return NextResponse.json(
-      { error: 'Server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
