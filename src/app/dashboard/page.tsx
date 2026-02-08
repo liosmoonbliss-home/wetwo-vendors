@@ -206,16 +206,26 @@ export default function DashboardHome() {
             No receipt. No direct line between your payment and money coming back in.
           </p>
           <p className="payback-text" style={{ fontWeight: 600, color: '#2c2420' }}>
-            This is different. When you upgrade, every purchase through your links generates 
-            trackable commission that flows back to you through the same system you're paying for.
+            This is different. For the price of a cup of coffee a day, you get a system that generates leads, 
+            reactivates cold contacts, puts your name in front of hundreds of new people — and pays you 
+            trackable commission on top of it all.
           </p>
 
+          <div className="real-value-callout">
+            <div className="callout-icon">💎</div>
+            <div>
+              <strong>The real ROI isn't the commission — it's your main business.</strong>
+              <p>One booking from a reactivated lead or a registry guest who found your page is worth $2,000–$10,000+. The commission is just spending money — a cherry on top.</p>
+            </div>
+          </div>
+
           <div className="payback-math">
-            <div className="math-header">The math (per The Knot's 2024 study: avg wedding gift = $150)</div>
+            <div className="math-header">The commission math (per The Knot's 2024 study: avg wedding gift = $150)</div>
             <div className="math-grid">
               <div className="math-tier">
                 <div className="tier-name">Starter</div>
                 <div className="tier-price">$97/mo</div>
+                <div className="daily-cost">$3.23/day</div>
                 <div className="tier-rate">10% commission</div>
                 <div className="tier-per">$15 per sale</div>
                 <div className="tier-break"><strong>7 sales</strong> covers your plan</div>
@@ -224,6 +234,7 @@ export default function DashboardHome() {
                 <div className="tier-badge">Sweet Spot</div>
                 <div className="tier-name">Growth</div>
                 <div className="tier-price">$197/mo</div>
+                <div className="daily-cost">$6.57/day</div>
                 <div className="tier-rate">15% commission</div>
                 <div className="tier-per">$22.50 per sale</div>
                 <div className="tier-break"><strong>9 sales</strong> covers your plan</div>
@@ -231,6 +242,7 @@ export default function DashboardHome() {
               <div className="math-tier">
                 <div className="tier-name">Pro</div>
                 <div className="tier-price">$297/mo</div>
+                <div className="daily-cost">$9.90/day</div>
                 <div className="tier-rate">20% commission</div>
                 <div className="tier-per">$30 per sale</div>
                 <div className="tier-break"><strong>10 sales</strong> covers your plan</div>
@@ -340,10 +352,10 @@ export default function DashboardHome() {
             <div>
               <h4>Before you start sharing — a smart move.</h4>
               <p>
-                <strong>Lock in your 10% commission before you push your links.</strong> Every sale from day one counts — 7 sales covers it.
+                <strong>For the price of a cup of coffee a day, lock in commission before you push your links.</strong> Every sale from day one counts — 7 sales covers it.
               </p>
               <p style={{ marginBottom: 0 }}>
-                <strong>One couple's registry alone could be worth thousands.</strong> Don't leave money on the table during your biggest push.
+                The expense won't change your life. <strong>But what it unlocks absolutely can.</strong>
               </p>
             </div>
             <Link href="/dashboard/earnings" className="nudge-btn">
@@ -424,10 +436,11 @@ export default function DashboardHome() {
 
         {isFree && (
           <div className="bottom-upgrade">
-            <h4>The system is yours. The commission is optional.</h4>
+            <h4>The system is yours. The commission is spending money.</h4>
             <p>
-              Everything above works free. To <strong>earn money</strong> on every purchase your network makes, 
-              upgrade to a paid plan. 7 sales covers your cost. One registry could be worth thousands.
+              Everything above works free. Upgrade for the price of a coffee a day, and every purchase 
+              your network makes earns you <strong>trackable commission</strong> — while the real value is 
+              the leads, the bookings, and the network you're building.
             </p>
             <Link href="/dashboard/earnings" className="upgrade-btn">See the math →</Link>
           </div>
@@ -569,6 +582,15 @@ export default function DashboardHome() {
         .payback-header h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: #2c2420; margin: 0; }
         .payback-text { font-size: 15px; color: #6b5e52; line-height: 1.7; margin: 0 0 12px; }
 
+        .real-value-callout {
+          display: flex; gap: 14px; align-items: flex-start;
+          background: rgba(201,148,74,0.06); border: 1px solid rgba(201,148,74,0.2);
+          border-radius: 12px; padding: 18px; margin-bottom: 20px;
+        }
+        .callout-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+        .real-value-callout strong { font-size: 14px; color: #2c2420; display: block; margin-bottom: 4px; }
+        .real-value-callout p { font-size: 13px; color: #6b5e52; line-height: 1.5; margin: 0; }
+
         .payback-math {
           background: #fff; border: 1px solid #e4ddd4; border-radius: 12px;
           padding: 24px; margin: 20px 0;
@@ -586,7 +608,8 @@ export default function DashboardHome() {
           padding: 2px 10px; border-radius: 10px;
         }
         .tier-name { font-size: 16px; font-weight: 700; color: #2c2420; margin-bottom: 2px; }
-        .tier-price { font-size: 13px; color: #9a8d80; margin-bottom: 8px; }
+        .tier-price { font-size: 13px; color: #9a8d80; margin-bottom: 4px; }
+        .daily-cost { font-size: 11px; color: #c9944a; font-weight: 600; font-style: italic; margin-bottom: 8px; }
         .tier-rate { font-size: 13px; color: #22c55e; font-weight: 600; margin-bottom: 4px; }
         .tier-per { font-size: 14px; color: #6b5e52; margin-bottom: 8px; }
         .tier-break { font-size: 13px; color: #2c2420; }
