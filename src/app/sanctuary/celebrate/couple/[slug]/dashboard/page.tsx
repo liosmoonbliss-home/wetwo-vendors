@@ -1,5 +1,6 @@
 'use client'
 
+import PayPalConnect from '@/components/dashboard/PayPalConnect'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
@@ -474,25 +475,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
             </div>
           </div>
           
-          <a
-            href="https://wetwo.goaffpro.com/forgot-password"
-            target="_blank" rel="noopener noreferrer"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              width: '100%', padding: '12px 16px',
-              background: 'rgba(74, 222, 128, 0.15)',
-              border: '1px solid rgba(74, 222, 128, 0.3)',
-              borderRadius: 8, color: '#4ade80',
-              fontSize: 13, fontWeight: 600, textDecoration: 'none', marginBottom: 10
-            }}
-          >
-            <DollarSign size={16} />
-            Set Up Payout Account
-            <ExternalLink size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} />
-          </a>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, margin: 0, textAlign: 'center' }}>
-            Use your registry email to set password, then Settings → Payment
-          </p>
+          <PayPalConnect type="couple" refId={slug} darkTheme={true} />
         </div>
 
       </div>

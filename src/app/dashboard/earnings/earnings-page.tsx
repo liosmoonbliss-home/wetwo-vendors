@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 
+import PayPalConnect from '@/components/dashboard/PayPalConnect'
+
 export default function EarningsPage() {
   const [vendor, setVendor] = useState<any>(null)
 
@@ -33,6 +35,11 @@ export default function EarningsPage() {
           {!isFree && (
             <div className="rate-badge">✓ Earning {vendor.commission_rate}% on every purchase</div>
           )}
+        </div>
+
+        {/* Payout Setup */}
+        <div style={{ marginBottom: 24 }}>
+          <PayPalConnect type="vendor" refId={vendor.ref} />
         </div>
 
         {/* How It Works */}
