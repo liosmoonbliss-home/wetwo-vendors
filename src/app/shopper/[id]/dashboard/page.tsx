@@ -72,8 +72,8 @@ export default function ShopperDashboard() {
   const s = data.shopper;
   const v = data.vendor;
   const firstName = (s.name || 'there').split(' ')[0];
-  const shopLink = s.goaffpro_referral_code
-    ? `https://wetwo.love?ref=${s.goaffpro_referral_code}`
+  const shopLink = v?.ref
+    ? `https://wetwo.love?ref=vendor-${v.ref}`
     : 'https://wetwo.love';
 
   return (

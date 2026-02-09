@@ -204,6 +204,59 @@ export async function POST(request: NextRequest) {
       });
     } catch (e) { /* tracking should never break signup */ }
 
+
+    // 6. Send welcome email to shopper with dashboard link
+    try {
+      const RESEND_API_KEY = process.env.RESEND_API_KEY;
+      const vendorNameForEmail = vendor_name || vendor_ref || 'your vendor';
+      const dashboardLink = `https://wetwo-vendors.vercel.app/shopper/${client?.id}/dashboard`;
+      const shopNowLink = vendor_ref ? `https://wetwo.love?ref=vendor-${vendor_ref}` : 'https://wetwo.love';
+      if (RESEND_API_KEY && email) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'WeTwo <hello@noreply.wetwo.love>',
+            to: [email],
+            subject: `Welcome to WeTwo — Your 25% Cashback Is Ready!`,
+            html: `
+              <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 600px; margin: 0 auto; background: #0f1419; padding: 0;">
+                <div style="padding: 40px 32px 24px; text-align: center;">
+                  <div style="color: #c9a96e; font-size: 11px; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 8px;">WETWO</div>
+                  <h1 style="color: #e8e0d4; font-size: 28px; font-weight: 300; margin: 0 0 8px;">Welcome, ${name.split(' ')[0]}!</h1>
+                  <p style="color: #7a7570; font-size: 14px; margin: 0;">Your cashback shopping account is ready</p>
+                </div>
+                <div style="padding: 0 32px;">
+                  <div style="background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.15); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <div style="color: #c9a96e; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">Courtesy of</div>
+                    <div style="color: #e8e0d4; font-size: 16px; margin-top: 4px;">${vendorNameForEmail}</div>
+                  </div>
+                  <div style="background: rgba(201,169,110,0.06); border: 1px solid rgba(201,169,110,0.12); border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 20px;">
+                    <div style="color: #e8e0d4; font-size: 18px; font-weight: 300; margin-bottom: 8px;">You earn 25% cashback on every purchase</div>
+                    <p style="color: #7a7570; font-size: 13px; margin-bottom: 20px; line-height: 1.5;">Shop wedding gifts, home essentials, fashion and more and get 25% back.</p>
+                    <a href="${shopNowLink}" style="display: inline-block; padding: 14px 32px; background: #c9a96e; color: #0f1419; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; letter-spacing: 0.5px;">Shop Now</a>
+                  </div>
+                  <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 20px;">
+                    <div style="color: #e8e0d4; font-size: 16px; font-weight: 400; margin-bottom: 8px;">Your Dashboard</div>
+                    <p style="color: #7a7570; font-size: 13px; margin-bottom: 16px; line-height: 1.5;">Bookmark this link to check your cashback, connect PayPal, and shop anytime.</p>
+                    <a href="${dashboardLink}" style="display: inline-block; padding: 12px 28px; border: 1px solid rgba(201,169,110,0.3); color: #c9a96e; border-radius: 8px; font-size: 14px; text-decoration: none;">My Dashboard</a>
+                  </div>
+                </div>
+                <div style="padding: 24px 32px; text-align: center;">
+                  <div style="color: #3a3530; font-size: 10px; letter-spacing: 2px;">WETWO - WHERE EVERY GIFT GOES FURTHER</div>
+                </div>
+              </div>
+            `,
+          }),
+        });
+      }
+    } catch (welcomeErr) {
+      console.error('Shopper welcome email error (non-blocking):', welcomeErr);
+    }
+
     return NextResponse.json({ success: true, client, storeUrl });
   } catch (err) {
     console.error('Shoppers API error:', err);
