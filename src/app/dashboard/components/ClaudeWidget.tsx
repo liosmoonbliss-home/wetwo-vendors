@@ -30,13 +30,8 @@ export default function ClaudeWidget() {
     const stored = localStorage.getItem('wetwo_vendor_session')
     if (stored) setVendor(JSON.parse(stored))
 
-    // Check if they've seen the hero intro before
-    const introduced = localStorage.getItem('wetwo_claude_introduced')
-    if (!introduced) {
-      setMode('hero')
-    } else {
-      setMode('corner-closed')
-    }
+    // Always start in hero mode on every visit
+    setMode('hero')
     setReady(true)
   }, [])
 
