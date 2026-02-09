@@ -418,14 +418,14 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
   }, [slug])
 
   const copyGuestLink = () => {
-    const link = `https://wetwo.love/collections/registry-${slug}`
+    const link = `https://wetwo.love/collections/registry-${slug}?ref=${slug}`
     navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   const shareGuestLink = async () => {
-    const link = `https://wetwo.love/collections/registry-${slug}`
+    const link = `https://wetwo.love/collections/registry-${slug}?ref=${slug}`
     if (navigator.share) {
       await navigator.share({
         title: `${couple?.partner_a} & ${couple?.partner_b}'s Wedding Registry`,
@@ -516,6 +516,30 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
         }}>
           Your Cashback Registry
         </p>
+
+        {/* Vendor Referrer Banner */}
+        {couple?.referred_by_vendor_id && (
+          <div style={{
+            background: 'rgba(74, 222, 128, 0.1)',
+            border: '1px solid rgba(74, 222, 128, 0.3)',
+            borderRadius: 12,
+            padding: '14px 16px',
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10
+          }}>
+            <span style={{ fontSize: 20 }}>🤝</span>
+            <div>
+              <div style={{ color: '#4ade80', fontSize: 14, fontWeight: 600 }}>
+                Referred by {couple.referred_by_vendor || 'a WeTwo Vendor'}
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
+                Your vendor earns when guests buy from your registry
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 1. VIEW REGISTRY */}
         <a
@@ -647,7 +671,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
             color: '#d4af74',
             wordBreak: 'break-all'
           }}>
-            wetwo.love/collections/registry-{slug}
+            wetwo.love/collections/registry-{slug}?ref={slug}
           </div>
           
           <div style={{ display: 'flex', gap: 8 }}>
@@ -798,62 +822,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
             Use your registry email to set password, then Settings → Payment
           </p>
         </div>
-{/* Boost Your Cashback */}
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(212, 175, 116, 0.15) 0%, rgba(212, 175, 116, 0.05) 100%)',
-              border: '1px solid rgba(212, 175, 116, 0.3)',
-              borderRadius: '12px',
-              padding: '20px',
-              marginTop: '16px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                <span style={{ fontSize: '24px' }}>✨</span>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ 
-                    color: '#d4af74', 
-                    fontSize: '16px', 
-                    fontWeight: 600, 
-                    margin: '0 0 6px 0' 
-                  }}>
-                    {Math.round((0.25 + parseFloat(couple?.referral_bonus_percent || '0')) * 100) >= 40 
-                      ? "You've Maxed Your Cashback! 🎉" 
-                      : `Boost Your Cashback to 40%`}
-                  </h3>
-                  <p style={{ 
-                    color: 'rgba(255,255,255,0.7)', 
-                    fontSize: '13px', 
-                    margin: '0 0 12px 0',
-                    lineHeight: 1.5
-                  }}>
-                    {Math.round((0.25 + parseFloat(couple?.referral_bonus_percent || '0')) * 100) >= 40 
-                      ? "You're earning the maximum 40% cashback on every registry purchase. Nice work!"
-                      : `You're earning ${Math.round((0.25 + parseFloat(couple?.referral_bonus_percent || '0')) * 100)}% now. Book vendors through WeTwo partners to stack bonuses — each Sponsor adds +2%, each Benefactor adds +4%, up to 40% total.`}
-                  </p>
-                  {Math.round((0.25 + parseFloat(couple?.referral_bonus_percent || '0')) * 100) < 40 && (
-                    <a 
-                      href="https://wetwo.love/pages/find-vendors"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        background: 'rgba(212, 175, 116, 0.2)',
-                        border: '1px solid rgba(212, 175, 116, 0.4)',
-                        borderRadius: '8px',
-                        padding: '10px 16px',
-                        color: '#d4af74',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        textDecoration: 'none'
-                      }}
-                    >
-                      Find WeTwo Vendors →
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
+
       </div>
 
       {/* Footer */}

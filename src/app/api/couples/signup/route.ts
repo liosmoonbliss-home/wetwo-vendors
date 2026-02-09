@@ -592,6 +592,12 @@ export async function POST(request: NextRequest) {
               goaffpro_affiliate_id: coupleAffiliateId,
             },
           })
+          // Also store vendor business name for display
+          await supabase
+            .from('couples')
+            .update({ referred_by_vendor: refVendor.business_name })
+            .eq('slug', slug)
+
           console.log('✅ Couple added to vendor dashboard:', refVendor.business_name)
         }
       } catch (dashErr) {
@@ -678,6 +684,19 @@ export async function POST(request: NextRequest) {
     // 📧 SEND WELCOME EMAIL
     await sendWelcomeEmail(newCouple, registryUrl, dashboardUrl)
 
+    // Look up vendor name for admin email
+    let referringVendorName = ''
+    if (referred_by_vendor_id) {
+      try {
+        const { data: vn } = await supabase
+          .from('vendors')
+          .select('business_name')
+          .eq('id', referred_by_vendor_id)
+          .single()
+        referringVendorName = vn?.business_name || referred_by_vendor_id
+      } catch {}
+    }
+
     // 📧 SEND ADMIN NOTIFICATION
     try {
       const budgetInfo = budget_range ? `<p><strong>Budget:</strong> ${budget_range}</p>` : ''
@@ -689,7 +708,7 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: 'WeTwo <notify@noreply.wetwo.love>',
         to: 'david@wetwo.love',
-        subject: `🎉 New signup: ${partner_a}${hasPartner ? ` & ${partnerB}` : ''}${budget_range ? ` (${budget_range})` : ''}${phone ? ' 📱' : ''}`,
+        subject: `🎉 New signup: ${partner_a}${hasPartner ? ` & ${partnerB}` : ''}${referringVendorName ? ` via ${referringVendorName}` : ''}${budget_range ? ` (${budget_range})` : ''}${phone ? ' 📱' : ''}`,
         html: `
           <div style="font-family: -apple-system, sans-serif; padding: 20px;">
             <h2 style="color: #1a1a2e;">New Registry Signup!</h2>
@@ -702,6 +721,8 @@ export async function POST(request: NextRequest) {
             ${dateInfo}
             ${locationInfo}
             <p><strong>Source:</strong> ${source || 'Direct signup'}</p>
+            ${referringVendorName ? `<p><strong>🤝 Referred by:</strong> <span style="color: #22c55e; font-weight: 700;">${referringVendorName}</span></p>` : ''}
+            <p><strong>📊 GoAffPro:</strong> ${coupleAffiliateId ? `✅ Affiliate ${coupleAffiliateId}` : '❌ Not created'}</p>
             <p><strong>Status:</strong> ⏳ Pending email verification</p>
             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
             <p>
