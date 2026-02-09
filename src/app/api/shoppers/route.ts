@@ -78,6 +78,12 @@ export async function POST(request: NextRequest) {
       if (goaffproResponse.ok && affiliateData?.affiliate_id) {
         shopperAffiliateId = String(affiliateData.affiliate_id);
         console.log('✅ GoAffPro shopper affiliate created:', shopperAffiliateId);
+        // Save GoAffPro data back to vendor_clients
+        const refCode = affiliateData.ref_code || affiliateData.referral_code || null;
+        await supabase.from('vendor_clients').update({
+          goaffpro_affiliate_id: shopperAffiliateId,
+          goaffpro_referral_code: refCode,
+        }).eq('id', client?.id);
       } else if (affiliateData?.message?.includes('already') || affiliateData?.error?.includes('exists')) {
         console.log('ℹ️ GoAffPro shopper affiliate already exists');
       } else {

@@ -135,7 +135,7 @@ export default function ShopperDashboard() {
           <p style={{ color: '#7a7570', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
             Every purchase you make on WeTwo earns you 25% back. Shop gifts for weddings, for friends, or for yourself.
           </p>
-          <a href="https://wetwo.love" target="_blank" style={{
+          <a href={shopLink} target="_blank" style={{
             display: 'inline-block',
             padding: '14px 32px',
             background: '#c9a96e',
