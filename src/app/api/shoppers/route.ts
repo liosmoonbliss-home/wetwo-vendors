@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error('vendor_clients insert error:', insertError);
       if (insertError.code === '23505') {
-        return NextResponse.json({ success: true, existing: true, storeUrl });
+        const { data: existingClient } = await supabase.from('vendor_clients').select('id').eq('email', email).eq('type', 'shopper').single();
+        return NextResponse.json({ success: true, existing: true, client: existingClient, storeUrl });
       }
       return NextResponse.json({ error: 'Failed to register' }, { status: 500 });
     }
