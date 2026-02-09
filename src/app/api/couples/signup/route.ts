@@ -739,6 +739,16 @@ export async function POST(request: NextRequest) {
       console.error('⚠️ Admin notification failed (non-blocking):', notifyError)
     }
 
+    // Track couple signup event
+    trackEvent({
+      event_type: 'couple_signup',
+      vendor_ref: newCouple?.referred_by_vendor_id || undefined,
+      actor_name: newCouple?.partner_a && newCouple?.partner_b ? `${newCouple.partner_a} & ${newCouple.partner_b}` : undefined,
+      actor_email: newCouple?.email || undefined,
+      summary: `New couple signup: ${newCouple?.partner_a || ''} & ${newCouple?.partner_b || ''} under ${newCouple?.referred_by_vendor || 'direct'}`,
+      metadata: { slug: newCouple?.slug },
+    }).catch(() => {});
+
     return NextResponse.json({
       success: true,
       message: 'Registry created successfully!',
@@ -749,17 +759,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('💥 Unexpected signup error:', error)
-
-    // Track couple signup event
-    try {
-      await trackEvent({
-        event_type: 'couple_signup',
-        vendor_ref: referred_by_vendor_id || undefined,
-        actor_name: partner_a && partnerB ? `${partner_a} & ${partnerB}` : undefined,
-        actor_email: email || undefined,
-        summary: `New couple signup: ${partner_a || ''} & ${partnerB || ''} under ${referred_by_vendor || 'direct'}`,
-        metadata: { slug, wedding_date: weddingDate },
       });
     } catch (e) { /* tracking should never break signup */ }
 
