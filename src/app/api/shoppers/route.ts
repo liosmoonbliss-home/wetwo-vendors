@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         shopperAffiliateId = String(affiliateData.affiliate_id);
         console.log('✅ GoAffPro shopper affiliate created:', shopperAffiliateId);
         // Save GoAffPro data back to vendor_clients
-        const refCode = affiliateData.ref_code || affiliateData.referral_code || null;
+        const refCode = affiliateData.ref_code || shopperRefCode;
         await supabase.from('vendor_clients').update({
           goaffpro_affiliate_id: shopperAffiliateId,
           goaffpro_referral_code: refCode,
