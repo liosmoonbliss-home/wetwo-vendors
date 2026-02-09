@@ -12,7 +12,7 @@ function buildSystemPrompt(vendor: any) {
   const state = vendor.state || ''
   const location = [city, state].filter(Boolean).join(', ')
   const shopLink = `https://wetwo.love?ref=vendor-${vendor.ref}`
-  const registryLink = `https://wetwo.love/couple/signup?ref=vendor-${vendor.ref}`
+  const registryLink = `https://wetwo-vendors.vercel.app/wetwo/couple-signup?ref=vendor-${vendor.ref}`
   const pageLink = `https://wetwo-vendors.vercel.app/vendor/${vendor.ref}`
 
   return `You are Claude — the AI assistant inside the WeTwo Wedding Buyers Club vendor dashboard.

@@ -27,7 +27,7 @@ export default function LinksPage() {
   const biz = vendor.business_name || 'My Business'
   const baseUrl = 'https://wetwo.love'
   const shopLink = `${baseUrl}?ref=vendor-${vendor.ref}`
-  const registryLink = `${baseUrl}/couple/signup?ref=vendor-${vendor.ref}`
+  const registryLink = `https://wetwo-vendors.vercel.app/wetwo/couple-signup?ref=vendor-${vendor.ref}`
   const pageLink = `https://wetwo-vendors.vercel.app/vendor/${vendor.ref}`
 
   // ---- MESSAGES ----
