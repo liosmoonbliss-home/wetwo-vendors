@@ -1,5 +1,5 @@
-import PayPalConnect from '@/components/dashboard/PayPalConnect'
 'use client'
+import PayPalConnect from '@/components/dashboard/PayPalConnect'
 
 import { useState, useEffect } from 'react'
 
