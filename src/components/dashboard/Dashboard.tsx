@@ -23,7 +23,7 @@ export function Dashboard({ vendor, links, onViewPublic }: { vendor: Vendor; lin
     const [l,s,c] = await Promise.all([
       supabase.from('leads').select('*').eq('vendor_id',vendor.id).order('created_at',{ascending:false}),
       supabase.from('shoppers').select('*').eq('vendor_id',vendor.id).order('created_at',{ascending:false}),
-      supabase.from('couples').select('*').eq('vendor_id',vendor.id).order('created_at',{ascending:false}),
+      supabase.from('couples').select('*').eq('referred_by_vendor_id',vendor.id).order('created_at',{ascending:false}),
     ]);
     if(l.data) setLeads(l.data); if(s.data) setShoppers(s.data); if(c.data) setCouples(c.data);
   } load(); }, [vendor.id]);
