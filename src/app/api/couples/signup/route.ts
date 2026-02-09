@@ -755,10 +755,10 @@ export async function POST(request: NextRequest) {
     try {
       await trackEvent({
         event_type: 'couple_signup',
-        vendor_ref: refVendor?.ref || undefined,
+        vendor_ref: referred_by_vendor_id || undefined,
         actor_name: partner_a && partnerB ? `${partner_a} & ${partnerB}` : undefined,
         actor_email: email || undefined,
-        summary: `New couple signup: ${partner_a || ''} & ${partnerB || ''} under ${refVendor?.ref || 'direct'}`,
+        summary: `New couple signup: ${partner_a || ''} & ${partnerB || ''} under ${referred_by_vendor || 'direct'}`,
         metadata: { slug, wedding_date: weddingDate },
       });
     } catch (e) { /* tracking should never break signup */ }
