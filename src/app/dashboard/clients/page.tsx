@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import CouplesPanel from '@/components/dashboard/CouplesPanel'
 
 function ClientsContent() {
   const searchParams = useSearchParams()
@@ -29,7 +30,6 @@ function ClientsContent() {
     setLoading(false)
   }
 
-  const filtered = clients.filter(c => c.type === type)
   const couples = clients.filter(c => c.type === 'couple')
   const shoppers = clients.filter(c => c.type === 'shopper')
 
@@ -56,41 +56,46 @@ function ClientsContent() {
       </header>
 
       <div className="page-content">
-        {loading ? (
-          <div className="empty-state">Loading...</div>
-        ) : filtered.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">{type === 'couple' ? '💍' : '🛒'}</div>
-            <h3>No {type === 'couple' ? 'couples' : 'clients'} yet</h3>
-            <p>
-              {type === 'couple' 
-                ? 'When couples sign up through your registry link, they\'ll appear here.'
-                : 'When people shop through your cashback link, they\'ll appear here.'
-              }
-            </p>
-            <a href="/dashboard/links" className="empty-cta">Go to Your Links →</a>
-          </div>
-        ) : (
-          <div className="client-list">
-            {filtered.map(client => (
-              <div key={client.id} className="client-card">
-                <div className="client-avatar">
-                  {(client.name || '?')[0].toUpperCase()}
-                </div>
-                <div className="client-info">
-                  <h4>{client.name || 'Unknown'}</h4>
-                  <div className="client-meta">
-                    {client.email && <span>✉️ {client.email}</span>}
-                    {client.registered && <span className="badge green">Registered</span>}
-                    {client.total_purchases > 0 && <span className="badge gold">${client.total_purchases.toFixed(0)} purchased</span>}
-                  </div>
-                </div>
-                {client.commission_earned > 0 && (
-                  <div className="client-earned">${client.commission_earned.toFixed(2)}</div>
-                )}
+        {/* COUPLES TAB — Rich CouplesPanel */}
+        {type === 'couple' && vendor && (
+          <CouplesPanel vendorId={vendor.id} vendorRef={vendor.ref} />
+        )}
+
+        {/* SHOPPERS TAB — Original client cards */}
+        {type === 'shopper' && (
+          <>
+            {loading ? (
+              <div className="empty-state">Loading...</div>
+            ) : shoppers.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">🛒</div>
+                <h3>No clients yet</h3>
+                <p>When people shop through your cashback link, they'll appear here.</p>
+                <a href="/dashboard/links" className="empty-cta">Go to Your Links →</a>
               </div>
-            ))}
-          </div>
+            ) : (
+              <div className="client-list">
+                {shoppers.map(client => (
+                  <div key={client.id} className="client-card">
+                    <div className="client-avatar">
+                      {(client.name || '?')[0].toUpperCase()}
+                    </div>
+                    <div className="client-info">
+                      <h4>{client.name || 'Unknown'}</h4>
+                      <div className="client-meta">
+                        {client.email && <span>✉️ {client.email}</span>}
+                        {client.registered && <span className="badge green">Registered</span>}
+                        {client.total_purchases > 0 && <span className="badge gold">${client.total_purchases.toFixed(0)} purchased</span>}
+                      </div>
+                    </div>
+                    {client.commission_earned > 0 && (
+                      <div className="client-earned">${client.commission_earned.toFixed(2)}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -195,4 +200,3 @@ export default function ClientsPage() {
     </Suspense>
   )
 }
-

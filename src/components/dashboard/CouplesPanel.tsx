@@ -1,15 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ExternalLink, Users, DollarSign, Calendar, ShoppingBag, Eye } from 'lucide-react'
 
 // ═══════════════════════════════════════════════════════════════
-// VENDOR COUPLES PANEL — Shows referred couples in vendor dashboard
-// Import into Dashboard.tsx and render when panel === 'couples'
-//
-// Usage:
-//   import CouplesPanel from '@/components/dashboard/CouplesPanel'
-//   {panel === 'couples' && <CouplesPanel vendorId={vendor.id} vendorRef={vendor.ref} />}
+// VENDOR COUPLES PANEL — Light theme for vendor dashboard
+// Shows referred couples with registry stats + dashboard links
 // ═══════════════════════════════════════════════════════════════
 
 interface CoupleRow {
@@ -51,28 +46,32 @@ export default function CouplesPanel({ vendorId, vendorRef }: { vendorId?: strin
   }, [vendorId, vendorRef])
 
   if (loading) {
-    return <p style={{ color: 'var(--text-muted, rgba(255,255,255,0.5))', padding: '20px 0' }}>Loading couples...</p>
+    return <p style={{ color: '#9a8d80', padding: '20px 0' }}>Loading couples...</p>
   }
 
   if (couples.length === 0) {
     return (
       <div style={{
         textAlign: 'center', padding: '40px 20px',
-        background: 'rgba(255,255,255,0.02)', borderRadius: 12,
-        border: '1px solid rgba(255,255,255,0.06)'
+        background: '#fff', borderRadius: 12,
+        border: '1px solid #e4ddd4'
       }}>
-        <Users size={32} color="rgba(255,255,255,0.2)" style={{ marginBottom: 12 }} />
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, margin: '0 0 8px' }}>
+        <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.5 }}>💍</div>
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#2c2420', margin: '0 0 6px' }}>
           No couples yet
+        </h3>
+        <p style={{ fontSize: 14, color: '#6b5e52', margin: '0 auto 16px', maxWidth: 400, lineHeight: 1.5 }}>
+          When couples sign up through your registry link, they'll appear here with their registry stats and dashboard links.
         </p>
-        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, margin: 0 }}>
-          Share your couple signup link to get started. When couples register through your link, they'll appear here.
-        </p>
+        <a href="/dashboard/links" style={{
+          display: 'inline-block', padding: '10px 20px',
+          background: '#c9944a', color: '#fff', borderRadius: 8,
+          textDecoration: 'none', fontSize: 14, fontWeight: 700
+        }}>Go to Your Links →</a>
       </div>
     )
   }
 
-  // Summary stats
   const totalCouples = couples.length
   const totalOrders = couples.reduce((s, c) => s + c.total_orders, 0)
   const totalRevenue = couples.reduce((s, c) => s + c.total_value, 0)
@@ -80,38 +79,29 @@ export default function CouplesPanel({ vendorId, vendorRef }: { vendorId?: strin
   return (
     <div>
       {/* Summary bar */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8,
-        marginBottom: 20
-      }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
         <div style={{
-          background: 'rgba(212, 175, 116, 0.1)', border: '1px solid rgba(212, 175, 116, 0.2)',
+          background: 'rgba(201,148,74,0.06)', border: '1px solid rgba(201,148,74,0.2)',
           borderRadius: 10, padding: '14px 12px', textAlign: 'center'
         }}>
-          <div style={{ color: '#d4af74', fontSize: 22, fontWeight: 700 }}>{totalCouples}</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            Couples
-          </div>
+          <div style={{ color: '#c9944a', fontSize: 24, fontWeight: 700 }}>{totalCouples}</div>
+          <div style={{ color: '#9a8d80', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>Couples</div>
         </div>
         <div style={{
-          background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.2)',
+          background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)',
           borderRadius: 10, padding: '14px 12px', textAlign: 'center'
         }}>
-          <div style={{ color: '#4ade80', fontSize: 22, fontWeight: 700 }}>{totalOrders}</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            Orders
-          </div>
+          <div style={{ color: '#22c55e', fontSize: 24, fontWeight: 700 }}>{totalOrders}</div>
+          <div style={{ color: '#9a8d80', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>Orders</div>
         </div>
         <div style={{
-          background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.2)',
+          background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)',
           borderRadius: 10, padding: '14px 12px', textAlign: 'center'
         }}>
-          <div style={{ color: '#4ade80', fontSize: 22, fontWeight: 700 }}>
+          <div style={{ color: '#22c55e', fontSize: 24, fontWeight: 700 }}>
             ${totalRevenue > 0 ? totalRevenue.toLocaleString() : '0'}
           </div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            Revenue
-          </div>
+          <div style={{ color: '#9a8d80', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>Revenue</div>
         </div>
       </div>
 
@@ -124,72 +114,66 @@ export default function CouplesPanel({ vendorId, vendorRef }: { vendorId?: strin
 
           return (
             <div key={c.id} style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: `1px solid ${isExpanded ? 'rgba(212, 175, 116, 0.3)' : 'rgba(255,255,255,0.06)'}`,
+              background: '#fff',
+              border: `1px solid ${isExpanded ? 'rgba(201,148,74,0.4)' : '#e4ddd4'}`,
               borderRadius: 12, overflow: 'hidden',
               transition: 'border-color 0.2s ease'
             }}>
-              {/* Main row — clickable */}
-              <div 
+              {/* Main row */}
+              <div
                 onClick={() => setExpandedId(isExpanded ? null : c.id)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '14px 16px', cursor: 'pointer'
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '14px 20px', cursor: 'pointer'
                 }}
               >
                 <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: c.total_orders > 0 
-                    ? 'rgba(74, 222, 128, 0.15)' 
-                    : 'rgba(212, 175, 116, 0.1)',
+                  width: 38, height: 38, borderRadius: '50%',
+                  background: c.total_orders > 0 ? 'rgba(34,197,94,0.1)' : '#c9944a',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0
+                  flexShrink: 0, color: c.total_orders > 0 ? '#22c55e' : '#fff',
+                  fontWeight: 700, fontSize: 14
                 }}>
-                  {c.total_orders > 0 
-                    ? <DollarSign size={18} color="#4ade80" />
-                    : <Users size={18} color="#d4af74" />
-                  }
+                  {c.total_orders > 0 ? '💰' : (c.display_name || '?')[0].toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: 'white', fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ color: '#2c2420', fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {c.display_name}
                   </div>
-                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-                    {c.state} · {timeLabel}
+                  <div style={{ color: '#9a8d80', fontSize: 13 }}>
+                    {c.state || 'Active'} · {timeLabel}
                   </div>
                 </div>
                 {c.total_value > 0 && (
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ color: '#4ade80', fontSize: 14, fontWeight: 700 }}>
+                    <div style={{ color: '#22c55e', fontSize: 15, fontWeight: 700 }}>
                       ${c.total_value.toLocaleString()}
                     </div>
-                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
+                    <div style={{ color: '#9a8d80', fontSize: 12 }}>
                       {c.total_orders} order{c.total_orders !== 1 ? 's' : ''}
                     </div>
                   </div>
                 )}
-                <div style={{ 
-                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0)', 
+                <div style={{
+                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0)',
                   transition: 'transform 0.2s ease',
-                  color: 'rgba(255,255,255,0.3)'
-                }}>
-                  ›
-                </div>
+                  color: '#9a8d80', fontSize: 18
+                }}>›</div>
               </div>
 
-              {/* Expanded detail */}
+              {/* Expanded */}
               {isExpanded && (
                 <div style={{
-                  padding: '0 16px 14px',
-                  borderTop: '1px solid rgba(255,255,255,0.06)'
+                  padding: '0 20px 16px',
+                  borderTop: '1px solid #f3efe9'
                 }}>
                   <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ display: 'flex', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-                      <span>📧 {c.email}</span>
+                    <div style={{ fontSize: 13, color: '#6b5e52' }}>
+                      ✉️ {c.email}
                     </div>
                     {c.wedding_date && (
-                      <div style={{ display: 'flex', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-                        <Calendar size={12} /> {c.wedding_date}
+                      <div style={{ fontSize: 13, color: '#6b5e52' }}>
+                        📅 {c.wedding_date}
                       </div>
                     )}
                     <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
@@ -199,14 +183,13 @@ export default function CouplesPanel({ vendorId, vendorRef }: { vendorId?: strin
                         style={{
                           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                           padding: '10px 12px',
-                          background: 'rgba(212, 175, 116, 0.1)',
-                          border: '1px solid rgba(212, 175, 116, 0.25)',
-                          borderRadius: 8, color: '#d4af74',
-                          fontSize: 12, fontWeight: 600, textDecoration: 'none'
+                          background: 'rgba(201,148,74,0.08)',
+                          border: '1px solid rgba(201,148,74,0.25)',
+                          borderRadius: 8, color: '#c9944a',
+                          fontSize: 13, fontWeight: 600, textDecoration: 'none'
                         }}
                       >
-                        <ShoppingBag size={14} />
-                        View Registry
+                        🛍️ View Registry
                       </a>
                       <a
                         href={c.dashboard_url}
@@ -214,14 +197,13 @@ export default function CouplesPanel({ vendorId, vendorRef }: { vendorId?: strin
                         style={{
                           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                           padding: '10px 12px',
-                          background: 'rgba(74, 222, 128, 0.1)',
-                          border: '1px solid rgba(74, 222, 128, 0.25)',
-                          borderRadius: 8, color: '#4ade80',
-                          fontSize: 12, fontWeight: 600, textDecoration: 'none'
+                          background: 'rgba(34,197,94,0.08)',
+                          border: '1px solid rgba(34,197,94,0.25)',
+                          borderRadius: 8, color: '#22c55e',
+                          fontSize: 13, fontWeight: 600, textDecoration: 'none'
                         }}
                       >
-                        <Eye size={14} />
-                        Dashboard
+                        📊 Dashboard
                       </a>
                     </div>
                   </div>
