@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { 
   Copy, Check, ExternalLink, DollarSign, 
-  Share2, ChevronRight, Edit3, Users, Wallet, Send
+  Share2, ChevronRight, Edit3, Users, Wallet, Send, ShoppingBag, Trash2
 } from 'lucide-react'
 
 // ═══════════════════════════════════════════════════════════════
@@ -382,9 +382,34 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
           </div>
         </div>
 
-        {/* ═══ 4. VIEW & EDIT REGISTRY ═══ */}
+        {/* ═══ 4. REMOVE ITEMS ═══ */}
         <a
           href={`https://wetwo.love/collections/registry-${slug}?ref=${slug}&owner=true`}
+          target="_blank" rel="noopener noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 12, padding: 16,
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: 14, textDecoration: 'none', marginBottom: 10
+          }}
+        >
+          <div style={{
+            width: 40, height: 40, borderRadius: 10,
+            background: 'rgba(239, 68, 68, 0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <Trash2 size={20} color="#ef4444" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: 'white', fontSize: 15, fontWeight: 600 }}>Remove Items from Registry</div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Review and remove items you don't want</div>
+          </div>
+          <ExternalLink size={16} color="rgba(255,255,255,0.3)" />
+        </a>
+
+        {/* ═══ 4b. ADD ITEMS ═══ */}
+        <a
+          href={`https://wetwo.love/collections/all?ref=${slug}&owner=true`}
           target="_blank" rel="noopener noreferrer"
           style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: 16,
@@ -395,14 +420,14 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
         >
           <div style={{
             width: 40, height: 40, borderRadius: 10,
-            background: 'rgba(212, 175, 116, 0.15)',
+            background: 'linear-gradient(135deg, rgba(212, 175, 116, 0.2) 0%, rgba(212, 175, 116, 0.1) 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <Edit3 size={20} color="#d4af74" />
+            <ShoppingBag size={20} color="#d4af74" />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ color: 'white', fontSize: 15, fontWeight: 600 }}>View & Edit Registry</div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Add, remove, or browse more items</div>
+            <div style={{ color: 'white', fontSize: 15, fontWeight: 600 }}>Add Items to Registry</div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Browse the store and add more items</div>
           </div>
           <ExternalLink size={16} color="rgba(255,255,255,0.3)" />
         </a>
