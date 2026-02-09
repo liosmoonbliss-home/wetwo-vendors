@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Vendor, Lead, Shopper, Couple } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
 import { Toast } from '../ui/Toast';
+import CouplesPanel from './CouplesPanel';
 type Panel = 'get-started'|'dashboard'|'couples'|'shoppers'|'leads'|'earnings'|'perks'|'analytics'|'marketing'|'settings';
 const NAV: { id: Panel; icon: string; label: string }[] = [
   {id:'get-started',icon:'🚀',label:'Get Started'},{id:'dashboard',icon:'📊',label:'Dashboard'},{id:'couples',icon:'💍',label:'Couples'},
@@ -55,7 +56,7 @@ export function Dashboard({ vendor, links, onViewPublic }: { vendor: Vendor; lin
         <div className="card" style={{textAlign:'center'}}><div style={{fontSize:'32px',fontWeight:700,color:'var(--primary)'}}>{shoppers.length}</div><div style={{color:'var(--text-muted)',fontSize:'14px'}}>Shoppers</div></div>
         <div className="card" style={{textAlign:'center'}}><div style={{fontSize:'32px',fontWeight:700,color:'var(--primary)'}}>{leads.length}</div><div style={{color:'var(--text-muted)',fontSize:'14px'}}>Leads</div></div>
       </div>)}
-      {panel==='couples' && (<div>{couples.length===0?<p style={{color:'var(--text-muted)'}}>No couples yet. Share your couple signup link to get started!</p>:couples.map((c,i)=>(<div key={i} className="card" style={{marginBottom:'12px'}}><div style={{fontWeight:600}}>{c.name}{c.partner_name?` & ${c.partner_name}`:''}</div>{c.email&&<div style={{color:'var(--text-muted)',fontSize:'13px'}}>{c.email}</div>}{c.wedding_date&&<div style={{color:'var(--text-dim)',fontSize:'13px'}}>Wedding: {c.wedding_date}</div>}</div>))}</div>)}
+      {panel==='couples' && <CouplesPanel vendorId={vendor.id} vendorRef={vendor.ref} />}
       {panel==='shoppers' && (<div>{shoppers.length===0?<p style={{color:'var(--text-muted)'}}>No shoppers yet. Share your cashback link!</p>:shoppers.map((s,i)=>(<div key={i} className="card" style={{marginBottom:'12px'}}><div style={{fontWeight:600}}>{s.name}</div>{s.email&&<div style={{color:'var(--text-muted)',fontSize:'13px'}}>{s.email}</div>}</div>))}</div>)}
       {panel==='leads' && (<div>{leads.length===0?<p style={{color:'var(--text-muted)'}}>No leads yet. Leads from your contact form will appear here.</p>:leads.map((l,i)=>(<div key={i} className="card" style={{marginBottom:'12px'}}><div style={{display:'flex',justifyContent:'space-between'}}><div style={{fontWeight:600}}>{l.name}</div><div style={{color:'var(--text-dim)',fontSize:'13px'}}>{l.created_at?new Date(l.created_at).toLocaleDateString():''}</div></div><div style={{color:'var(--text-muted)',fontSize:'13px'}}>{l.email}{l.phone?` • ${l.phone}`:''}</div>{l.message&&<div style={{color:'var(--text-muted)',fontSize:'14px',marginTop:'8px'}}>{l.message}</div>}</div>))}</div>)}
       {panel==='earnings' && (<div>
