@@ -7,6 +7,7 @@ export default function DashboardHome() {
   const [vendor, setVendor] = useState<any>(null)
   const [copied, setCopied] = useState<string | null>(null)
   const [stats, setStats] = useState({ leads: 0, couples: 0, shoppers: 0, totalCommission: 0 })
+  const [sponsorActive, setSponsorActive] = useState<boolean | null>(null)
 
   useEffect(() => {
     const stored = localStorage.getItem('wetwo_vendor_session')
@@ -17,6 +18,10 @@ export default function DashboardHome() {
         .then(r => r.json())
         .then(d => { if (d.stats) setStats(d.stats) })
         .catch(() => {})
+      fetch(`/api/vendor/sponsor-status?ref=${v.ref}`)
+        .then(r => r.json())
+        .then(d => setSponsorActive(d.active === true))
+        .catch(() => setSponsorActive(false))
     }
   }, [])
 
@@ -49,6 +54,33 @@ export default function DashboardHome() {
       </header>
 
       <div className="page-content">
+
+
+        {/* ===== SPONSOR BANNER ===== */}
+        {sponsorActive === true && (
+          <a
+            href="https://wetwo.love/pages/your-sponsors"
+            target="_blank" rel="noopener noreferrer"
+            className="sponsor-banner live"
+          >
+            <span className="sponsor-icon">✨</span>
+            <div className="sponsor-text">
+              <strong>You're live on wetwo.love</strong>
+              <span>Your page is featured in the Sponsor Directory where couples browse wedding professionals.</span>
+            </div>
+            <span className="sponsor-cta">See your listing →</span>
+          </a>
+        )}
+        {sponsorActive === false && (
+          <div className="sponsor-banner expired">
+            <span className="sponsor-icon">🔒</span>
+            <div className="sponsor-text">
+              <strong>Your Sponsor listing has expired</strong>
+              <span>Upgrade to get back in front of couples browsing wetwo.love.</span>
+            </div>
+            <a href="/dashboard/earnings" className="sponsor-cta-btn">Become a Sponsor →</a>
+          </div>
+        )}
 
         {/* ===== SECTION 1: HERE'S WHAT WE JUST BUILT FOR YOU ===== */}
         <div className="gift-card">
@@ -771,6 +803,45 @@ export default function DashboardHome() {
         .upgrade-btn { display: inline-block; padding: 14px 28px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
         .upgrade-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
+        /* SPONSOR BANNER */
+        .sponsor-banner {
+          display: flex; align-items: center; gap: 14px;
+          padding: 16px 20px; border-radius: 12px;
+          margin-bottom: 20px; text-decoration: none;
+          transition: all 0.2s ease;
+        }
+        .sponsor-banner.live {
+          background: linear-gradient(135deg, rgba(201,148,74,0.08), rgba(201,148,74,0.03));
+          border: 1px solid rgba(201,148,74,0.35);
+        }
+        .sponsor-banner.live:hover {
+          border-color: rgba(201,148,74,0.6);
+          box-shadow: 0 4px 16px rgba(201,148,74,0.12);
+        }
+        .sponsor-banner.expired {
+          background: rgba(107,94,82,0.04);
+          border: 1px solid rgba(107,94,82,0.2);
+        }
+        .sponsor-icon { font-size: 24px; flex-shrink: 0; }
+        .sponsor-text { flex: 1; }
+        .sponsor-text strong {
+          display: block; font-size: 14px; color: #2c2420;
+          margin-bottom: 2px;
+        }
+        .sponsor-banner.live .sponsor-text strong { color: #c9944a; }
+        .sponsor-text span { font-size: 13px; color: #6b5e52; line-height: 1.4; }
+        .sponsor-cta {
+          font-size: 13px; color: #c9944a; font-weight: 600;
+          white-space: nowrap; flex-shrink: 0;
+        }
+        .sponsor-cta-btn {
+          padding: 8px 16px; background: #c9944a; color: #fff;
+          border: none; border-radius: 8px; font-size: 13px;
+          font-weight: 700; text-decoration: none; white-space: nowrap;
+          flex-shrink: 0; transition: all 0.2s;
+        }
+        .sponsor-cta-btn:hover { filter: brightness(1.1); }
+
         @media (max-width: 768px) {
           .page-header { padding: 16px 20px; flex-direction: column; gap: 12px; align-items: flex-start; }
           .page-content { padding: 20px; }
@@ -782,6 +853,8 @@ export default function DashboardHome() {
           .earn-zone { padding: 6px; border-radius: 16px; }
           .upgrade-nudge { flex-direction: column; }
           .claude-header { flex-direction: column; }
+          .sponsor-banner { flex-wrap: wrap; }
+          .sponsor-cta, .sponsor-cta-btn { margin-top: 8px; }
           .net-flow { flex-direction: column; gap: 4px; }
           .flow-arrow { transform: rotate(90deg); }
           .math-grid { grid-template-columns: 1fr; }
