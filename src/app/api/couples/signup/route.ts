@@ -757,10 +757,7 @@ export async function POST(request: NextRequest) {
       dashboardUrl,
       couple: newCouple
     })
-
   } catch (error: any) {
-      });
-    } catch (e) { /* tracking should never break signup */ }
 
     return NextResponse.json(
       { 
