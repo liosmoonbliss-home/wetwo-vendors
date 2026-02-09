@@ -321,6 +321,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
   })
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [vendorName, setVendorName] = useState<string | null>(null)
   const [showWelcome, setShowWelcome] = useState(false)
 
   const slug = params.slug
@@ -417,15 +418,35 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
     if (slug) loadStats()
   }, [slug])
 
+  // Look up vendor name if referred
+  useEffect(() => {
+    if (!couple?.referred_by_vendor_id) return
+    const name = couple.referred_by_vendor
+    // If referred_by_vendor looks like a UUID, look up the actual name
+    if (name && !/^[0-9a-f]{8}-/.test(name)) {
+      setVendorName(name)
+    } else {
+      const lookup = async () => {
+        const { data } = await supabase
+          .from('vendors')
+          .select('business_name')
+          .eq('id', couple.referred_by_vendor_id)
+          .single()
+        if (data?.business_name) setVendorName(data.business_name)
+      }
+      lookup()
+    }
+  }, [couple])
+
   const copyGuestLink = () => {
-    const link = `https://wetwo.love/collections/registry-${slug}?ref=${slug}`
+    const link = `https://wetwo.love/collections/registry-${slug}`
     navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   const shareGuestLink = async () => {
-    const link = `https://wetwo.love/collections/registry-${slug}?ref=${slug}`
+    const link = `https://wetwo.love/collections/registry-${slug}`
     if (navigator.share) {
       await navigator.share({
         title: `${couple?.partner_a} & ${couple?.partner_b}'s Wedding Registry`,
@@ -532,7 +553,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
             <span style={{ fontSize: 20 }}>🤝</span>
             <div>
               <div style={{ color: '#4ade80', fontSize: 14, fontWeight: 600 }}>
-                Referred by {couple.referred_by_vendor || 'a WeTwo Vendor'}
+                Referred by {vendorName || 'a WeTwo Vendor'}
               </div>
               <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
                 Your vendor earns when guests buy from your registry
@@ -671,7 +692,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
             color: '#d4af74',
             wordBreak: 'break-all'
           }}>
-            wetwo.love/collections/registry-{slug}?ref={slug}
+            wetwo.love/collections/registry-{slug}
           </div>
           
           <div style={{ display: 'flex', gap: 8 }}>
