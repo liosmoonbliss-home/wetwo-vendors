@@ -40,8 +40,8 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
       });
 
       const data = await res.json();
-      // Redirect to store regardless of insert result
-      window.open(data.storeUrl || storeUrl, '_blank');
+      // Redirect to shopper dashboard if we have an ID
+      if (data.client?.id) { window.location.href = '/shopper/' + data.client.id + '/dashboard'; } else { window.open(data.storeUrl || storeUrl, '_blank'); }
       setShowForm(false);
       form.reset();
     } catch (err) {
