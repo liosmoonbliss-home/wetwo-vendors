@@ -1,3 +1,4 @@
+import { trackEvent } from '@/lib/admin-track';
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
@@ -254,6 +255,15 @@ NEVER tell them to send their shopping links or registry links BEFORE upgrading.
 export async function POST(req: NextRequest) {
   try {
     const { messages, vendor } = await req.json()
+
+  // Track Claude chat event
+  trackEvent({
+    event_type: 'claude_chat',
+    vendor_ref: vendor?.ref || undefined,
+    summary: `Claude chat from vendor ${vendor?.ref || 'unknown'}`,
+    metadata: { message_preview: 'chat interaction' },
+  }).catch(() => {});
+
 
     if (!messages || !vendor) {
       return NextResponse.json({ error: 'Messages and vendor data required' }, { status: 400 })

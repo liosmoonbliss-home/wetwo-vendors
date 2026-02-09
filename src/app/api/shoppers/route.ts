@@ -1,3 +1,4 @@
+import { trackEvent } from '@/lib/admin-track';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -183,6 +184,18 @@ export async function POST(request: NextRequest) {
     } catch (emailErr) {
       console.error('Admin email error (non-blocking):', emailErr);
     }
+
+
+    // Track shopper signup event
+    try {
+      await trackEvent({
+        event_type: 'shopper_signup',
+        vendor_ref: vendor_ref || undefined,
+        actor_name: name || undefined,
+        actor_email: email || undefined,
+        summary: `New shopper: ${name || email || 'unknown'} under ${vendor_ref || 'direct'}`,
+      });
+    } catch (e) { /* tracking should never break signup */ }
 
     return NextResponse.json({ success: true, client, storeUrl });
   } catch (err) {

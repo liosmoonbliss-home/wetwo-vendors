@@ -1,3 +1,4 @@
+import { trackEvent } from '@/lib/admin-track';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -113,6 +114,19 @@ export async function POST(request: NextRequest) {
     } catch (emailErr) {
       console.error('Admin email error (non-blocking):', emailErr);
     }
+
+
+    // Track lead form event
+    try {
+      await trackEvent({
+        event_type: 'lead_form',
+        vendor_ref: resolvedRef || undefined,
+        actor_name: name || undefined,
+        actor_email: email || undefined,
+        summary: `New lead from ${name || email || 'unknown'} for ${resolvedRef || 'unknown'}`,
+        metadata: { message: (message || '').substring(0, 200) },
+      });
+    } catch (e) { /* tracking should never break form */ }
 
     return NextResponse.json({ success: true, lead });
   } catch (err) {

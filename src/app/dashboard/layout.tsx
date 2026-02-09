@@ -1,5 +1,6 @@
 'use client'
 
+import DashboardTracker from '@/components/dashboard/DashboardTracker';
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -159,6 +160,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main content */}
       <main className="dashboard-main">
+        <DashboardTracker />
         {children}
       </main>
 

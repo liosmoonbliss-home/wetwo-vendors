@@ -1,3 +1,4 @@
+import { trackEvent } from '@/lib/admin-track';
 // =================================================================
 // WETWO SIGNUP ROUTE - WITH MLM PARENT ASSIGNMENT FIX
 // Deploy to: app/api/couples/signup/route.ts
@@ -749,6 +750,19 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('💥 Unexpected signup error:', error)
+
+    // Track couple signup event
+    try {
+      await trackEvent({
+        event_type: 'couple_signup',
+        vendor_ref: refVendor?.ref || undefined,
+        actor_name: partner_a && partnerB ? `${partner_a} & ${partnerB}` : undefined,
+        actor_email: email || undefined,
+        summary: `New couple signup: ${partner_a || ''} & ${partnerB || ''} under ${refVendor?.ref || 'direct'}`,
+        metadata: { slug, wedding_date: weddingDate },
+      });
+    } catch (e) { /* tracking should never break signup */ }
+
     return NextResponse.json(
       { 
         success: false, 
