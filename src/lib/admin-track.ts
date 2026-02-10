@@ -13,7 +13,8 @@ export type EventType =
   | 'lead_form'
   | 'vendor_created'
   | 'subscription_change'
-  | 'page_view';
+  | 'page_view'
+  | 'vendor_request';
 
 interface TrackEventParams {
   event_type: EventType;

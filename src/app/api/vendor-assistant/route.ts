@@ -279,15 +279,6 @@ export async function POST(req: NextRequest) {
   try {
     const { messages, vendor } = await req.json()
 
-  // Track Claude chat event
-  trackEvent({
-    event_type: 'claude_chat',
-    vendor_ref: vendor?.ref || undefined,
-    summary: `Claude chat from vendor ${vendor?.ref || 'unknown'}`,
-    metadata: { message_preview: 'chat interaction' },
-  }).catch(() => {});
-
-
     if (!messages || !vendor) {
       return NextResponse.json({ error: 'Messages and vendor data required' }, { status: 400 })
     }
@@ -308,6 +299,25 @@ export async function POST(req: NextRequest) {
 
     const textContent = response.content.find((c: any) => c.type === 'text')
     const text = textContent ? (textContent as any).text : 'Sorry, I could not generate a response.'
+
+    // Get the latest user message for the activity log
+    const latestUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')
+    const userPreview = latestUserMsg?.content?.substring(0, 300) || ''
+    const claudePreview = text.substring(0, 500)
+    const vendorName = vendor.business_name || vendor.contact_name || vendor.ref
+
+    // Track Claude chat event with full content
+    trackEvent({
+      event_type: 'claude_chat',
+      vendor_ref: vendor?.ref || undefined,
+      vendor_name: vendorName,
+      summary: `${vendorName}: "${userPreview.substring(0, 80)}${userPreview.length > 80 ? '...' : ''}"`,
+      metadata: {
+        user_message: userPreview,
+        claude_response: claudePreview,
+        message_count: messages.length,
+      },
+    }).catch(() => {});
 
     return NextResponse.json({ response: text })
   } catch (err) {

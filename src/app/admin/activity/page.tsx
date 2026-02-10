@@ -11,12 +11,14 @@ const EVENT_LABELS: Record<string, string> = {
   vendor_created: '⭐ New Vendor',
   subscription_change: '💎 Subscription',
   page_view: '👁 Page View',
+  vendor_request: '✏️ Page Change Request',
 };
 
 const EVENT_TYPES = [
   { value: '', label: 'All Events' },
   { value: 'dashboard_visit', label: 'Dashboard Visits' },
   { value: 'claude_chat', label: 'Claude Chats' },
+  { value: 'vendor_request', label: 'Page Requests' },
   { value: 'couple_signup', label: 'Couple Signups' },
   { value: 'shopper_signup', label: 'Shopper Signups' },
   { value: 'lead_form', label: 'Lead Forms' },
@@ -34,6 +36,7 @@ const EVENT_COLORS: Record<string, string> = {
   vendor_created: '#ec4899',
   subscription_change: '#06b6d4',
   page_view: '#6b7280',
+  vendor_request: '#f97316',
 };
 
 function formatDate(dateStr: string) {
@@ -48,7 +51,16 @@ export default function AdminActivity() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [offset, setOffset] = useState(0);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const limit = 50;
+
+  const toggleExpand = (id: string) => {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const fetchEvents = (type: string, off: number) => {
     setLoading(true);
@@ -68,6 +80,11 @@ export default function AdminActivity() {
   useEffect(() => {
     fetchEvents(filter, offset);
   }, [filter, offset]);
+
+  const isExpandable = (event: any) => {
+    return (event.event_type === 'claude_chat' || event.event_type === 'vendor_request') &&
+      event.metadata && Object.keys(event.metadata).length > 0;
+  };
 
   const selectStyle: React.CSSProperties = {
     background: 'rgba(255,255,255,0.05)',
@@ -116,69 +133,188 @@ export default function AdminActivity() {
             No events found. Activity will appear here as it happens.
           </div>
         ) : (
-          events.map((event: any, i: number) => (
-            <div key={event.id} style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '14px',
-              padding: '16px 20px',
-              borderBottom: i < events.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-            }}>
-              <div style={{
-                width: '10px', height: '10px', borderRadius: '50%',
-                background: EVENT_COLORS[event.event_type] || '#c9a96e',
-                flexShrink: 0, marginTop: '4px',
-              }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                  <div>
-                    <span style={{ color: '#c8c0b4', fontSize: '13px' }}>
-                      {event.summary || EVENT_LABELS[event.event_type] || event.event_type}
-                    </span>
-                  </div>
-                  <span style={{ color: '#5a5550', fontSize: '11px', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                    {formatDate(event.created_at)}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
-                  <span style={{
-                    fontSize: '10px', padding: '2px 8px', borderRadius: '4px',
-                    background: `${EVENT_COLORS[event.event_type] || '#c9a96e'}20`,
-                    color: EVENT_COLORS[event.event_type] || '#c9a96e',
-                    letterSpacing: '0.3px',
-                  }}>
-                    {event.event_type}
-                  </span>
-                  {event.vendor_ref && (
-                    <a href={`/admin/vendors/${event.vendor_ref}`} style={{
-                      fontSize: '10px', padding: '2px 8px', borderRadius: '4px',
-                      background: 'rgba(255,255,255,0.04)', color: '#7a7570',
-                      textDecoration: 'none',
-                    }}>
-                      {event.vendor_name || event.vendor_ref}
-                    </a>
-                  )}
-                  {event.actor_email && (
-                    <span style={{
-                      fontSize: '10px', padding: '2px 8px', borderRadius: '4px',
-                      background: 'rgba(255,255,255,0.04)', color: '#5a5550',
-                    }}>
-                      {event.actor_email}
-                    </span>
-                  )}
-                </div>
-                {event.metadata && Object.keys(event.metadata).length > 0 && (
+          events.map((event: any, i: number) => {
+            const canExpand = isExpandable(event);
+            const isOpen = expanded.has(event.id);
+
+            return (
+              <div key={event.id} style={{
+                borderBottom: i < events.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+              }}>
+                {/* Main row */}
+                <div
+                  onClick={() => canExpand && toggleExpand(event.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '14px',
+                    padding: '16px 20px',
+                    cursor: canExpand ? 'pointer' : 'default',
+                    transition: 'background 0.15s',
+                    background: isOpen ? 'rgba(255,255,255,0.02)' : 'transparent',
+                  }}
+                  onMouseEnter={(e) => { if (canExpand) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                  onMouseLeave={(e) => { if (!isOpen) e.currentTarget.style.background = 'transparent'; }}
+                >
                   <div style={{
-                    marginTop: '8px', fontSize: '11px', color: '#5a5550',
-                    background: 'rgba(255,255,255,0.02)', padding: '8px 10px',
-                    borderRadius: '4px', fontFamily: 'monospace',
+                    width: '10px', height: '10px', borderRadius: '50%',
+                    background: EVENT_COLORS[event.event_type] || '#c9a96e',
+                    flexShrink: 0, marginTop: '4px',
+                  }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                      <div>
+                        <span style={{ color: '#c8c0b4', fontSize: '13px' }}>
+                          {event.summary || EVENT_LABELS[event.event_type] || event.event_type}
+                        </span>
+                        {canExpand && (
+                          <span style={{
+                            marginLeft: '8px', fontSize: '11px', color: '#5a5550',
+                            transition: 'transform 0.2s',
+                          }}>
+                            {isOpen ? '▼' : '▶ click to view'}
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ color: '#5a5550', fontSize: '11px', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                        {formatDate(event.created_at)}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                      <span style={{
+                        fontSize: '10px', padding: '2px 8px', borderRadius: '4px',
+                        background: `${EVENT_COLORS[event.event_type] || '#c9a96e'}20`,
+                        color: EVENT_COLORS[event.event_type] || '#c9a96e',
+                        letterSpacing: '0.3px',
+                      }}>
+                        {event.event_type}
+                      </span>
+                      {event.vendor_ref && (
+                        <a
+                          href={`/admin/vendors/${event.vendor_ref}`}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            fontSize: '10px', padding: '2px 8px', borderRadius: '4px',
+                            background: 'rgba(255,255,255,0.04)', color: '#7a7570',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          {event.vendor_name || event.vendor_ref}
+                        </a>
+                      )}
+                      {event.actor_email && (
+                        <span style={{
+                          fontSize: '10px', padding: '2px 8px', borderRadius: '4px',
+                          background: 'rgba(255,255,255,0.04)', color: '#5a5550',
+                        }}>
+                          {event.actor_email}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded content for claude_chat */}
+                {isOpen && event.event_type === 'claude_chat' && event.metadata && (
+                  <div style={{
+                    padding: '0 20px 20px 44px',
+                    animation: 'fadeIn 0.15s ease',
                   }}>
-                    {JSON.stringify(event.metadata, null, 0).substring(0, 200)}
+                    {/* Vendor's message */}
+                    {event.metadata.user_message && (
+                      <div style={{ marginBottom: '12px' }}>
+                        <div style={{
+                          fontSize: '10px', fontWeight: 700, color: '#c9a96e',
+                          textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px',
+                        }}>
+                          Vendor asked:
+                        </div>
+                        <div style={{
+                          padding: '12px 14px', borderRadius: '8px',
+                          background: 'rgba(201,169,110,0.06)',
+                          border: '1px solid rgba(201,169,110,0.15)',
+                          color: '#c8c0b4', fontSize: '13px', lineHeight: '1.6',
+                        }}>
+                          {event.metadata.user_message}
+                        </div>
+                      </div>
+                    )}
+                    {/* Claude's response */}
+                    {event.metadata.claude_response && (
+                      <div>
+                        <div style={{
+                          fontSize: '10px', fontWeight: 700, color: '#a855f7',
+                          textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px',
+                        }}>
+                          Claude responded:
+                        </div>
+                        <div style={{
+                          padding: '12px 14px', borderRadius: '8px',
+                          background: 'rgba(168,85,247,0.06)',
+                          border: '1px solid rgba(168,85,247,0.15)',
+                          color: '#c8c0b4', fontSize: '13px', lineHeight: '1.6',
+                          whiteSpace: 'pre-wrap',
+                        }}>
+                          {event.metadata.claude_response}
+                        </div>
+                      </div>
+                    )}
+                    {event.metadata.message_count && (
+                      <div style={{ marginTop: '8px', fontSize: '11px', color: '#5a5550' }}>
+                        {event.metadata.message_count} messages in conversation
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Expanded content for vendor_request */}
+                {isOpen && event.event_type === 'vendor_request' && event.metadata && (
+                  <div style={{
+                    padding: '0 20px 20px 44px',
+                    animation: 'fadeIn 0.15s ease',
+                  }}>
+                    {event.metadata.message && (
+                      <div style={{
+                        padding: '12px 14px', borderRadius: '8px',
+                        background: 'rgba(249,115,22,0.06)',
+                        border: '1px solid rgba(249,115,22,0.15)',
+                        color: '#c8c0b4', fontSize: '13px', lineHeight: '1.6',
+                      }}>
+                        {event.metadata.message}
+                      </div>
+                    )}
+                    {event.vendor_ref && (
+                      <a
+                        href={`/admin/vendors/${event.vendor_ref}`}
+                        style={{
+                          display: 'inline-block', marginTop: '10px',
+                          fontSize: '12px', color: '#f97316', textDecoration: 'none',
+                          fontWeight: 600,
+                        }}
+                      >
+                        View vendor & respond →
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Fallback metadata for other expandable types */}
+                {isOpen && event.event_type !== 'claude_chat' && event.event_type !== 'vendor_request' && event.metadata && Object.keys(event.metadata).length > 0 && (
+                  <div style={{
+                    padding: '0 20px 16px 44px',
+                  }}>
+                    <div style={{
+                      fontSize: '11px', color: '#5a5550',
+                      background: 'rgba(255,255,255,0.02)', padding: '8px 10px',
+                      borderRadius: '4px', fontFamily: 'monospace',
+                    }}>
+                      {JSON.stringify(event.metadata, null, 2)}
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -212,6 +348,13 @@ export default function AdminActivity() {
           </button>
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

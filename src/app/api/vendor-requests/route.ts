@@ -1,3 +1,4 @@
+import { trackEvent } from '@/lib/admin-track';
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -25,6 +26,18 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) throw error
+
+    // Track in activity feed
+    trackEvent({
+      event_type: 'vendor_request',
+      vendor_ref,
+      vendor_name: vendor_name || undefined,
+      summary: `Page change request from ${vendor_name || vendor_ref}`,
+      metadata: {
+        request_id: data.id,
+        message: message.trim().substring(0, 500),
+      },
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, request: data })
   } catch (err) {
