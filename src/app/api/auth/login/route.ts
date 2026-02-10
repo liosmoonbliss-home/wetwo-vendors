@@ -55,14 +55,14 @@ export async function POST(req: NextRequest) {
       .eq('id', account.id)
 
     // Track login in activity feed
-    trackEvent({
+    await trackEvent({
       event_type: 'vendor_login',
       vendor_ref: vendor.ref,
       vendor_name: vendor.business_name || vendor.contact_name,
       actor_email: account.email,
       summary: `${vendor.business_name || vendor.ref} logged in`,
       metadata: { email: account.email, plan: account.plan || 'free' },
-    }).catch(() => {});
+    });
 
     // Return session data (vendor info + account info)
     return NextResponse.json({
