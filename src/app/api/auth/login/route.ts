@@ -55,7 +55,8 @@ export async function POST(req: NextRequest) {
       .eq('id', account.id)
 
     // Track login in activity feed
-    console.log("[LOGIN] tracking login for", vendor.ref); await trackEvent({
+    // Track login directly
+    const { error: trackErr } = await supabase.from('admin_events').insert({
       event_type: 'vendor_login',
       vendor_ref: vendor.ref,
       vendor_name: vendor.business_name || vendor.contact_name,
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
       summary: `${vendor.business_name || vendor.ref} logged in`,
       metadata: { email: account.email, plan: account.plan || 'free' },
     });
+    console.log('[LOGIN] track result:', trackErr ? trackErr.message : 'success');
 
     // Return session data (vendor info + account info)
     return NextResponse.json({
