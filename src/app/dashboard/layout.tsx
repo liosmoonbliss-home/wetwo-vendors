@@ -6,7 +6,19 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import ClaudeWidget from './components/ClaudeWidget'
 
-const NAV_SECTIONS = [
+interface NavItem {
+  label: string
+  icon: string
+  href: string
+  countKey?: string
+}
+
+interface NavSection {
+  title: string
+  items: NavItem[]
+}
+
+const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Command Center',
     items: [
@@ -17,9 +29,9 @@ const NAV_SECTIONS = [
   {
     title: 'Your Network',
     items: [
-      { label: 'Couples', icon: '💍', href: '/dashboard/clients?type=couple' },
-      { label: 'Clients', icon: '🛒', href: '/dashboard/clients?type=shopper' },
-      { label: 'Leads', icon: '📬', href: '/dashboard/leads' },
+      { label: 'Couples', icon: '💍', href: '/dashboard/clients?type=couple', countKey: 'couples' },
+      { label: 'Clients', icon: '🛒', href: '/dashboard/clients?type=shopper', countKey: 'clients' },
+      { label: 'Leads', icon: '📬', href: '/dashboard/leads', countKey: 'leads' },
     ]
   },
   {
@@ -48,12 +60,22 @@ const NAV_SECTIONS = [
   },
 ]
 
+interface Counts {
+  couples: number
+  clients: number
+  leads: number
+  newCouples: number
+  newClients: number
+  newLeads: number
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [vendor, setVendor] = useState<any>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [counts, setCounts] = useState<Counts>({ couples: 0, clients: 0, leads: 0, newCouples: 0, newClients: 0, newLeads: 0 })
 
   useEffect(() => {
     const stored = localStorage.getItem('wetwo_vendor_session')
@@ -70,6 +92,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
     setLoading(false)
   }, [router])
+
+  // Fetch counts for sidebar
+  useEffect(() => {
+    if (!vendor?.ref) return
+    fetch(`/api/vendor-counts?ref=${vendor.ref}`)
+      .then(r => r.json())
+      .then(data => setCounts(data))
+      .catch(() => {})
+  }, [vendor])
 
   const handleLogout = () => {
     localStorage.removeItem('wetwo_vendor_session')
@@ -90,6 +121,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard'
     return pathname.startsWith(href.split('?')[0])
+  }
+
+  // Map countKey to count and new status
+  const getCountInfo = (countKey?: string): { count: number; isNew: boolean } | null => {
+    if (!countKey) return null
+    switch (countKey) {
+      case 'couples': return { count: counts.couples, isNew: counts.newCouples > 0 }
+      case 'clients': return { count: counts.clients, isNew: counts.newClients > 0 }
+      case 'leads': return { count: counts.leads, isNew: counts.newLeads > 0 }
+      default: return null
+    }
   }
 
   return (
@@ -119,17 +161,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {NAV_SECTIONS.map((section) => (
             <div key={section.title} className="nav-section">
               <div className="nav-section-title">{section.title}</div>
-              {section.items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`nav-link ${isActive(item.href) ? 'active' : ''}`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="nav-icon">{item.icon}</span>
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              {section.items.map((item) => {
+                const countInfo = getCountInfo(item.countKey)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`nav-link ${isActive(item.href) ? 'active' : ''}`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span className="nav-icon">{item.icon}</span>
+                    <span className="nav-label">{item.label}</span>
+                    {countInfo && (
+                      <span className="nav-count-group">
+                        <span className="nav-count">{countInfo.count}</span>
+                        {countInfo.isNew && <span className="nav-new-dot" title="New in last 48 hours" />}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
             </div>
           ))}
 
@@ -288,6 +339,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           font-size: 16px;
           width: 22px;
           text-align: center;
+          flex-shrink: 0;
+        }
+        .nav-label {
+          flex: 1;
+        }
+        .nav-count-group {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-left: auto;
+        }
+        .nav-count {
+          font-size: 12px;
+          font-weight: 600;
+          color: #9a8d80;
+          background: #f0ece6;
+          padding: 1px 8px;
+          border-radius: 10px;
+          min-width: 22px;
+          text-align: center;
+        }
+        .nav-link.active .nav-count {
+          color: #c9944a;
+          background: rgba(201,148,74,0.15);
+        }
+        .nav-new-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #22c55e;
+          flex-shrink: 0;
+          animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(0.8); }
         }
         .sidebar-footer {
           padding: 12px;
