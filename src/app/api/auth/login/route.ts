@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { trackEvent } from '@/lib/admin-track';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,6 +54,16 @@ export async function POST(req: NextRequest) {
       .update({ last_login: new Date().toISOString() })
       .eq('id', account.id)
 
+    // Track login in activity feed
+    trackEvent({
+      event_type: 'vendor_login',
+      vendor_ref: vendor.ref,
+      vendor_name: vendor.business_name || vendor.contact_name,
+      actor_email: account.email,
+      summary: `${vendor.business_name || vendor.ref} logged in`,
+      metadata: { email: account.email, plan: account.plan || 'free' },
+    }).catch(() => {});
+
     // Return session data (vendor info + account info)
     return NextResponse.json({
       vendor: {
@@ -77,4 +88,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
-
