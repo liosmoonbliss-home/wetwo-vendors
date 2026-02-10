@@ -26,6 +26,8 @@ const EVENT_LABELS: Record<string, string> = {
   vendor_created: '⭐ New Vendor',
   subscription_change: '💎 Subscription',
   page_view: '👁 Page View',
+  vendor_request: '✏️ Page Request',
+  vendor_login: '🔑 Vendor Login',
 };
 
 const EVENT_COLORS: Record<string, string> = {
@@ -37,6 +39,8 @@ const EVENT_COLORS: Record<string, string> = {
   vendor_created: '#ec4899',
   subscription_change: '#06b6d4',
   page_view: '#6b7280',
+  vendor_request: '#f97316',
+  vendor_login: '#14b8a6',
 };
 
 function timeAgo(dateStr: string) {
