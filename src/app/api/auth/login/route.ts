@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       .eq('id', account.id)
 
     // Track login in activity feed
-    await trackEvent({
+    console.log("[LOGIN] tracking login for", vendor.ref); await trackEvent({
       event_type: 'vendor_login',
       vendor_ref: vendor.ref,
       vendor_name: vendor.business_name || vendor.contact_name,
