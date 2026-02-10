@@ -14,6 +14,13 @@ const EVENT_COLORS: Record<string, string> = {
   page_view: '#6b7280',
 };
 
+const STATUS_OPTIONS = [
+  { value: 'new', label: 'New', color: '#c9a96e' },
+  { value: 'in_progress', label: 'In Progress', color: '#4a9eff' },
+  { value: 'done', label: 'Done', color: '#22c55e' },
+  { value: 'dismissed', label: 'Dismissed', color: '#7a7570' },
+];
+
 function formatDate(dateStr: string) {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
@@ -38,7 +45,9 @@ export default function AdminVendorDetail() {
   const ref = params.ref as string;
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'activity' | 'couples' | 'shoppers' | 'leads'>('activity');
+  const [activeTab, setActiveTab] = useState<'activity' | 'couples' | 'shoppers' | 'leads' | 'requests'>('activity');
+  const [requests, setRequests] = useState<any[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
 
   useEffect(() => {
     fetch(`/api/admin/vendors?ref=${ref}`)
@@ -46,7 +55,32 @@ export default function AdminVendorDetail() {
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
+
+    // Fetch change requests for this vendor
+    fetch(`/api/vendor-requests?ref=${ref}`)
+      .then((r) => r.json())
+      .then((d) => setRequests(d.requests || []))
+      .catch(console.error)
+      .finally(() => setRequestsLoading(false));
   }, [ref]);
+
+  const updateRequest = async (id: string, status: string, admin_notes?: string) => {
+    try {
+      const body: any = { id, status };
+      if (admin_notes !== undefined) body.admin_notes = admin_notes;
+      const res = await fetch('/api/vendor-requests', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const d = await res.json();
+      if (d.success) {
+        setRequests(prev => prev.map(r => r.id === id ? d.request : r));
+      }
+    } catch (err) {
+      console.error('Failed to update request:', err);
+    }
+  };
 
   if (loading) return <div style={{ color: '#7a7570', padding: '40px 0' }}>Loading vendor...</div>;
   if (!data?.vendor) return <div style={{ color: '#e74c3c' }}>Vendor not found</div>;
@@ -56,9 +90,11 @@ export default function AdminVendorDetail() {
   const clients = data.clients || [];
   const leads = data.leads || [];
   const events = data.events || [];
+  const newRequestCount = requests.filter(r => r.status === 'new').length;
 
   const tabs = [
     { key: 'activity', label: `Activity (${events.length})` },
+    { key: 'requests', label: `Requests${newRequestCount > 0 ? ` (${newRequestCount} new)` : requests.length > 0 ? ` (${requests.length})` : ''}` },
     { key: 'couples', label: `Couples (${couples.length})` },
     { key: 'shoppers', label: `Shoppers (${clients.length})` },
     { key: 'leads', label: `Leads (${leads.length})` },
@@ -167,6 +203,85 @@ export default function AdminVendorDetail() {
 
       {/* Tab Content */}
       <div style={cardStyle}>
+
+        {/* ===== REQUESTS TAB ===== */}
+        {activeTab === 'requests' && (
+          <div>
+            {requestsLoading ? (
+              <div style={{ color: '#5a5550', fontSize: '13px' }}>Loading requests...</div>
+            ) : requests.length === 0 ? (
+              <div style={{ color: '#5a5550', fontSize: '13px', fontStyle: 'italic' }}>No change requests from this vendor yet.</div>
+            ) : requests.map((r: any, i: number) => {
+              const statusOpt = STATUS_OPTIONS.find(s => s.value === r.status) || STATUS_OPTIONS[0];
+              return (
+                <div key={r.id} style={{
+                  padding: '16px 0',
+                  borderBottom: i < requests.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                }}>
+                  {/* Header row */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <select
+                        value={r.status}
+                        onChange={(e) => updateRequest(r.id, e.target.value)}
+                        style={{
+                          background: 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${statusOpt.color}40`,
+                          borderRadius: '4px',
+                          color: statusOpt.color,
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          padding: '3px 8px',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        {STATUS_OPTIONS.map(s => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <span style={{ color: '#5a5550', fontSize: '11px' }}>{timeAgo(r.created_at)}</span>
+                  </div>
+
+                  {/* Message */}
+                  <div style={{
+                    padding: '12px 14px', borderRadius: '8px',
+                    background: 'rgba(255,255,255,0.02)', color: '#c8c0b4',
+                    fontSize: '14px', lineHeight: '1.6', marginBottom: '10px',
+                  }}>
+                    {r.message}
+                  </div>
+
+                  {/* Admin notes - inline editable */}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <input
+                      type="text"
+                      placeholder="Add a note (visible to vendor)..."
+                      defaultValue={r.admin_notes || ''}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          updateRequest(r.id, r.status, (e.target as HTMLInputElement).value)
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value !== (r.admin_notes || '')) {
+                          updateRequest(r.id, r.status, e.target.value)
+                        }
+                      }}
+                      style={{
+                        flex: 1, padding: '8px 12px', fontSize: '12px', color: '#c8c0b4',
+                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '6px', fontFamily: 'inherit',
+                      }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         {activeTab === 'activity' && (
           <div>
             {events.length === 0 ? (
