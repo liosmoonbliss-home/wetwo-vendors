@@ -93,6 +93,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setLoading(false)
   }, [router])
 
+  // Log vendor session (debounced server-side to once per 2 hours)
+  useEffect(() => {
+    if (!vendor?.ref) return
+    fetch('/api/vendor-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ref: vendor.ref,
+        business_name: vendor.business_name,
+        email: vendor.email,
+        plan: vendor.plan,
+      }),
+    }).catch(() => {})
+  }, [vendor])
+
   // Fetch counts for sidebar
   useEffect(() => {
     if (!vendor?.ref) return
