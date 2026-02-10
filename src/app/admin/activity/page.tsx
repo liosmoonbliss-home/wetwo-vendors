@@ -12,6 +12,7 @@ const EVENT_LABELS: Record<string, string> = {
   subscription_change: '💎 Subscription',
   page_view: '👁 Page View',
   vendor_request: '✏️ Page Change Request',
+  vendor_login: '🔑 Vendor Login',
 };
 
 const EVENT_TYPES = [
@@ -19,6 +20,7 @@ const EVENT_TYPES = [
   { value: 'dashboard_visit', label: 'Dashboard Visits' },
   { value: 'claude_chat', label: 'Claude Chats' },
   { value: 'vendor_request', label: 'Page Requests' },
+  { value: 'vendor_login', label: 'Vendor Logins' },
   { value: 'couple_signup', label: 'Couple Signups' },
   { value: 'shopper_signup', label: 'Shopper Signups' },
   { value: 'lead_form', label: 'Lead Forms' },
@@ -37,6 +39,7 @@ const EVENT_COLORS: Record<string, string> = {
   subscription_change: '#06b6d4',
   page_view: '#6b7280',
   vendor_request: '#f97316',
+  vendor_login: '#14b8a6',
 };
 
 function formatDate(dateStr: string) {

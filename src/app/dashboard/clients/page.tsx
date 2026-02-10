@@ -12,6 +12,11 @@ function ClientsContent() {
   const [loading, setLoading] = useState(true)
   const [type, setType] = useState(typeParam)
 
+  // Sync tab state with URL when searchParams change (fixes sidebar nav)
+  useEffect(() => {
+    setType(typeParam)
+  }, [typeParam])
+
   useEffect(() => {
     const stored = localStorage.getItem('wetwo_vendor_session')
     if (stored) {
