@@ -6,6 +6,7 @@ import OnboardUrl from '@/components/builder/OnboardUrl';
 import BuilderChat from '@/components/builder/BuilderChat';
 import { mapOnboardToVendor } from '@/lib/mapOnboardToVendor';
 import { THEME_LIBRARY } from '@/lib/themes';
+import { normalizeSectionIds } from '@/lib/normalizeSections';
 
 // ── TYPES ─────────────────────────────────────────────────────
 
@@ -556,8 +557,8 @@ export default function BuilderPage() {
   // ── RENDER: EDITOR (split panel) ──────────────
   const heroImage = images.find(i => i.isHero)?.url || '';
   const galleryImages = images.filter(i => i.inGallery).map(i => i.url);
-  const activeSections = vendor.active_sections || [];
-  const sectionOrder = vendor.section_order || [];
+  const activeSections = normalizeSectionIds((vendor.active_sections || []) as SectionId[]);
+  const sectionOrder = normalizeSectionIds((vendor.section_order || []) as SectionId[]);
   const theme = vendor.theme_preset ? THEME_LIBRARY[vendor.theme_preset] : null;
 
   return (
@@ -1212,7 +1213,7 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
   const bgCard = theme?.bgCard || '#ffffff';
   const isDark = theme?.mode === 'dark';
   const heroConfig = vendor.hero_config as Record<string, unknown> | undefined;
-  const sections = vendor.section_order || [];
+  const sections = normalizeSectionIds((vendor.section_order || []) as SectionId[]);
 
   return (
     <div style={{ transformOrigin: 'top left', transform: `scale(${scale})`, width: `${100 / scale}%`, minHeight: `${100 / scale}%` }}>

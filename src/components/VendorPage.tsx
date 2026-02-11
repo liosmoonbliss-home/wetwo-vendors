@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vendor, SectionId } from '@/lib/types';
 import type { ThemeConfig } from '@/lib/types';
+import { normalizeSectionIds } from '@/lib/normalizeSections';
 
 // Section components
 import { HeroSection } from '@/components/sections/Hero';
@@ -319,8 +320,9 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
 
   // Auto-detect sections when none are configured
   const { resolvedActive, resolvedOrder } = useMemo(() => {
-    const rawActive = Array.isArray(activeSections) ? activeSections : [];
-    const rawOrder = Array.isArray(sectionOrder) ? sectionOrder : [];
+    // Normalize aliases FIRST (e.g. "services" → "services_list")
+    const rawActive = normalizeSectionIds(Array.isArray(activeSections) ? activeSections : []);
+    const rawOrder = normalizeSectionIds(Array.isArray(sectionOrder) ? sectionOrder : []);
 
     if (rawActive.length > 0 && rawOrder.length > 0) {
       return { resolvedActive: rawActive, resolvedOrder: rawOrder };
@@ -394,8 +396,6 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
         return <TestimonialsSection key={key} vendor={vendor} />;
       case 'faq':
         return <FAQSection key={key} vendor={vendor} />;
-      case 'about' as SectionId:
-        return <AboutSection key={key} vendor={vendor} />;
       case 'about' as SectionId:
         return <AboutSection key={key} vendor={vendor} />;
       case 'contact':

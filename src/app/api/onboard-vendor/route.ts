@@ -108,8 +108,8 @@ Return ONLY a JSON object (no markdown fences, no explanation) with this structu
     "state": "state abbreviation",
     "service_area": "Creative area description"
   },
-  "active_sections": ["hero", "about", "services", "gallery", "packages", "contact"],
-  "section_order": ["hero", "about", "services", "gallery", "packages", "contact"],
+  "active_sections": ["hero", "about", "services_list", "gallery", "packages", "contact"],
+  "section_order": ["hero", "about", "services_list", "gallery", "packages", "contact"],
   "event_types": ["Weddings", "any other relevant event types"]
 }
 
@@ -128,7 +128,9 @@ Return ONLY a JSON object (no markdown fences, no explanation) with this structu
 11. design_notes explains your creative thinking for the human reviewer.
 12. hero_mood is a creative direction note for the rendering engine.
 13. CONTRAST IS CRITICAL: The accent_word color and all hero text must be readable over images. For dark/busy hero backgrounds, accent_word should be a BRIGHT or WARM tone (gold, coral, blush, champagne) — NEVER dark blue, forest green, or maroon. For light backgrounds, accent colors can be deeper. Think: would this text pass a readability test over a photo?
-14. theme_recommendation.primary_color should be a color that works as BOTH a button color AND an accent-word color on hero images. Avoid dark primaries for dark-mood themes — go warm and luminous instead.`;
+14. theme_recommendation.primary_color should be a color that works as BOTH a button color AND an accent-word color on hero images. Avoid dark primaries for dark-mood themes — go warm and luminous instead.
+15. SECTION IDS ARE CANONICAL: active_sections and section_order MUST use these exact IDs: hero, about, gallery, services_list, packages, testimonials, faq, menu_accordion, event_types, video_showcase, team_spotlight, venue_details, contact. NEVER use shorthand like "services" (use "services_list"), "menu" (use "menu_accordion"), "reviews" (use "testimonials"), or "faqs" (use "faq").
+16. services_list MUST always be included in active_sections and section_order. Every vendor page needs a services section.`;
 
 export async function POST(req: NextRequest) {
   try {
