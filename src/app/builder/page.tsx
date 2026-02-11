@@ -1117,30 +1117,31 @@ export default function BuilderPage() {
                 <BuilderChat
                   vendor={vendor}
                   onApplyChanges={(changes) => {
+                    const c = changes as any;
                     // Handle gallery_images_append separately (images are in their own state)
-                    if (changes.gallery_images_append && Array.isArray(changes.gallery_images_append)) {
-                      const newImgs = (changes.gallery_images_append as string[]).map((url: string) => ({
+                    if (c.gallery_images_append && Array.isArray(c.gallery_images_append)) {
+                      const newImgs = (c.gallery_images_append as string[]).map((url: string) => ({
                         url,
                         isHero: false,
                         inGallery: true,
                       }));
                       setImages(prev => [...prev, ...newImgs]);
-                      delete changes.gallery_images_append;
+                      delete c.gallery_images_append;
                     }
                     // Handle hero_image_url separately
-                    if (changes.hero_image_url && typeof changes.hero_image_url === 'string') {
-                      const heroUrl = changes.hero_image_url as string;
+                    if (c.hero_image_url && typeof c.hero_image_url === 'string') {
+                      const heroUrl = c.hero_image_url as string;
                       setImages(prev => {
                         const updated = prev.map(img => ({ ...img, isHero: false }));
                         return [{ url: heroUrl, isHero: true, inGallery: false }, ...updated];
                       });
-                      delete changes.hero_image_url;
+                      delete c.hero_image_url;
                     }
                     // Apply remaining changes to vendor state
-                    if (Object.keys(changes).length > 0) {
+                    if (Object.keys(c).length > 0) {
                       setVendor(prev => {
                         const merged = { ...prev };
-                        for (const [key, value] of Object.entries(changes)) {
+                        for (const [key, value] of Object.entries(c)) {
                           if (key === 'hero_config' && typeof value === 'object' && value !== null) {
                             merged.hero_config = { ...(prev.hero_config || {}), ...value } as any;
                           } else {
