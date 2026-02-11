@@ -4,6 +4,76 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
+// ── URL detection + fetch ────────────────────────────────────
+const URL_REGEX = /https?:\/\/[^\s"'<>)\]]+/gi;
+
+async function fetchUrlContent(url: string): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; WeTwo-Builder/1.0)',
+        'Accept': 'text/html,application/xhtml+xml,*/*',
+      },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('text/html') && !contentType.includes('text/plain')) return null;
+    const html = await res.text();
+    // Strip scripts/styles to save tokens, keep meaningful content
+    const cleaned = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<noscript[\s\S]*?<\/noscript>/gi, '')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    // Cap at ~30k chars to leave room in context window
+    return cleaned.slice(0, 30000);
+  } catch {
+    return null;
+  }
+}
+
+async function extractImageUrls(html: string, baseUrl: string): Promise<string[]> {
+  const imgs: string[] = [];
+  const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+  let match;
+  while ((match = imgRegex.exec(html)) !== null) {
+    let src = match[1];
+    if (src.startsWith('//')) src = 'https:' + src;
+    else if (src.startsWith('/')) {
+      try {
+        const u = new URL(baseUrl);
+        src = u.origin + src;
+      } catch { continue; }
+    }
+    if (src.startsWith('http') && !src.includes('data:') && !src.includes('.svg')) {
+      imgs.push(src);
+    }
+  }
+  // Also grab background-image URLs
+  const bgRegex = /background(?:-image)?\s*:\s*url\(["']?([^"')]+)["']?\)/gi;
+  while ((match = bgRegex.exec(html)) !== null) {
+    let src = match[1];
+    if (src.startsWith('//')) src = 'https:' + src;
+    else if (src.startsWith('/')) {
+      try {
+        const u = new URL(baseUrl);
+        src = u.origin + src;
+      } catch { continue; }
+    }
+    if (src.startsWith('http') && !src.includes('data:')) {
+      imgs.push(src);
+    }
+  }
+  // Deduplicate
+  return [...new Set(imgs)];
+}
+
 const EDITOR_SYSTEM_PROMPT = `You are the creative director at WeTwo — a premium wedding vendor platform. You're inside the page builder, reviewing and refining a vendor's page in real time.
 
 You can SEE the current state of the vendor page (business info, hero, services, packages, bio, theme, etc). The human editor — the WeTwo platform operator — is talking to you about this specific vendor's page.
@@ -15,6 +85,7 @@ You can SEE the current state of the vendor page (business info, hero, services,
 3. **Incorporate new content** — the editor might paste a page you missed, vendor feedback, social posts, reviews, etc
 4. **Suggest improvements** — headline rewrites, bio polish, package restructuring, theme changes
 5. **Creative direction** — explain why a layout or color choice works or doesn't
+6. **Fetch web content** — when the editor shares a URL, you can see the fetched HTML and any images found on that page. Use this to extract gallery images, content, bios, services, etc.
 
 === HOW TO RESPOND ===
 
@@ -41,7 +112,25 @@ OR, when making changes:
   }
 }
 
+OR, when adding images to the gallery:
+
+{
+  "message": "Found some beautiful shots! Here are the best ones I'd add to the gallery...",
+  "changes": {
+    "gallery_images_append": ["https://example.com/img1.jpg", "https://example.com/img2.jpg"]
+  }
+}
+
 The "changes" object is a PARTIAL update — only include fields you're changing. The builder will merge them into the current vendor state.
+
+=== WORKING WITH FETCHED WEB CONTENT ===
+
+When the system provides fetched HTML and image lists from a URL:
+- Examine the images and pick the best ones for the vendor's gallery (look for portfolio shots, event photos, high-quality work samples)
+- Skip logos, icons, tiny thumbnails, social media badges, and stock photos
+- Prefer images that are large, high-quality, and showcase the vendor's actual work
+- When adding gallery images, use "gallery_images_append" in changes to ADD to existing gallery (don't replace)
+- You can also extract text content like bios, service descriptions, testimonials, etc.
 
 === RULES ===
 
@@ -54,7 +143,8 @@ The "changes" object is a PARTIAL update — only include fields you're changing
 7. For theme changes, use real theme names from the WeTwo library or describe the mood.
 8. For hero_config changes, remember: headline is the PROMISE (never the business name), accent_word must appear in the headline.
 9. When asked to adjust based on vendor feedback, balance their preferences with good design.
-10. You can suggest changes without making them — use "changes": null and describe what you'd do.`;
+10. You can suggest changes without making them — use "changes": null and describe what you'd do.
+11. When a URL is provided with fetched content, USE IT. Don't say you can't access URLs — the system has already fetched the page for you.`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -67,6 +157,38 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
+    }
+
+    // ── Detect URLs and fetch them ───────────────────────────
+    const urls = message.match(URL_REGEX) || [];
+    let fetchedContent = '';
+
+    if (urls.length > 0) {
+      const fetches = await Promise.all(
+        urls.slice(0, 3).map(async (url: string) => {
+          const html = await fetchUrlContent(url);
+          if (!html) return null;
+          const images = await extractImageUrls(html, url);
+          return { url, html, images };
+        })
+      );
+
+      const successful = fetches.filter(Boolean);
+      if (successful.length > 0) {
+        fetchedContent = '\n\n=== FETCHED WEB CONTENT ===\n';
+        for (const result of successful) {
+          if (!result) continue;
+          fetchedContent += `\n--- URL: ${result.url} ---\n`;
+          fetchedContent += `IMAGES FOUND (${result.images.length}):\n`;
+          result.images.forEach((img, i) => {
+            fetchedContent += `  ${i + 1}. ${img}\n`;
+          });
+          // Include a trimmed version of the HTML for text extraction
+          const textHtml = result.html.slice(0, 15000);
+          fetchedContent += `\nPAGE CONTENT (trimmed):\n${textHtml}\n`;
+        }
+        fetchedContent += '\n=== END FETCHED CONTENT ===\n';
+      }
     }
 
     // Build the conversation context
@@ -85,10 +207,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Current user message with vendor context
+    // Current user message with vendor context + fetched content
     messages.push({
       role: 'user',
-      content: `${message}${vendorContext}`,
+      content: `${message}${fetchedContent}${vendorContext}`,
     });
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
