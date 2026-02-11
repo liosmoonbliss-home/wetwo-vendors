@@ -175,7 +175,7 @@ export default function DashboardHome() {
                 <span className="link-emoji">💍</span>
                 <div>
                   <h4 className="link-title">For Your Couples</h4>
-                  <p className="link-desc">The honeymoon money link — 150 guests = $5,625 cash back in their pocket. Every guest sees your name.</p>
+                  <p className="link-desc">The honeymoon money link — a 150-guest wedding could mean $5,000+ cash back for the couple. Every guest sees your name.</p>
                 </div>
               </div>
               <div className="link-row">
@@ -256,19 +256,20 @@ export default function DashboardHome() {
                 <h2>You're giving couples their honeymoon. Literally.</h2>
               </div>
               <p>
-                When you give a couple your registry link, every single wedding guest gets 25% cashback on their gift.
-                It adds up fast:
+                When you give a couple your registry link, their guests buy gifts at already-discounted prices — great deals.
+                But the couple gets 25% of every purchase back as cash. A $150 gift gives them the gift PLUS $37.50 in cash.
+                Every guest amplifies their gift. It adds up fast:
               </p>
               <div className="registry-math" style={{ margin: '16px 0' }}>
                 <div className="registry-numbers" style={{ flexDirection: 'column', gap: '6px' }}>
-                  <span>100 guests × $150 avg gift = <strong>$3,750 cash back</strong> — that's honeymoon flights ✈️</span>
-                  <span>150 guests × $150 avg gift = <strong>$5,625 cash back</strong> — flights + the hotel 🏨</span>
-                  <span>200 guests × $150 avg gift = <strong>$7,500 cash back</strong> — the entire trip 🌴</span>
+                  <span>100 guests × $150 avg gift → couple could get up to <strong>$3,750 cash back</strong> ✈️</span>
+                  <span>150 guests × $150 avg gift → couple could get up to <strong>$5,625 cash back</strong> 🏨</span>
+                  <span>200 guests × $150 avg gift → couple could get up to <strong>$7,500 cash back</strong> 🌴</span>
                 </div>
               </div>
               <p>
-                That's not a coupon. That's real, spendable money going straight into a newlywed couple's pocket —
-                because <strong>you</strong> were generous enough to share it.
+                That's not a coupon. That's real, spendable honeymoon money —
+                because <strong>you</strong> were generous enough to set it up for them.
               </p>
               <p style={{ marginBottom: 0 }}>
                 And every guest who buys a gift sees <strong>"Gift from {firstName}"</strong> — linked right back to your page. One registry = hundreds of people discovering you, attached to your generosity.
@@ -337,14 +338,14 @@ export default function DashboardHome() {
                   <div className="net-num">1</div>
                   <div>
                     <strong>You give a couple the registry link.</strong>
-                    <p>They set it up. Now every guest — 100, 150, 200 people — sees <em className="accent-gold">"Gift from {firstName}"</em> on every purchase. You just put $3,750–$7,500 in that couple's pocket.</p>
+                    <p>They set it up. Now every guest — 100, 150, 200 people — sees <em className="accent-gold">"Gift from {firstName}"</em> on every purchase. And the couple could be getting thousands back in cash for their honeymoon.</p>
                   </div>
                 </div>
                 <div className="net-step">
                   <div className="net-num">2</div>
                   <div>
                     <strong>Those guests click your name.</strong>
-                    <p>They land on your page. They see your work. They reach out. And they just received real cashback — because of you.</p>
+                    <p>They land on your page. They see your work. They reach out. And they just got a great deal on their gift — because of you.</p>
                   </div>
                 </div>
                 <div className="net-step">
@@ -358,7 +359,7 @@ export default function DashboardHome() {
                   <div className="net-num">4</div>
                   <div>
                     <strong>It compounds.</strong>
-                    <p>One couple's registry = 150+ people seeing your brand. Every single one received real money because of your generosity. That's not marketing. That's a legacy.</p>
+                    <p>One couple's registry = 150+ people seeing your brand. The couple got their honeymoon money, every guest got a great deal, and your name is on all of it. That's not marketing. That's a legacy.</p>
                   </div>
                 </div>
               </div>
@@ -390,7 +391,7 @@ export default function DashboardHome() {
                 <h2>The gift-giving is free. The honeymoon money is free. No catch.</h2>
               </div>
               <p>
-                Right now, for $0, you can put $3,750–$7,500 in a couple's pocket for their honeymoon.
+                Right now, for $0, you could be putting thousands of dollars in a couple's pocket for their honeymoon.
                 You can gift every client, every friend, every person in your life exclusive 25% cashback on thousands of products.
                 <strong className="accent-purple"> You're already the most generous {category} in your market.</strong>
               </p>
@@ -459,7 +460,7 @@ export default function DashboardHome() {
                   One couple. 150 guests. $150 average gift. That's <strong>$22,500 in total purchases</strong>.
                 </p>
                 <p style={{ fontSize: '13px', color: '#6b5e52', margin: '0 0 12px' }}>
-                  <strong style={{ color: '#c9944a' }}>What the couple gets:</strong> $5,625 cash back — their honeymoon, courtesy of you.
+                  <strong style={{ color: '#c9944a' }}>What the couple gets:</strong> Up to $5,625 cash back — their honeymoon, courtesy of you.
                 </p>
                 <div className="registry-numbers">
                   <span><strong style={{ color: '#c9944a' }}>What you earn:</strong></span>
@@ -533,7 +534,7 @@ export default function DashboardHome() {
                 <div className="play-number">3</div>
                 <div className="play-content">
                   <h4>Send the gift to everyone who said yes</h4>
-                  <p>Now share your cashback link and registry link with everyone who's interested. They get real money back. You earn commission. The couple gets honeymoon money. Everyone wins from day one.</p>
+                  <p>Now share your cashback link and registry link with everyone who's interested. Shoppers get great deals. Couples get honeymoon money. You earn commission. Everyone wins from day one.</p>
                   <Link href="/dashboard/links" className="play-link">Get your links →</Link>
                 </div>
               </div>
@@ -551,7 +552,7 @@ export default function DashboardHome() {
                 <div className="play-number">5</div>
                 <div className="play-content">
                   <h4>Give every couple their honeymoon</h4>
-                  <p>"I want to give you something. Through my membership, I can set you up with a registry where your guests get 25% cashback — and it all adds up for you. 150 guests? That's $5,000+ back in your pocket for your honeymoon." Watch their face.</p>
+                  <p>"I want to give you something. Through my membership, I can set you up with a registry where every gift is amplified — guests get great prices, and you get 25% of every purchase back as cash. 150 guests? That could mean $5,000+ back in your pocket for your honeymoon." Watch their face.</p>
                 </div>
               </div>
 
