@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
           if (!result) continue;
           fetchedContent += `\n--- URL: ${result.url} ---\n`;
           fetchedContent += `IMAGES FOUND (${result.images.length}):\n`;
-          result.images.forEach((img, i) => {
+          result.images.forEach((img: string, i: number) => {
             fetchedContent += `  ${i + 1}. ${img}\n`;
           });
           // Include a trimmed version of the HTML for text extraction
