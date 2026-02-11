@@ -1496,15 +1496,22 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                 <div key="services" style={{ padding: '3rem 2rem', background: bg }}>
                   <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{ fontSize: '0.75rem', color: primary, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>What We Offer</div>
-                    <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>Our Services</h2>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>{(vendor as any).services_heading || 'Our Services'}</h2>
                   </div>
                   {(vendor.services_included || []).length === 0 && <div style={{ textAlign: 'center', color: textMuted }}>No services — click Services in sections to add</div>}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center', maxWidth: '700px', margin: '0 auto' }}>
-                    {(vendor.services_included || []).map((svc: any, si: number) => (
-                      <div key={si} style={{ padding: '0.5rem 1.25rem', background: bgCard, borderRadius: '8px', border: `1px solid ${theme?.border || '#e5e1dc'}`, fontSize: '0.9rem' }}>
-                        ✦ {typeof svc === 'string' ? svc : svc?.name || ''}
-                      </div>
-                    ))}
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min((vendor.services_included || []).length, 3)}, 1fr)`, gap: '0.75rem', maxWidth: '750px', margin: '0 auto' }}>
+                    {(vendor.services_included || []).map((svc: any, si: number) => {
+                      const icon = typeof svc === 'string' ? '✦' : svc?.icon || '✦';
+                      const name = typeof svc === 'string' ? svc : svc?.name || '';
+                      const desc = typeof svc === 'string' ? '' : svc?.description || '';
+                      return (
+                        <div key={si} style={{ background: bgCard, borderRadius: '12px', border: `1px solid ${theme?.border || '#e5e1dc'}`, padding: '1.25rem 1rem', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{icon}</div>
+                          <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.35rem', color: text }}>{name}</div>
+                          {desc && <div style={{ fontSize: '0.75rem', color: textMuted, lineHeight: 1.5 }}>{desc}</div>}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
