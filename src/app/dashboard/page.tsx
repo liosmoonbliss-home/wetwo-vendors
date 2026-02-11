@@ -55,7 +55,7 @@ export default function DashboardHome() {
       <header className="page-header">
         <div>
           <h1 className="page-title">Welcome, {firstName} 👋</h1>
-          <p className="page-subtitle">WeTwo Wedding Buyers Club — Member Vendor</p>
+          <p className="page-subtitle">WeTwo Wedding Buyers Club — Gift-Giver</p>
         </div>
         <Link href={`/vendor/${vendor.ref}`} target="_blank" className="header-btn">
           View Your Page →
@@ -89,10 +89,10 @@ export default function DashboardHome() {
         {/* ===== HERO: HERE'S WHAT YOU HAVE ===== */}
         <div className="hero-block">
           <div className="hero-top">
-            <h2 className="hero-headline">Here's what you have.</h2>
+            <h2 className="hero-headline">We gave you a gift. Now it's your turn.</h2>
             <p className="hero-sub">
-              A complete marketing system — built, live, and working for {vendor.business_name || 'your business'} right now.
-              Everything below is yours. Use it.
+              Everything below is yours — free. A custom page, an AI assistant, exclusive links, a complete marketing system.
+              We built it for you because we believe in leading with generosity. Now pay it forward to every person you meet.
             </p>
           </div>
 
@@ -108,7 +108,7 @@ export default function DashboardHome() {
               <div className="tool-icon-wrap links-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               </div>
-              <div className="tool-label">3 Exclusive Links</div>
+              <div className="tool-label">3 Gift Links</div>
               <div className="tool-status">Ready ↓</div>
             </div>
             <Link href="/dashboard/assistant" className="tool-card">
@@ -150,8 +150,8 @@ export default function DashboardHome() {
 
         {/* ===== YOUR 3 LINKS (always visible) ===== */}
         <div id="links-section" className="links-section">
-          <h3 className="section-heading">Your 3 Exclusive Links</h3>
-          <p className="section-intro">These only work because you're a member. Nobody else can generate them.</p>
+          <h3 className="section-heading">Your 3 Gift Links</h3>
+          <p className="section-intro">Each one puts real money in someone's pocket. Use them generously — that's the whole point.</p>
 
           <div className="links-grid">
             <div className="link-card you">
@@ -175,7 +175,7 @@ export default function DashboardHome() {
                 <span className="link-emoji">💍</span>
                 <div>
                   <h4 className="link-title">For Your Couples</h4>
-                  <p className="link-desc">Registry link — guests buy real gifts, couple gets 25% cash back. Every guest sees your name.</p>
+                  <p className="link-desc">The honeymoon money link — 150 guests = $5,625 cash back in their pocket. Every guest sees your name.</p>
                 </div>
               </div>
               <div className="link-row">
@@ -191,7 +191,7 @@ export default function DashboardHome() {
                 <span className="link-emoji">🎁</span>
                 <div>
                   <h4 className="link-title">For Everyone Else</h4>
-                  <p className="link-desc">Clients, friends, followers, expo visitors — everyone lands on your page.</p>
+                  <p className="link-desc">A gift for anyone — clients, friends, family, followers, expo visitors. Real money back on everything they buy.</p>
                 </div>
               </div>
               <div className="link-row">
@@ -208,11 +208,11 @@ export default function DashboardHome() {
         {isFree && (
           <div className="upgrade-nudge">
             <div className="nudge-content">
-              <div className="nudge-badge">Smart Move</div>
-              <h4>Lock in commission before you share a single link.</h4>
-              <p>Everything above is free forever. But for the price of a coffee a day, every purchase through your links earns you trackable commission from day one.</p>
+              <div className="nudge-badge">Pay It Forward</div>
+              <h4>You're already giving. Become a Sponsor and get paid too.</h4>
+              <p>Everything above is free forever. For the price of a coffee a day, you become a Sponsor — the reason couples get their honeymoon money. And every purchase through your links earns you trackable commission from day one.</p>
             </div>
-            <Link href="/dashboard/earnings" className="nudge-btn">See Plans →</Link>
+            <Link href="/dashboard/earnings" className="nudge-btn">Become a Sponsor →</Link>
           </div>
         )}
 
@@ -235,38 +235,43 @@ export default function DashboardHome() {
 
             {/* What we built */}
             <div className="content-card dark-card">
-              <div className="dark-badge">🎁 WHAT WE BUILT FOR YOU</div>
-              <h2 className="dark-title">A custom landing page. An AI assistant. An entire marketing system.</h2>
+              <div className="dark-badge">🎁 OUR GIFT TO YOU</div>
+              <h2 className="dark-title">A custom landing page. An AI assistant. An entire marketing system. Free.</h2>
               <p className="dark-text">
-                Your page showcases your work, captures leads through a built-in contact form,
-                and works as your <strong>universal landing page</strong> — Instagram bio, business cards,
-                email signature. Everywhere.
+                We built this for {vendor.business_name || 'your business'} because that's how we believe business should work — you lead with generosity and everything else follows.
+                Your page showcases your work, captures leads, and works as your <strong>universal landing page</strong> — Instagram bio, business cards, email signature. Everywhere.
               </p>
               <p className="dark-text" style={{ marginBottom: 0 }}>
-                Plus an AI assistant, exclusive member links, a contact management system,
-                and copy-paste marketing templates. All live. All free.
+                It felt good receiving this, right? That's the feeling. Now you can give that same feeling to every couple, every client, every person in your life — and put real money in their pockets while you're at it.
               </p>
               <a href={pageLink} target="_blank" rel="noopener" className="dark-link">
                 See your page live →
               </a>
             </div>
 
-            {/* The hook */}
+            {/* The hook — honeymoon money */}
             <div className="content-card hook-card">
               <div className="card-header-row">
-                <span className="card-icon">🔑</span>
-                <h2>Your page has a hook that nobody else has.</h2>
+                <span className="card-icon">✈️</span>
+                <h2>You're giving couples their honeymoon. Literally.</h2>
               </div>
               <p>
-                You can <strong>gift everyone who comes through you</strong> exclusive access to 25% cashback
-                on thousands of real products — furniture, kitchen, bedroom, fashion, home goods.
+                When you give a couple your registry link, every single wedding guest gets 25% cashback on their gift.
+                It adds up fast:
               </p>
+              <div className="registry-math" style={{ margin: '16px 0' }}>
+                <div className="registry-numbers" style={{ flexDirection: 'column', gap: '6px' }}>
+                  <span>100 guests × $150 avg gift = <strong>$3,750 cash back</strong> — that's honeymoon flights ✈️</span>
+                  <span>150 guests × $150 avg gift = <strong>$5,625 cash back</strong> — flights + the hotel 🏨</span>
+                  <span>200 guests × $150 avg gift = <strong>$7,500 cash back</strong> — the entire trip 🌴</span>
+                </div>
+              </div>
               <p>
-                This deal <strong>does not exist</strong> anywhere else. Not online. Not in stores. Not on Google.
-                The <em>only way</em> anyone gets access is through a member vendor like you.
+                That's not a coupon. That's real, spendable money going straight into a newlywed couple's pocket —
+                because <strong>you</strong> were generous enough to share it.
               </p>
               <p style={{ marginBottom: 0 }}>
-                When someone shops through your link, the store says <strong>"Gift from {firstName}"</strong> — linked right back to your page.
+                And every guest who buys a gift sees <strong>"Gift from {firstName}"</strong> — linked right back to your page. One registry = hundreds of people discovering you, attached to your generosity.
               </p>
             </div>
 
@@ -293,7 +298,7 @@ export default function DashboardHome() {
             <div className="content-card">
               <div className="card-header-row">
                 <span className="card-icon">💡</span>
-                <h2>All those cold leads? Now you have a reason to reach out.</h2>
+                <h2>All those cold leads? Now you have a gift to bring them.</h2>
               </div>
               <p>
                 Think about everyone who contacted you in the past few months and went quiet.
@@ -303,18 +308,17 @@ export default function DashboardHome() {
                 <div className="compare-bad">
                   <div className="compare-label">❌ Before</div>
                   <p>"Hey, just checking in..." / "I have new availability..." / "I learned a new song..."</p>
-                  <span className="compare-verdict">No reason. Feels desperate.</span>
+                  <span className="compare-verdict">No reason. Nothing to give. Feels desperate.</span>
                 </div>
                 <div className="compare-good">
                   <div className="compare-label">✅ Now</div>
-                  <p>"I just got access to something exclusive and wanted you to be one of the first to know."</p>
-                  <span className="compare-verdict">A genuine gift. Opens every door.</span>
+                  <p>"I just got access to something amazing and I wanted you to be one of the first to know."</p>
+                  <span className="compare-verdict">A genuine gift. You feel good sending it.</span>
                 </div>
               </div>
               <p style={{ marginBottom: 0 }}>
-                This gives you a <strong>legitimate, valuable reason</strong> to reconnect with every single person
-                in your network — past clients, cold leads, people who didn't book, friends,
-                followers. It's not a sales pitch. It's a gift.
+                You're not selling. You're <strong>giving</strong> — something that puts real money in people's pockets.
+                That's not a sales pitch. That's generosity. And it opens every door.
               </p>
             </div>
 
@@ -322,53 +326,53 @@ export default function DashboardHome() {
             <div className="content-card network-card">
               <div className="card-header-row">
                 <span className="card-icon">🌐</span>
-                <h2>Every share grows your network. Your name travels with every link.</h2>
+                <h2>Generosity compounds. Your name travels with every gift.</h2>
               </div>
               <p>
-                This isn't one-and-done. Every time you share your link, it starts working <em className="accent-blue">for you</em> — and it keeps going.
+                Every time you give someone your link, a chain starts — and your name is attached to generosity at every step.
               </p>
 
               <div className="network-steps">
                 <div className="net-step">
                   <div className="net-num">1</div>
                   <div>
-                    <strong>You share your link with a couple.</strong>
-                    <p>They set up a registry. Now every guest — 100, 150, 200 people — sees <em className="accent-gold">"Gift from {firstName}"</em> on the registry, linked back to your page.</p>
+                    <strong>You give a couple the registry link.</strong>
+                    <p>They set it up. Now every guest — 100, 150, 200 people — sees <em className="accent-gold">"Gift from {firstName}"</em> on every purchase. You just put $3,750–$7,500 in that couple's pocket.</p>
                   </div>
                 </div>
                 <div className="net-step">
                   <div className="net-num">2</div>
                   <div>
                     <strong>Those guests click your name.</strong>
-                    <p>They land on your page. Your bio, your work, your contact form. They see what you do. They reach out.</p>
+                    <p>They land on your page. They see your work. They reach out. And they just received real cashback — because of you.</p>
                   </div>
                 </div>
                 <div className="net-step">
                   <div className="net-num">3</div>
                   <div>
-                    <strong>They share with their people.</strong>
-                    <p>"My wedding vendor got me 25% cashback on everything." They tell their friends. They text the link. Your name is on it.</p>
+                    <strong>They pay it forward.</strong>
+                    <p>"My wedding vendor gave us 25% cashback on everything." They tell friends. They text the link. Your name goes with it. The chain continues.</p>
                   </div>
                 </div>
                 <div className="net-step">
                   <div className="net-num">4</div>
                   <div>
                     <strong>It compounds.</strong>
-                    <p>One couple's registry = 150+ people seeing your brand. One Instagram post = dozens of DMs. Every person who clicks lands on <em className="accent-gold">your</em> page.</p>
+                    <p>One couple's registry = 150+ people seeing your brand. Every single one received real money because of your generosity. That's not marketing. That's a legacy.</p>
                   </div>
                 </div>
               </div>
 
               <div className="flow-bar">
-                <span className="flow-step">You share</span>
+                <span className="flow-step">You give</span>
                 <span className="flow-arrow">→</span>
-                <span className="flow-step">They see your name</span>
+                <span className="flow-step">They receive</span>
                 <span className="flow-arrow">→</span>
-                <span className="flow-step">They click your page</span>
+                <span className="flow-step">They share</span>
                 <span className="flow-arrow">→</span>
-                <span className="flow-step">They share with others</span>
+                <span className="flow-step">Others receive</span>
                 <span className="flow-arrow">→</span>
-                <span className="flow-step highlight">Your network grows</span>
+                <span className="flow-step highlight">Generosity compounds</span>
               </div>
             </div>
 
@@ -383,16 +387,16 @@ export default function DashboardHome() {
             <div className="content-card free-card">
               <div className="card-header-row">
                 <span className="card-icon">✨</span>
-                <h2>Everything above is free. No catch.</h2>
+                <h2>The gift-giving is free. The honeymoon money is free. No catch.</h2>
               </div>
               <p>
-                Your custom page. This AI assistant. Your exclusive links. The contact form.
-                The gifting power. The reactivation tool. The network effect. The competitive edge.
-                <strong className="accent-purple"> All of it works perfectly, right now, for free.</strong>
+                Right now, for $0, you can put $3,750–$7,500 in a couple's pocket for their honeymoon.
+                You can gift every client, every friend, every person in your life exclusive 25% cashback on thousands of products.
+                <strong className="accent-purple"> You're already the most generous {category} in your market.</strong>
               </p>
               <p style={{ marginBottom: 0 }}>
-                You only pay if you want to <strong>earn commission</strong> when people buy products through your links.
-                But everything else? That's yours.
+                You only pay if you want to <strong>earn commission</strong> and become a Sponsor.
+                But the power to give? That's yours right now.
               </p>
             </div>
 
@@ -400,24 +404,21 @@ export default function DashboardHome() {
             <div className="content-card payback-card">
               <div className="card-header-row">
                 <span className="card-icon">💰</span>
-                <h2>The only tool that pays you back.</h2>
+                <h2>Become a Sponsor. Fund honeymoons. Get paid.</h2>
               </div>
               <p>
-                Every other tool you pay for — listing sites, CRMs, email platforms —
-                takes your money and hopes you see ROI "somewhere downstream, eventually."
-                No receipt. No direct line between your payment and money coming back in.
+                When you upgrade, you become a <strong>Sponsor</strong> — listed on the WeTwo store as the reason couples get their honeymoon money.
+                Your sponsorship funds the cashback. That's a powerful identity: you're not paying a subscription. You're funding generosity.
               </p>
               <p className="callout-text">
-                This is different. For the price of a cup of coffee a day, you get a system that generates leads,
-                reactivates cold contacts, puts your name in front of hundreds of new people — and pays you
-                trackable commission on top of it all.
+                And for the price of a cup of coffee a day, every purchase through your links earns you trackable commission — while the system generates leads, reactivates contacts, and puts your name in front of hundreds of new people.
               </p>
 
               <div className="real-value-callout">
                 <div className="callout-icon">💎</div>
                 <div>
-                  <strong>The real ROI isn't the commission — it's your main business.</strong>
-                  <p>One booking from a reactivated lead or a registry guest who found your page is worth $2,000–$10,000+. The commission is just spending money — a cherry on top.</p>
+                  <strong>The real ROI isn't the commission — it's who you become.</strong>
+                  <p>You become the vendor who gives couples their honeymoon. The one brides tell their friends about. One booking from that reputation is worth $2,000–$10,000+. The commission is just the cherry on top.</p>
                 </div>
               </div>
 
@@ -453,35 +454,38 @@ export default function DashboardHome() {
               </div>
 
               <div className="registry-math">
-                <div className="registry-label">📋 The registry math</div>
+                <div className="registry-label">📋 The registry math — what you give AND what you earn</div>
                 <p>
-                  When a couple sets up a registry through your link, every guest who buys a gift generates commission.
-                  Average wedding = 150 guests. Average gift = $150. That's <strong>$22,500 in total purchases</strong> from one couple.
+                  One couple. 150 guests. $150 average gift. That's <strong>$22,500 in total purchases</strong>.
+                </p>
+                <p style={{ fontSize: '13px', color: '#6b5e52', margin: '0 0 12px' }}>
+                  <strong style={{ color: '#c9944a' }}>What the couple gets:</strong> $5,625 cash back — their honeymoon, courtesy of you.
                 </p>
                 <div className="registry-numbers">
+                  <span><strong style={{ color: '#c9944a' }}>What you earn:</strong></span>
                   <span>At 10% = <strong>$2,250</strong></span>
                   <span>At 15% = <strong>$3,375</strong></span>
                   <span>At 20% = <strong>$4,500</strong></span>
                 </div>
                 <p className="registry-kicker">
-                  That's from <strong>one couple</strong>. You work with multiple couples per year.
+                  Everyone wins. The couple gets honeymoon money. You get commission. From <strong>one couple</strong>.
                 </p>
               </div>
 
               <p className="payback-closer">
-                Name one other tool you pay for that pays you back. This is the only one.
+                "Give, and it shall be given unto you." That's not a strategy. That's a law.
               </p>
             </div>
 
             {isFree && (
               <div className="bottom-upgrade">
-                <h4>The system is free. The commission is how you profit.</h4>
+                <h4>You're already giving. Become a Sponsor and get paid too.</h4>
                 <p>
-                  Your page, your links, your AI assistant — all free, forever. Upgrade for the price of a coffee a day
-                  and every purchase your network makes earns you <strong>trackable commission</strong> — while the real value
-                  is the leads, the bookings, and the network you're building.
+                  Your page, your links, your AI assistant — all free, forever. You're already putting thousands in couples' pockets.
+                  Upgrade to become a <strong>Sponsor</strong> — the reason brides get their honeymoon money —
+                  and every purchase your network makes earns you <strong>trackable commission</strong>.
                 </p>
-                <Link href="/dashboard/earnings" className="upgrade-btn">See the math →</Link>
+                <Link href="/dashboard/earnings" className="upgrade-btn">Become a Sponsor →</Link>
               </div>
             )}
 
@@ -493,16 +497,16 @@ export default function DashboardHome() {
           <div className="tab-content">
 
             <div className="playbook-intro">
-              <h2>Here's Exactly What To Do</h2>
-              <p>You hold the key. Now use it.</p>
+              <h2>Pay It Forward — Here's How</h2>
+              <p>We gave to you. Now give to them. Here's exactly how to start.</p>
             </div>
 
             <div className="playbook">
               <div className="play">
                 <div className="play-number">1</div>
                 <div className="play-content">
-                  <h4>Try it yourself first</h4>
-                  <p>Use your link, buy something you want, and see the 25% cashback hit. Once you've experienced it yourself, you'll talk about it completely differently.</p>
+                  <h4>Experience the gift yourself first</h4>
+                  <p>Use your own link, buy something, and feel the 25% cashback hit. That feeling? That's what you're giving to every person you share this with. Once you feel it, you'll talk about it completely differently.</p>
                   <a href={shopLink} target="_blank" rel="noopener" className="play-link">Browse the store →</a>
                 </div>
               </div>
@@ -510,8 +514,8 @@ export default function DashboardHome() {
               <div className="play">
                 <div className="play-number">2</div>
                 <div className="play-content">
-                  <h4>Warm up your network</h4>
-                  <p>Text past clients, cold leads, and current couples: "I just got access to something exclusive and wanted you to be one of the first to know." Gauge interest. Get the "yes, send it!" replies flowing. Don't send links yet.</p>
+                  <h4>Start giving</h4>
+                  <p>Text past clients, cold leads, current couples: "I have something incredible I want to give you — can I send you the details?" Gauge interest. Get the "yes!" replies flowing. You're bearing gifts — this part feels great.</p>
                   <Link href="/dashboard/assistant" className="play-link">Have Claude write the message →</Link>
                 </div>
               </div>
@@ -519,17 +523,17 @@ export default function DashboardHome() {
               <div className="play highlight">
                 <div className="play-number upgrade">⚡</div>
                 <div className="play-content">
-                  <h4>Lock in your commission before you share a single link</h4>
-                  <p>You've got people interested. Now before you send your links, make sure every click counts. Upgrade so every purchase from day one earns you trackable commission. The outreach was free — <strong>now get paid for the results.</strong></p>
-                  <Link href="/dashboard/earnings" className="play-link upgrade-link">See plans & lock it in →</Link>
+                  <h4>Become a Sponsor before you send a single link</h4>
+                  <p>You've got people saying yes. Before you send links, become a Sponsor — so every purchase from day one earns you commission AND you're listed on the store as the reason couples get honeymoon money. The outreach was free — <strong>now get paid for your generosity.</strong></p>
+                  <Link href="/dashboard/earnings" className="play-link upgrade-link">Become a Sponsor →</Link>
                 </div>
               </div>
 
               <div className="play">
                 <div className="play-number">3</div>
                 <div className="play-content">
-                  <h4>Send your links to everyone who said yes</h4>
-                  <p>Now that you're covered, share your cashback link and registry link with everyone who showed interest. Every purchase earns you commission from day one.</p>
+                  <h4>Send the gift to everyone who said yes</h4>
+                  <p>Now share your cashback link and registry link with everyone who's interested. They get real money back. You earn commission. The couple gets honeymoon money. Everyone wins from day one.</p>
                   <Link href="/dashboard/links" className="play-link">Get your links →</Link>
                 </div>
               </div>
@@ -538,7 +542,7 @@ export default function DashboardHome() {
                 <div className="play-number">4</div>
                 <div className="play-content">
                   <h4>Post it on Instagram</h4>
-                  <p><em>"I'm now a member of the WeTwo Wedding Buyers Club 🔑 DM me for exclusive access."</em> Every DM is a warm lead.</p>
+                  <p><em>"I have a gift for you 🎁 DM me GIFT for exclusive access to 25% cashback on thousands of products."</em> Every DM is a warm lead who came to you — because you offered to give.</p>
                   <Link href="/dashboard/links" className="play-link">Get an Instagram caption →</Link>
                 </div>
               </div>
@@ -546,16 +550,16 @@ export default function DashboardHome() {
               <div className="play">
                 <div className="play-number">5</div>
                 <div className="play-content">
-                  <h4>Make it part of every close</h4>
-                  <p>"One more thing — through my membership, you get 25% cashback on thousands of products. Nobody else can give you this." Use it as your competitive edge.</p>
+                  <h4>Give every couple their honeymoon</h4>
+                  <p>"I want to give you something. Through my membership, I can set you up with a registry where your guests get 25% cashback — and it all adds up for you. 150 guests? That's $5,000+ back in your pocket for your honeymoon." Watch their face.</p>
                 </div>
               </div>
 
               <div className="play">
                 <div className="play-number">6</div>
                 <div className="play-content">
-                  <h4>Add it to everything</h4>
-                  <p>Your universal landing page link goes on your website, business cards, email signature, every ad. One line: <em>"My clients get exclusive 25% cashback — ask me how."</em></p>
+                  <h4>Give everywhere you go</h4>
+                  <p>Your link goes on your website, business cards, email signature, every ad. One line: <em>"🎁 Ask me how I can put thousands back in your pocket."</em> You wake up every morning with something real to give everyone you meet.</p>
                 </div>
               </div>
             </div>
