@@ -55,7 +55,7 @@ export default function DashboardHome() {
       <header className="page-header">
         <div>
           <h1 className="page-title">Welcome, {firstName} 👋</h1>
-          <p className="page-subtitle">WeTwo Wedding Buyers Club — Gift-Giver</p>
+          <p className="page-subtitle">Give, and it shall be given unto you. — Luke 6:38</p>
         </div>
         <Link href={`/vendor/${vendor.ref}`} target="_blank" className="header-btn">
           View Your Page →
