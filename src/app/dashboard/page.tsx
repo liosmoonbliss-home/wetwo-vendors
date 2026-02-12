@@ -191,12 +191,12 @@ export default function DashboardHome() {
                 <span className="link-emoji">🎁</span>
                 <div>
                   <h4 className="link-title">For Everyone Else</h4>
-                  <p className="link-desc">A gift for anyone — clients, friends, family, followers, expo visitors. Real money back on everything they buy.</p>
+                  <p className="link-desc">A gift for anyone — clients, friends, family, followers, expo visitors. They enter their info, unlock cashback, and you capture the lead.</p>
                 </div>
               </div>
               <div className="link-row">
-                <input type="text" value={shopLink} readOnly className="link-input" />
-                <button className={`copy-btn ${copied === 'everyone' ? 'copied' : ''}`} onClick={() => copyLink(shopLink, 'everyone')}>
+                <input type="text" value={pageLink} readOnly className="link-input" />
+                <button className={`copy-btn ${copied === 'everyone' ? 'copied' : ''}`} onClick={() => copyLink(pageLink, 'everyone')}>
                   {copied === 'everyone' ? '✓' : 'Copy'}
                 </button>
               </div>
