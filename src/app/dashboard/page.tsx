@@ -195,8 +195,8 @@ export default function DashboardHome() {
                 </div>
               </div>
               <div className="link-row">
-                <input type="text" value={pageLink} readOnly className="link-input" />
-                <button className={`copy-btn ${copied === 'everyone' ? 'copied' : ''}`} onClick={() => copyLink(pageLink, 'everyone')}>
+                <input type="text" value={`${pageLink}?gift=true`} readOnly className="link-input" />
+                <button className={`copy-btn ${copied === 'everyone' ? 'copied' : ''}`} onClick={() => copyLink(`${pageLink}?gift=true`, 'everyone')}>
                   {copied === 'everyone' ? '✓' : 'Copy'}
                 </button>
               </div>

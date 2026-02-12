@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import type { Vendor } from '@/lib/types';
 
 interface CashbackBannerProps {
@@ -11,6 +11,14 @@ interface CashbackBannerProps {
 export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Auto-open form when ?gift=true is in the URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('gift') === 'true') {
+      setShowForm(true);
+    }
+  }, []);
 
   // The actual store URL with affiliate attribution
   const affiliateRef = vendor.goaffpro_referral_code || `vendor-${vendor.ref}`;
