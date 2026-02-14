@@ -18,6 +18,7 @@ const ALLOWED_COLUMNS = new Set([
   'ref','first_name','account_status','profile_completed',
   'goaffpro_affiliate_id','goaffpro_referral_code','affiliate_link',
   'magic_token','boost_percentage',
+  'referral_slug','white_label_name','white_label_tagline',
 ]);
 
 // Generate a readable initial password: e.g., "WeTwo-Gladys-7k3m"
@@ -101,6 +102,11 @@ export async function POST(req: NextRequest) {
       const newRef = `${slugBase}-${slugRand}`;
       cleanVendor.ref = newRef;
 
+      // Set referral_slug and white_label_name for incentive system
+      cleanVendor.referral_slug = newRef;
+      cleanVendor.white_label_name = ((cleanVendor.business_name as string) || 'Vendor').slice(0, 40);
+      cleanVendor.white_label_tagline = (cleanVendor.category as string) || 'Wedding Professional';
+
       // 2. Generate magic token for legacy dashboard access
       cleanVendor.magic_token = crypto.randomBytes(16).toString('hex');
 
@@ -158,6 +164,22 @@ export async function POST(req: NextRequest) {
             .eq('id', result.id);
 
           console.log('✅ GoAffPro affiliate created:', affiliateId, 'ref:', referralCode);
+
+          // Auto-generate Shopify discount codes for vendor incentives
+          // (Supabase trigger already generated incentive records when goaffpro_referral_code was set)
+          try {
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wetwo-vendors.vercel.app';
+            const discountRes = await fetch(`${baseUrl}/api/create-shopify-discounts`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ vendor_id: result.id }),
+            });
+            const discountData = await discountRes.json();
+            console.log('🎟️ Shopify discounts created:', JSON.stringify(discountData));
+          } catch (discountError) {
+            console.error('⚠️ Shopify discount creation failed (non-blocking):', discountError);
+          }
+
         } else if (goaffproData?.message?.includes('already') || goaffproData?.error?.includes('exists')) {
           console.log('ℹ️ GoAffPro affiliate already exists');
           affiliateLink = `https://wetwo.love?ref=${goaffproRefCode}`;
