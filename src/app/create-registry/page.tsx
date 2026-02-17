@@ -44,7 +44,7 @@ function CreateRegistryForm() {
     state: '',
     wedding_date: '',
     guest_count: '',
-    budget_range: '',
+    
   })
 
   const [submitting, setSubmitting] = useState(false)
@@ -105,7 +105,7 @@ function CreateRegistryForm() {
           state: form.state,
           wedding_date: form.wedding_date || null,
           guest_count: form.guest_count || null,
-          budget_range: form.budget_range || null,
+          
           source: vendor ? `vendor-referral-${vendor.ref}` : 'create-registry',
           referred_by_vendor_id: vendor?.id || null,
           referred_by_vendor: vendor?.business_name || null,
@@ -287,20 +287,18 @@ function CreateRegistryForm() {
             </select>
           </div>
 
-          {/* Wedding date */}
-          <div style={styles.field}>
-            <label style={styles.label}>Wedding Date</label>
-            <input
-              name="wedding_date"
-              type="date"
-              value={form.wedding_date}
-              onChange={handleChange}
-              style={styles.input}
-            />
-          </div>
-
-          {/* Guest count + Budget — optional extras */}
+          {/* Wedding date + Guest count */}
           <div style={styles.row}>
+            <div style={styles.fieldHalf}>
+              <label style={styles.label}>Wedding Date</label>
+              <input
+                name="wedding_date"
+                type="date"
+                value={form.wedding_date}
+                onChange={handleChange}
+                style={styles.input}
+              />
+            </div>
             <div style={styles.fieldHalf}>
               <label style={styles.label}>Guest Count</label>
               <select
@@ -317,25 +315,6 @@ function CreateRegistryForm() {
                 <option value="50-100">50–100</option>
                 <option value="100-200">100–200</option>
                 <option value="200+">200+</option>
-              </select>
-            </div>
-            <div style={styles.fieldHalf}>
-              <label style={styles.label}>Budget Range</label>
-              <select
-                name="budget_range"
-                value={form.budget_range}
-                onChange={handleChange}
-                style={{
-                  ...styles.input,
-                  color: form.budget_range ? '#2c2420' : '#9a8d80',
-                }}
-              >
-                <option value="">Select</option>
-                <option value="Under $10K">Under $10K</option>
-                <option value="$10K-$25K">$10K–$25K</option>
-                <option value="$25K-$50K">$25K–$50K</option>
-                <option value="$50K-$100K">$50K–$100K</option>
-                <option value="$100K+">$100K+</option>
               </select>
             </div>
           </div>
