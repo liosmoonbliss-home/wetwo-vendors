@@ -212,27 +212,6 @@ function CreateRegistryForm() {
           )}
         </p>
 
-        {/* Vendor attribution */}
-        {vendorLoading ? (
-          <div style={styles.vendorBanner}>
-            <div style={{ color: '#9a8d80', fontSize: 13 }}>Loading referral...</div>
-          </div>
-        ) : vendor ? (
-          <div style={styles.vendorBanner}>
-            {vendor.photo_url && (
-              <img
-                src={vendor.photo_url}
-                alt={vendor.business_name}
-                style={styles.vendorPhoto}
-              />
-            )}
-            <div>
-              <div style={styles.vendorLabel}>Referred by</div>
-              <div style={styles.vendorName}>{vendor.business_name}</div>
-            </div>
-          </div>
-        ) : null}
-
         <form onSubmit={handleSubmit} style={styles.form}>
           {/* Partner names */}
           <div style={styles.row}>
