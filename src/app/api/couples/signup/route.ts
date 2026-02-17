@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
       guest_count,
       wedding_date,
       wedding_location,
-      phone
+      phone,
       cashback_rate,
     } = body
 
