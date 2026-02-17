@@ -3,28 +3,31 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import type { Vendor } from '@/lib/types';
 
-interface CashbackBannerProps {
+interface ShopBannerProps {
   vendor: Vendor;
   links: any;
+  showForm: boolean;
+  setShowForm: (show: boolean) => void;
 }
 
-export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
-  const [showForm, setShowForm] = useState(false);
+export function ShopBanner({ vendor, links, showForm, setShowForm }: ShopBannerProps) {
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  // Auto-open form when ?gift=true is in the URL
+  // Auto-open form when ?shop=true (or legacy ?gift=true) is in the URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('gift') === 'true') {
+    if (params.get('shop') === 'true' || params.get('gift') === 'true') {
       setShowForm(true);
     }
-  }, []);
+  }, [setShowForm]);
 
-  // The actual store URL with affiliate attribution
   const affiliateRef = vendor.goaffpro_referral_code || `vendor-${vendor.ref}`;
   const storeUrl = `https://wetwo.love?ref=${affiliateRef}`;
+  const contactName = vendor.contact_name || vendor.business_name;
+  const displayName = vendor.white_label_name || vendor.business_name;
 
-  async function handleShopperSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleShopSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitting(true);
 
@@ -32,42 +35,36 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
     const formData = new FormData(form);
 
     const payload = {
+      vendor_id: vendor.id,
       vendor_ref: vendor.ref,
       vendor_name: vendor.business_name,
       name: formData.get('name') as string,
       email: formData.get('email') as string,
       phone: (formData.get('phone') as string) || null,
-      source: 'cashback_banner',
+      interest: 'Shop',
+      message: null,
     };
 
     try {
-      const res = await fetch('/api/shoppers', {
+      await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
-      // Redirect to shopper dashboard if we have an ID
-      if (data.client?.id) { window.location.href = '/shopper/' + data.client.id + '/dashboard'; } else { window.open(data.storeUrl || storeUrl, '_blank'); }
-      setShowForm(false);
-      form.reset();
     } catch (err) {
-      console.error('Shopper registration error:', err);
-      // Still redirect — don't block shopping
-      window.open(storeUrl, '_blank');
-      setShowForm(false);
-    } finally {
-      setSubmitting(false);
+      console.error('Shop form error:', err);
     }
+
+    // Always redirect to store
+    window.location.href = storeUrl;
   }
 
   return (
     <>
       {/* Banner */}
-      <div className="cashback-banner">
+      <div className="cashback-banner" suppressHydrationWarning>
         <p>
-          ✨ Shop with us and get <strong>25% cashback</strong> on everything — wedding registries, home, fashion &amp; more —{' '}
+          ✨ Browse thousands of wedding, home &amp; fashion gifts at <strong>{displayName}{"'"}s</strong> store —{' '}
           <a
             href="#"
             onClick={(e) => {
@@ -76,13 +73,13 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
             }}
             style={{ cursor: 'pointer' }}
           >
-            Unlock Cashback →
+            Shop Now →
           </a>
         </p>
       </div>
 
-      {/* Registration Modal */}
-      {showForm && (
+      {/* Shop Form Modal */}
+      {showForm && !submitted && (
         <div
           style={{
             position: 'fixed',
@@ -113,7 +110,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
             {/* Header */}
             <div
               style={{
-                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                background: 'linear-gradient(135deg, #c9944a, #d4a76a)',
                 padding: '24px 28px',
                 position: 'relative',
               }}
@@ -149,7 +146,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
                   fontFamily: '"Playfair Display", serif',
                 }}
               >
-                Unlock 25% Cashback
+                Shop {displayName}{"'"}s Store
               </h2>
               <p
                 style={{
@@ -159,15 +156,15 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
                   lineHeight: 1.5,
                 }}
               >
-                Courtesy of <strong>{vendor.business_name}</strong>. Enter your info below and start shopping with cashback on every purchase.
+                Enter your info and start browsing thousands of wedding, home &amp; fashion gifts.
               </p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleShopperSubmit} style={{ padding: '24px 28px' }}>
+            <form onSubmit={handleShopSubmit} style={{ padding: '24px 28px' }}>
               <div className="form-group" style={{ marginBottom: '16px' }}>
                 <label
-                  htmlFor="shopper-name"
+                  htmlFor="shop-name"
                   style={{
                     display: 'block',
                     fontSize: '13px',
@@ -180,7 +177,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
                 </label>
                 <input
                   type="text"
-                  id="shopper-name"
+                  id="shop-name"
                   name="name"
                   placeholder="Full name"
                   required
@@ -200,7 +197,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
 
               <div className="form-group" style={{ marginBottom: '16px' }}>
                 <label
-                  htmlFor="shopper-email"
+                  htmlFor="shop-email"
                   style={{
                     display: 'block',
                     fontSize: '13px',
@@ -213,7 +210,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
                 </label>
                 <input
                   type="email"
-                  id="shopper-email"
+                  id="shop-email"
                   name="email"
                   placeholder="you@example.com"
                   required
@@ -233,7 +230,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
 
               <div className="form-group" style={{ marginBottom: '20px' }}>
                 <label
-                  htmlFor="shopper-phone"
+                  htmlFor="shop-phone"
                   style={{
                     display: 'block',
                     fontSize: '13px',
@@ -246,7 +243,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
                 </label>
                 <input
                   type="tel"
-                  id="shopper-phone"
+                  id="shop-phone"
                   name="phone"
                   placeholder="(555) 123-4567"
                   style={{
@@ -269,7 +266,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
                 style={{
                   width: '100%',
                   padding: '14px 24px',
-                  background: submitting ? '#9a8d80' : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  background: submitting ? '#9a8d80' : 'linear-gradient(135deg, #c9944a, #d4a76a)',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '8px',
@@ -280,7 +277,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
                   fontFamily: 'inherit',
                 }}
               >
-                {submitting ? 'Unlocking...' : '🛍️ Start Shopping — 25% Cashback'}
+                {submitting ? 'Loading...' : '🛍️ Start Shopping →'}
               </button>
 
               <p
@@ -292,7 +289,7 @@ export function CashbackBanner({ vendor, links }: CashbackBannerProps) {
                   lineHeight: 1.5,
                 }}
               >
-                Free forever. No credit card needed. Your cashback link will open in a new tab.
+                {contactName} may follow up with exclusive offers and updates.
               </p>
             </form>
           </div>

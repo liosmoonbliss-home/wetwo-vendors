@@ -6,10 +6,10 @@ import VendorToolbox from '@/components/VendorToolbox'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 // ============================================================
-// WeTwo — Vendor Dashboard v4.2
+// WeTwo — Vendor Dashboard v4.1
 // 3-tier: Free (20%) → Pro $97 (30%) → Elite $197 (40%)
 // 7-day branded store trial for all new vendors
-// Accordion-first · Gold step-4 pill · Theme reinforcement
+// Accordion-first: compact by default
 // ============================================================
 
 const TIER_INFO: Record<string, {
@@ -43,7 +43,7 @@ function getTrialInfo(vendor: any): { inTrial: boolean; daysLeft: number; trialE
 // REUSABLE ACCORDION CARD
 // ============================================================
 function AccordionCard({ icon, title, subtitle, children, defaultOpen = false, accentColor }: {
-  icon: string; title: string; subtitle: string | React.ReactNode; children: React.ReactNode;
+  icon: string; title: string; subtitle: string; children: React.ReactNode;
   defaultOpen?: boolean; accentColor?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -238,7 +238,7 @@ export default function DashboardHome() {
           </div>
         )}
 
-        {/* ===== HERO WITH STEP 4 GOLD PILL ===== */}
+        {/* ===== HERO — COMPACT ===== */}
         <div className="hero-explainer">
           <h2>Your marketing system is live.</h2>
           <div className="hero-flow">
@@ -260,17 +260,15 @@ export default function DashboardHome() {
               }
             </div>
           </div>
-          {/* ===== STEP 4 — THE AHA MOMENT — GOLD PILL ===== */}
-          <div className="hero-gold-pill">
-            <span className="gold-pill-num">4</span>
-            <span className="gold-pill-text">
-              Every other way you attract customers costs you money. <strong>This one pays you</strong> — and builds your client list while it does.
-            </span>
-          </div>
+          <p className="hero-costco">
+            {t.contacts
+              ? 'Every buyer becomes a contact you own — a customer for life.'
+              : <>Earn on every sale. <span style={{ color: '#e5a50a' }}>Elite unlocks buyer names + emails.</span></>
+            }
+          </p>
         </div>
 
         {/* ===== YOUR STORE LINK — ALWAYS VISIBLE ===== */}
-        {/* Option B reinforcement: competitive edge */}
         <div className="section-card" style={{ borderLeft: '4px solid #22c55e' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
             <span style={{ fontSize: '20px' }}>🏪</span>
@@ -278,8 +276,8 @@ export default function DashboardHome() {
               <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#2c2420' }}>
                 {showBranded ? `${vendor.business_name || 'Your'} Store` : 'Your Store'} — {t.pool}% on every sale
               </h3>
-              <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#6b5e52' }}>
-                A customer attraction engine that pays for itself. Share this link anywhere.
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#9a8d80' }}>
+                Share this link anywhere. {t.contacts ? 'You earn commission + buyer contacts.' : 'You earn commission on every purchase.'}
               </p>
             </div>
           </div>
@@ -287,26 +285,25 @@ export default function DashboardHome() {
         </div>
 
         {/* ===== COUPLES — ACCORDION ===== */}
-        {/* Option C reinforcement: reframe */}
         <AccordionCard
           icon="🎁"
           title="For Couples — Cashback Registry"
           subtitle={t.contacts
-            ? 'Not just a registry — a marketing system that earns you money while it brings you customers.'
-            : 'Give brides honeymoon money from your pool — NOT YOUR POCKET. Plus, one wedding = up to 150 sales.'
+            ? 'Give brides cashback. Get up to 150 contacts per wedding.'
+            : 'Give brides cashback from your pool. One wedding = up to 150 sales.'
           }
           accentColor="#c9944a"
         >
           <CouplesContent vendorRef={vendor.ref} pool={t.pool} contacts={t.contacts} tier={tier} />
         </AccordionCard>
 
-        {/* ===== EVERYONE — CODE GENERATOR ===== */}
+        {/* ===== EVERYONE — CODE GENERATOR (ACCORDION) ===== */}
         <AccordionCard
           icon="🛒"
           title="For Everyone — Discount Codes"
           subtitle={t.contacts
-            ? 'Your customer magnet and loyalty engine. Every code earns you commission + their contact info.'
-            : <>Your customer magnet and loyalty engine. <span style={{ color: '#e5a50a' }}>Elite adds buyer contacts.</span></>
+            ? 'Give a discount, get a customer + their contact info.'
+            : <>{'Give a discount, get a customer.'} <span style={{ color: '#e5a50a' }}>Elite adds buyer contacts.</span></>
           }
           defaultOpen={true}
         >
@@ -314,12 +311,11 @@ export default function DashboardHome() {
         </AccordionCard>
 
         {/* ===== UPGRADE ===== */}
-        {/* Option D reinforcement: gut punch */}
         {tier === 'free' && (
           <AccordionCard
             icon="🚀"
-            title="Stop spending money to find customers"
-            subtitle="Start getting paid to attract them. Both tiers break even at 7 sales."
+            title="Upgrade — earn more, give more, grow faster"
+            subtitle="Both tiers break even at 7 sales. Elite earns double + buyer contacts."
             accentColor="#e5a50a"
           >
             <UpgradeFreeContent trial={trial} />
@@ -328,8 +324,8 @@ export default function DashboardHome() {
         {tier === 'pro' && (
           <AccordionCard
             icon="⭐"
-            title="Stop spending money to find customers"
-            subtitle="Elite gives you every buyer's name and email — marketing that pays for itself."
+            title="Upgrade to Elite — unlock buyer contacts"
+            subtitle="Give 20%, keep 20%, and get every buyer's name and email."
             accentColor="#e5a50a"
           >
             <UpgradeProContent />
@@ -415,7 +411,7 @@ function CouplesContent({ vendorRef, pool, contacts, tier }: { vendorRef: string
   return (
     <div>
       <p style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.6, margin: '0 0 12px' }}>
-        When a bride's guests buy gifts, she gets <strong style={{ color: '#2c2420' }}>cashback</strong> from your {pool}% pool — <em style={{ color: '#c9944a' }}>not your wallet</em>.
+        When a bride's guests buy gifts, she gets <strong style={{ color: '#2c2420' }}>cashback</strong> from your {pool}% pool — not out of pocket. 
         You choose 10%, 15%, or 20%. {contacts
           ? <><strong style={{ color: '#2c2420' }}>Every guest who buys = a new contact in your list.</strong></>
           : <>{tier !== 'elite' && <span style={{ color: '#e5a50a' }}>Upgrade to Elite to capture every guest's name and email.</span>}</>
@@ -470,17 +466,11 @@ function CopyRow({ pct, code, type }: { pct: number; code: string; type: 'cashba
 }
 
 // ============================================================
-// UPGRADE CONTENT
+// UPGRADE CONTENT (inside accordions)
 // ============================================================
 function UpgradeFreeContent({ trial }: { trial: { inTrial: boolean; daysLeft: number } }) {
   return (
     <div>
-      {/* Theme reinforcement: Option A echo */}
-      <p style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.6, margin: '0 0 16px' }}>
-        WeddingWire, The Knot, Instagram ads — they all cost you money with no guarantee. 
-        This system <strong style={{ color: '#2c2420' }}>pays you</strong> while it attracts customers. Upgrade to earn more on every sale and unlock premium features.
-      </p>
-
       {/* Tier comparison */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
         {/* Pro */}
@@ -537,13 +527,12 @@ function UpgradeFreeContent({ trial }: { trial: { inTrial: boolean; daysLeft: nu
         </div>
       </div>
 
-      {/* Option C reinforcement */}
       <div style={{
         padding: '12px 16px', borderRadius: '10px',
         background: 'rgba(229,165,10,0.06)', border: '1px solid rgba(229,165,10,0.15)',
         textAlign: 'center' as const, fontSize: '13px', color: '#6b5e52',
       }}>
-        This isn't just a store — it's the only marketing system that <strong style={{ color: '#2c2420' }}>makes you money</strong> while it <strong style={{ color: '#22c55e' }}>brings you customers</strong>.
+        Both break even at <strong style={{ color: '#2c2420' }}>7 sales</strong>. Elite earns <strong style={{ color: '#e5a50a' }}>double</strong> + gives you <strong style={{ color: '#22c55e' }}>buyer contacts</strong>.
       </div>
     </div>
   )
@@ -553,9 +542,8 @@ function UpgradeProContent() {
   return (
     <div>
       <p style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.6, margin: '0 0 12px' }}>
-        You're already getting paid to attract customers — that's what makes this different from every other platform. 
-        Elite takes it further: the <strong style={{ color: '#2c2420' }}>name and email of every buyer</strong> goes into your list. 
-        40% pool means you give 20% and still keep 20%.
+        You're earning well on Pro. But every buyer is a contact you <em>could</em> be marketing to. 
+        Elite gives you the <strong style={{ color: '#2c2420' }}>name and email of every buyer</strong> — plus 40% pool so you give 20% and still keep 20%.
       </p>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' as const }}>
         <Link href="/dashboard/upgrade?plan=elite" style={{
@@ -569,7 +557,7 @@ function UpgradeProContent() {
 }
 
 // ============================================================
-// SUB-PAGES — with theme reinforcement throughout
+// SUB-PAGES
 // ============================================================
 function HowItWorks({ pool, tier, contacts }: { pool: number; tier: string; contacts: boolean }) {
   return (
@@ -578,30 +566,26 @@ function HowItWorks({ pool, tier, contacts }: { pool: number; tier: string; cont
       <p>Every product in your store is priced at or below market. We power the backend — like Costco for small businesses.</p>
       <p>You earn <strong style={{ color: '#22c55e' }}>{pool}%</strong> on everything sold. That's your pool — keep it or share it as incentives (up to 20%).</p>
 
-      {/* Option D reinforcement */}
-      <h3>Why this is different</h3>
-      <p>WeddingWire costs thousands a year. The Knot charges for leads. Instagram ads are a gamble. They all cost you money with no guaranteed return. <strong>This system pays you while it attracts customers.</strong> You now have something no competitor has: a customer attraction engine that pays for itself.</p>
-
       {contacts ? (
         <>
           <h3>The real value — your contact list</h3>
-          <p>Every buyer gives you their <strong>name and email</strong>. Someone buys a toaster with your code — you email them about your core service. Now they're a prospect. Give them another discount as a thank-you. The cycle repeats. <strong>Customer for life.</strong></p>
+          <p>Every buyer gives you their <strong>name and email</strong>. That's a lead for your main business. Someone buys a toaster with your code — you email them about your core service. Now they're a prospect. Give them another discount as a thank-you. The cycle repeats. <strong>Customer for life.</strong></p>
         </>
       ) : (
         <>
-          <h3>Build momentum, then unlock the full flywheel</h3>
-          <p>Every sale earns you commission — money in your pocket for doing what you already do: sharing a link. <strong style={{ color: '#e5a50a' }}>With Elite ($197/mo)</strong>, you unlock the full power: the name and email of every buyer goes into your contact list. Email them about your core business, run reactivation campaigns, build a loyalty program — all from customers who found you through a discounted toaster.</p>
+          <h3>Build momentum, then unlock the real power</h3>
+          <p>Every sale earns you commission. <strong style={{ color: '#e5a50a' }}>With Elite ($197/mo)</strong>, you unlock the full flywheel: the name and email of every buyer goes into your contact list. Email them about your core business, run reactivation campaigns, build a loyalty program.</p>
         </>
       )}
 
       <h3>For couples</h3>
-      <p>A bride's guests buy gifts. She gets cashback from your pool — <strong style={{ color: '#c9944a', fontStyle: 'italic' }}>not your wallet</strong>. {contacts ? 'Every guest = a new contact. One wedding = up to 150 names.' : 'One wedding = up to 150 sales through your store.'} The bride becomes your biggest fan — and you never spent a dollar to make it happen.</p>
+      <p>A bride's guests buy gifts. She gets cashback from your pool. {contacts ? 'Every guest = a new contact. One wedding = up to 150 names.' : 'One wedding = up to 150 sales through your store.'}</p>
 
       <h3>For everyone else</h3>
-      <p>Generate codes. Share on social, text to clients, hand out at events. They save, you earn. {contacts ? 'And you get their contact info.' : ''} Every code is marketing that makes you money instead of costing it.</p>
+      <p>Generate codes. Share on social, text to clients, hand out at events. They save, you earn. {contacts ? 'And you get their contact info.' : ''}</p>
 
       <h3>The flywheel</h3>
-      <p>Discount → purchase → {contacts ? 'new contact → market your business → new client → reward → repeat' : 'earnings → more incentives → more purchases → repeat'}. It compounds. The store isn't just a revenue stream — it's the engine that feeds everything else you do.</p>
+      <p>Discount → purchase → {contacts ? 'new contact → market your business → new client → reward → repeat' : 'earnings → more incentives → more purchases → repeat'}. It compounds.</p>
     </div>
   )
 }
@@ -610,16 +594,15 @@ function GrowYourBusiness({ tier }: { tier: string }) {
   return (
     <div className="sub-page">
       <h2>📈 Grow your business</h2>
-      {/* Option B reinforcement */}
-      <p>You have something no competitor has: a customer attraction engine that pays for itself. Both paid tiers break even at <strong>7 sales</strong>. After that, Elite earns double — and gives you buyer contacts.</p>
+      <p>Both paid tiers break even at <strong>7 sales</strong>. After that, Elite earns double — and gives you buyer contacts.</p>
       <EarningsChart />
       <div style={{ marginTop: '24px' }}>
         <h3>The math at maximum generosity (giving 20%)</h3>
         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px', marginTop: '12px' }}>
           {[
-            { name: 'Free', keep: 0, note: 'Pure generosity. Give the max — start attracting customers on day one.', color: '#6b5e52' },
-            { name: 'Pro $97/mo', keep: 10, note: '7 sales to break even. Then $15/sale profit.', color: '#9141ac' },
-            { name: 'Elite $197/mo', keep: 20, note: '7 sales to break even. Then $30/sale + buyer contacts.', color: '#e5a50a' },
+            { name: 'Free', keep: 0, note: 'Pure generosity. Give the max and start building.', color: '#6b5e52' },
+            { name: 'Pro $97/mo', keep: 10, note: '7 sales to break even. Then $15/sale.', color: '#9141ac' },
+            { name: 'Elite $197/mo', keep: 20, note: '7 sales to break even. Then $30/sale + contacts.', color: '#e5a50a' },
           ].map(p => (
             <div key={p.name} style={{
               padding: '14px 18px', borderRadius: '10px',
@@ -647,10 +630,6 @@ function GrowYourBusiness({ tier }: { tier: string }) {
           <span style={{ fontSize: '28px', color: '#22c55e' }}>$4,500 profit</span>
           <span style={{ fontSize: '16px', color: '#e5a50a' }}> + 150 contacts</span>
         </p>
-        {/* Option A echo */}
-        <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#9a8d80', fontStyle: 'italic' }}>
-          Name one other marketing channel that pays you $4,500 while delivering 150 new leads.
-        </p>
       </div>
       {tier !== 'elite' && (
         <div style={{ marginTop: '24px', textAlign: 'center' as const }}>
@@ -668,14 +647,12 @@ function Playbook({ tier, contacts }: { tier: string; contacts: boolean }) {
   return (
     <div className="sub-page">
       <h2>📋 Your first week</h2>
-      {/* Option D reinforcement */}
-      <p style={{ marginBottom: '20px' }}>Stop spending money to find customers. Start getting paid to attract them. Here's how to get your first sales this week:</p>
       {[
-        { num: '1', title: 'Shop your own store', desc: 'Buy something. Feel the experience. See how the discount, the checkout, and the follow-up actually work.' },
-        { num: '2', title: 'Text 5 past clients', desc: `"I have something for you — exclusive savings on thousands of products." Every one who buys = ${contacts ? 'a contact you can market to again' : 'a sale that earns you commission'}.` },
-        { num: '3', title: 'Generate your first code', desc: `Pick 10% or 15%, send it to your best contacts. Every order earns you money${contacts ? ' and a name + email for your list' : ''} — marketing that pays you.` },
-        { num: '4', title: 'Post on Instagram', desc: `"I have a gift for you 🎁 DM me GIFT for exclusive access." Every DM = a warm lead. Every purchase = ${contacts ? 'a customer for life' : 'income from a new customer'}.` },
-        { num: '5', title: 'Set up one registry', desc: `One bride. 150 guests. That's 150 ${contacts ? 'new contacts' : 'sales'} — and you're putting honeymoon money in her bridal purse without taking a dollar from your pocket. She's your biggest fan. You're ours.` },
+        { num: '1', title: 'Shop your own store', desc: 'Buy something. Feel the experience from the customer side.' },
+        { num: '2', title: 'Text 5 past clients', desc: `"I have something for you — exclusive savings on thousands of products." Every one who buys = ${contacts ? 'a contact you can market to' : 'a sale through your store'}.` },
+        { num: '3', title: 'Generate your first code', desc: `Pick 10% or 15%, send it to your best contacts. Every order earns you commission${contacts ? ' + a new contact' : ''}.` },
+        { num: '4', title: 'Post on Instagram', desc: `"I have a gift for you 🎁 DM me GIFT for exclusive access." Every DM = a warm lead. Every purchase = ${contacts ? 'a customer for life' : 'money in your pocket'}.` },
+        { num: '5', title: 'Set up one registry', desc: `One bride. 150 guests. That's 150 ${contacts ? 'new contacts — plus cashback that makes the bride your biggest fan' : 'sales — plus cashback that makes the bride your biggest fan'}.` },
       ].map((step, i) => (
         <div key={i} style={{ display: 'flex', gap: '14px', padding: '14px 0', borderBottom: i < 4 ? '1px solid #e4ddd4' : 'none' }}>
           <div style={{
@@ -719,20 +696,15 @@ const sharedStyles = `
   .trial-cta-urgent { flex-shrink: 0; padding: 8px 18px; background: #e5a50a; color: #fff; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; }
   .trial-cta-urgent:hover { opacity: 0.9; }
 
-  /* Hero */
+  /* Hero — compact */
   .hero-explainer { background: linear-gradient(135deg, #2c2420, #1a1614); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; color: #fff; }
   .hero-explainer h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 600; margin: 0 0 12px; line-height: 1.3; color: #fff; }
-  .hero-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .hero-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .flow-step { flex: 1; min-width: 130px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.4; display: flex; align-items: flex-start; gap: 8px; }
   .flow-step strong { color: #fff; }
   .flow-num { background: #c9944a; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
   .flow-arrow { color: #c9944a; font-weight: 700; font-size: 14px; flex-shrink: 0; }
-
-  /* Step 4 — Gold Pill */
-  .hero-gold-pill { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; background: linear-gradient(135deg, rgba(201,148,74,0.15), rgba(229,165,10,0.1)); border: 1px solid rgba(201,148,74,0.3); }
-  .gold-pill-num { background: #c9944a; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
-  .gold-pill-text { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5; }
-  .gold-pill-text strong { color: #e5a50a; }
+  .hero-costco { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; font-style: italic; }
 
   /* Section cards */
   .section-card { background: #fff; border-radius: 14px; border: 1px solid #e4ddd4; padding: 16px 20px; margin-bottom: 12px; }
@@ -764,7 +736,6 @@ const sharedStyles = `
     .page-content { padding: 20px; }
     .hero-flow { flex-direction: column; }
     .flow-arrow { transform: rotate(90deg); }
-    .hero-gold-pill { margin-top: 4px; }
     .learn-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
     .learn-pill.big { grid-row: span 1; grid-column: 1; }
     .trial-banner, .trial-expired-banner { flex-direction: column; align-items: flex-start; }

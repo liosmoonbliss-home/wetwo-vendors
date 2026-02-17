@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
             from: 'Dave from WeTwo <hello@noreply.wetwo.love>',
             replyTo: 'david@wetwo.love',
             to: vendorEmail,
-            subject: `Welcome to the WeTwo Wedding Buyers Club, ${firstName}!`,
+            subject: `Welcome to the WeTwo Wedding Buying Group, ${firstName}!`,
             html: `
               <!DOCTYPE html>
               <html>
@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
                   
                   <div style="background: linear-gradient(135deg, #2c2420 0%, #1a1612 100%); padding: 32px; text-align: center;">
                     <h1 style="color: #c9944a; margin: 0; font-size: 28px; font-family: 'Playfair Display', Georgia, serif;">WeTwo</h1>
-                    <p style="color: rgba(255,255,255,0.5); margin: 8px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Wedding Buyers Club</p>
+                    <p style="color: rgba(255,255,255,0.5); margin: 8px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Wedding Buying Group</p>
                   </div>
                   
                   <div style="padding: 36px 28px;">
@@ -249,7 +249,7 @@ export async function POST(req: NextRequest) {
                     </p>
                     
                     <p style="color: #6b5e52; margin: 0 0 24px 0; font-size: 15px; line-height: 1.7;">
-                      Welcome to the WeTwo Wedding Buyers Club. We just built you a custom landing page, 
+                      Welcome to the WeTwo Wedding Buying Group. We just built you a custom landing page, 
                       an AI assistant, exclusive member links, and an entire marketing system — all live 
                       and ready to go.
                     </p>
@@ -275,7 +275,7 @@ export async function POST(req: NextRequest) {
                   
                   <div style="background: #faf8f5; padding: 20px 28px; text-align: center; border-top: 1px solid #e4ddd4;">
                     <p style="color: #9a8d80; font-size: 11px; margin: 0; letter-spacing: 1px;">
-                      WeTwo Wedding Buyers Club — Member Vendor
+                      WeTwo Wedding Buying Group — Member Vendor
                     </p>
                   </div>
                 </div>

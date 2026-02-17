@@ -164,17 +164,36 @@ export interface Vendor {
   menu_categories?: MenuCategory[];
   created_at?: string;
   updated_at?: string;
+  // Tier & pool (v4.0+)
+  boost_tier?: 'free' | 'pro' | 'elite';
+  current_pool?: string;
+  trial_start?: string;
+  // Branding
+  white_label_name?: string;
+  white_label_tagline?: string;
+  subdomain_slug?: string;
+  has_branded_store?: boolean;
+  show_powered_by_footer?: boolean;
+  has_brand_colors?: boolean;
+  // Referral & tracking
+  referral_slug?: string;
+  referral_count?: number;
+  subscription_active?: boolean;
 }
 
 export interface Lead {
   id?: string;
-  vendor_id: string;
+  vendor_id?: string;
+  vendor_ref?: string;
+  vendor_name?: string;
   name: string;
   email: string;
   phone?: string;
   event_date?: string;
   interest?: string;
   message?: string;
+  source?: string;
+  status?: string;
   created_at?: string;
 }
 

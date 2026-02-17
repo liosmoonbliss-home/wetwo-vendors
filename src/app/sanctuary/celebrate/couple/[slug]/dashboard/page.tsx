@@ -22,11 +22,10 @@ const supabase = createClient(
 interface RegistryStats {
   itemCount: number
   totalValue: number
-  cashbackAmount: number
 }
 
 // ═══════════════════════════════════════════════════════════════
-// WELCOME OVERLAY — First visit cashback education
+// WELCOME OVERLAY — First visit registry education
 // ═══════════════════════════════════════════════════════════════
 
 function WelcomeOverlay({ 
@@ -57,7 +56,7 @@ function WelcomeOverlay({
         <div style={{ padding: '28px 24px 20px', textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎁</div>
           <h2 style={{ color: 'white', fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>
-            {couple.partner_a}'s Cashback Registry
+            {couple.partner_a}{"'"}s Registry
           </h2>
           <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: 14, margin: 0 }}>
             is ready to customize
@@ -70,10 +69,10 @@ function WelcomeOverlay({
             borderRadius: 12, padding: 20, marginBottom: 20, textAlign: 'center'
           }}>
             <p style={{ color: '#0a0a15', fontSize: 28, fontWeight: 700, margin: '0 0 4px' }}>
-              $10,000 in gifts
+              Gifts + Cash
             </p>
             <p style={{ color: '#0a0a15', fontSize: 16, margin: 0 }}>
-              = gifts + <strong>$2,500 cash back</strong>
+              Every gift your guests buy puts <strong>real cash in your bridal purse</strong>
             </p>
           </div>
           
@@ -87,7 +86,7 @@ function WelcomeOverlay({
               {[
                 { n: '1', t: 'We pre-filled your registry', d: '57 of our most-loved items are already in your registry. Keep what you like.' },
                 { n: '2', t: 'Customize & share', d: 'Remove items you don\'t want, add from our store, then share your link with guests.' },
-                { n: '3', t: 'Guests buy, you earn', d: 'When guests buy from your registry, you get 25% back. Real cash, paid monthly.' },
+                { n: '3', t: 'Guests buy, you earn', d: 'When guests buy from your registry, you get cash back. Real money, paid monthly.' },
               ].map(s => (
                 <div key={s.n} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                   <div style={{
@@ -112,10 +111,10 @@ function WelcomeOverlay({
             borderRadius: 10, padding: 14
           }}>
             <p style={{ color: '#4ade80', fontSize: 13, fontWeight: 600, margin: '0 0 6px' }}>
-              💰 How 25%?
+              💰 How does the cash back work?
             </p>
             <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-              We buy wholesale, list at discounted prices, and share the margin with you. Your guests buy you gifts at a discount — you get the gifts plus Honeymoon cash.
+              Your vendor set you up with a special rate. When guests buy gifts from your registry, you receive the gifts plus bonus cash — deposited to your PayPal monthly.
             </p>
           </div>
         </div>
@@ -147,7 +146,7 @@ function WelcomeOverlay({
 export default function BrideDashboard({ params }: { params: { slug: string } }) {
   const searchParams = useSearchParams()
   const [couple, setCouple] = useState<any>(null)
-  const [stats, setStats] = useState<RegistryStats>({ itemCount: 0, totalValue: 0, cashbackAmount: 0 })
+  const [stats, setStats] = useState<RegistryStats>({ itemCount: 0, totalValue: 0 })
   const [earnings, setEarnings] = useState({ totalEarned: 0, pendingBalance: 0, paidOut: 0 })
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -155,7 +154,6 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
   const [showWelcome, setShowWelcome] = useState(false)
 
   const slug = params.slug
-  const cashbackRate = 0.25
 
   useEffect(() => {
     const bp = searchParams.get('blueprint')
@@ -192,7 +190,6 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
           setStats({
             itemCount: data.itemCount || 0,
             totalValue: data.totalValue || 0,
-            cashbackAmount: Math.round((data.totalValue || 0) * cashbackRate)
           })
         }
       } catch {}
@@ -219,7 +216,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
     if (navigator.share) {
       await navigator.share({
         title: `${couple?.partner_a}${couple?.partner_b ? ` & ${couple.partner_b}` : ''}'s Wedding Registry`,
-        text: 'Check out our wedding registry — and we get 25% cashback on every gift!',
+        text: 'Check out our wedding registry — every gift helps us build our new life together!',
         url: link
       })
     } else { copyGuestLink() }
@@ -267,7 +264,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
           color: '#d4af74', fontSize: 11, fontWeight: 600, 
           letterSpacing: 1.5, textTransform: 'uppercase', 
           margin: '20px 0 12px', paddingLeft: 4
-        }}>Your Cashback Registry</p>
+        }}>Your Registry</p>
 
         {/* ═══ 1. VENDOR REFERRER ═══ */}
         {couple?.referred_by_vendor_id && (
@@ -313,10 +310,10 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ color: '#4ade80', fontSize: 24, fontWeight: 700 }}>
-              ${stats.cashbackAmount > 0 ? stats.cashbackAmount.toLocaleString() : '—'}
+              ${earnings.totalEarned > 0 ? earnings.totalEarned.toFixed(0) : '—'}
             </div>
             <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              Potential Cashback
+              Cash Earned
             </div>
           </div>
         </div>
@@ -339,7 +336,7 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
             <div style={{ flex: 1 }}>
               <div style={{ color: 'white', fontSize: 16, fontWeight: 700 }}>Share Your Registry</div>
               <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
-                Send to guests to start earning cashback
+                Send to guests to start earning cash
               </div>
             </div>
           </div>
@@ -454,9 +451,9 @@ export default function BrideDashboard({ params }: { params: { slug: string } })
                 <span style={{
                   background: 'rgba(74, 222, 128, 0.2)', color: '#4ade80',
                   padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 700
-                }}>25% Cashback</span>
+                }}>Cash Back</span>
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Track cashback & set up transfers</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Track earnings & set up transfers</div>
             </div>
           </div>
           

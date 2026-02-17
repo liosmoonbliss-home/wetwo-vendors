@@ -1287,7 +1287,7 @@ function PreviewPane({ vendor, heroImage, galleryImages, theme, scale }: {
                   </div>
                   {/* Cashback banner — always right below hero */}
                   <div style={{ background: 'linear-gradient(135deg, #00d084, #00b37a)', color: '#fff', textAlign: 'center', padding: '0.5rem', fontSize: '0.8rem' }}>
-                    ✨ Shop with us and get 25% cashback on everything — wedding registries, home, fashion &amp; more — Unlock Cashback →
+                    ✨ Shop with us and earn cash back on everything — wedding registries, home, fashion &amp; more — Start Shopping →
                   </div>
                 </div>
               );

@@ -23,7 +23,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Command Center',
     items: [
       { label: 'Home', icon: '🏠', href: '/dashboard' },
-      { label: 'Your Links', icon: '🔗', href: '/dashboard/links' },
+      { label: 'Outreach Kit', icon: '🎁', href: '/dashboard/links' },
     ]
   },
   {
@@ -149,6 +149,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }
 
+  // Tier display for sidebar footer
+  const getTierLabel = () => {
+    const tier = vendor?.boost_tier || vendor?.plan || 'free'
+    switch (tier) {
+      case 'elite': return 'Elite Plan'
+      case 'pro': return 'Pro Plan'
+      default: return 'Free Plan'
+    }
+  }
+
   return (
     <div className="dashboard-shell">
       {/* Mobile header */}
@@ -214,11 +224,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div>
               <div className="sidebar-user-name">{vendor?.contact_name || vendor?.business_name}</div>
-              <div className="sidebar-user-plan">
-                {vendor?.plan === 'free' ? 'Free Plan' : 
-                 vendor?.plan === 'starter' ? 'Starter — 10%' :
-                 vendor?.plan === 'growth' ? 'Growth — 15%' : 'Pro — 20%'}
-              </div>
+              <div className="sidebar-user-plan">{getTierLabel()}</div>
             </div>
           </Link>
         </div>

@@ -202,6 +202,9 @@ export default function CoupleSignup() {
     }
   }
 
+  // Determine the display name for the referring vendor
+  const referrerName = partnerData?.partnerName || referralData?.vendorName || null
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -247,7 +250,7 @@ export default function CoupleSignup() {
           Start Your Registry
         </h1>
 
-        {/* Value Prop - BIGGER */}
+        {/* Value Prop */}
         <p style={{
           fontSize: '18px',
           color: '#d4af74',
@@ -255,17 +258,17 @@ export default function CoupleSignup() {
           marginBottom: '8px',
           fontWeight: 600
         }}>
-          Get 25% cash back on every gift your guests buy
+          Get cash back on every gift your guests buy
         </p>
 
-        {/* Cash Example */}
+        {/* Subtext */}
         <p style={{
           fontSize: '14px',
           color: 'rgba(255, 255, 255, 0.6)',
           textAlign: 'center',
           marginBottom: '28px'
         }}>
-          $1,000 in gifts = $250 cash. $10,000 = $2,500 cash.
+          Your guests choose the perfect gifts — you get cash in your bridal purse on top.
         </p>
 
         {/* 🆕 PARTNER REFERRAL BANNER */}
@@ -295,7 +298,7 @@ export default function CoupleSignup() {
             textAlign: 'center'
           }}>
             <span style={{ color: '#4ade80', fontSize: '14px' }}>
-              ✨ Referred by <strong>{referralData.vendorName}</strong> — Book them for bonus cashback!
+              ✨ Courtesy of <strong>{referralData.vendorName}</strong>
             </span>
           </div>
         )}
@@ -349,7 +352,7 @@ export default function CoupleSignup() {
                 letterSpacing: '0.5px',
                 textTransform: 'uppercase'
               }}>
-                Partner's Name *
+                {"Partner's"} Name *
               </label>
               <input
                 type="text"
@@ -488,7 +491,7 @@ export default function CoupleSignup() {
         }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '24px', marginBottom: '4px' }}>💰</div>
-            <div style={{ fontSize: '12px', color: '#d4af74', fontWeight: 600 }}>25% Cashback</div>
+            <div style={{ fontSize: '12px', color: '#d4af74', fontWeight: 600 }}>Cash Back</div>
             <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.4)' }}>On every gift</div>
           </div>
           <div style={{ textAlign: 'center' }}>

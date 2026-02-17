@@ -158,7 +158,7 @@ async function sendWelcomeEmail(couple: any, registryUrl: string, dashboardUrl: 
       from: 'Dave from WeTwo <hello@noreply.wetwo.love>',
       replyTo: 'david@wetwo.love',
       to: couple.email,
-      subject: `${couple.partner_a}, your 25% cashback registry is ready`,
+      subject: `${couple.partner_a}, your cashback registry is ready`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -183,15 +183,15 @@ async function sendWelcomeEmail(couple: any, registryUrl: string, dashboardUrl: 
               <!-- THE CASH HOOK -->
               <div style="background: linear-gradient(135deg, #d4af74 0%, #c9a663 100%); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
                 <p style="color: #0a0a15; font-size: 28px; font-weight: 700; margin: 0;">
-                  $10,000 in gifts
+                  Gifts + Cash Back
                 </p>
                 <p style="color: #0a0a15; font-size: 16px; margin: 8px 0 0 0;">
-                  = gifts + <strong>$2,500 cash back</strong>
+                  Every gift your guests buy puts <strong>real cash in your bridal purse</strong>
                 </p>
               </div>
               
               <p style="color: #666; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; text-align: center;">
-                Your cashback registry is set up and ready. When guests buy gifts, you earn 25% back in real cash.
+                Your cashback registry is set up and ready. When guests buy gifts, you earn cash back — on top of the gifts themselves.
               </p>
               
               <!-- CTA Button -->
@@ -210,7 +210,7 @@ async function sendWelcomeEmail(couple: any, registryUrl: string, dashboardUrl: 
             <!-- Footer -->
             <div style="background: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #eee;">
               <p style="color: #999; margin: 0; font-size: 12px;">
-                © 2026 WeTwo • The 25% Cashback Wedding Registry
+                © 2026 WeTwo • The Cashback Wedding Registry
               </p>
             </div>
           </div>

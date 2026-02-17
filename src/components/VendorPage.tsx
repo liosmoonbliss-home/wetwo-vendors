@@ -16,7 +16,7 @@ import { MenuAccordionSection } from '@/components/sections/MenuAccordion';
 import { EventTypesSection } from '@/components/sections/EventTypes';
 import { TestimonialsSection } from '@/components/sections/Testimonials';
 import { FAQSection } from '@/components/sections/FAQ';
-import { CashbackBanner } from '@/components/sections/CashbackBanner';
+import { ShopBanner } from '@/components/sections/CashbackBanner';
 
 // Dashboard
 import { Dashboard } from '@/components/dashboard/Dashboard';
@@ -307,6 +307,7 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [showShopForm, setShowShopForm] = useState(false);
 
   // Enrich vendor data with smart defaults
   const vendor = useMemo(() => {
@@ -365,8 +366,8 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
         return (
           <div key={key}>
             <HeroSection vendor={vendor} theme={theme} links={links} />
-            {/* Cashback banner immediately after hero */}
-            <CashbackBanner vendor={vendor} links={links} />
+            {/* Shop banner immediately after hero */}
+            <ShopBanner vendor={vendor} links={links} showForm={showShopForm} setShowForm={setShowShopForm} />
             {/* About: only auto-render here if not in active sections */}
             {!resolvedActive.includes('about' as SectionId) && <AboutSection vendor={vendor} />}
           </div>
@@ -452,6 +453,25 @@ export function VendorPage({ vendor: rawVendor, theme, activeSections = [], sect
           </ul>
 
           <div className="public-nav-right">
+            <button
+              onClick={() => setShowShopForm(true)}
+              className="public-nav-shop"
+              style={{
+                background: 'linear-gradient(135deg, #c9944a, #d4a76a)',
+                color: '#fff',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Shop 🛍️
+            </button>
             <a href="#contact" className="public-nav-cta">Get a Quote</a>
             <button
               onClick={() => setView('login')}

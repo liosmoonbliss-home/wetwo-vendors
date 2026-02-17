@@ -8,7 +8,7 @@ interface Message {
 }
 
 const STARTER_QUESTIONS = [
-  { label: '🔑 How does this work?', prompt: 'I\'m new here. Can you explain how the WeTwo Wedding Buyers Club works in simple terms? What am I giving people and how does it all work?' },
+  { label: '🔑 How does this work?', prompt: 'I\'m new here. Explain how my store, registry, and the whole system works in simple terms. What am I giving people and how does it all work?' },
   { label: '💰 What does it cost?', prompt: 'What does this cost me? How does pricing and commission work? Break it down simply.' },
   { label: '🚀 What should I do first?', prompt: 'I just got access to my dashboard. What should I do first? Give me a simple step-by-step.' },
   { label: '📈 How do I make money?', prompt: 'How do I actually make money with this? Explain the commission and give me the math.' },
@@ -115,7 +115,7 @@ export default function ClaudeWidget() {
           <div className="hero-avatar">✨</div>
           <h1 className="hero-title">Hey {firstName} — I'm Claude.</h1>
           <p className="hero-subtitle">
-            I'm your personal advisor. I know everything about your WeTwo Wedding Buyers Club membership — 
+            I'm your personal advisor. I know your system inside and out — 
             how it works, what to do, how to make money with it. Before you do anything else, ask me anything.
           </p>
 

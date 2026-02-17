@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
     }
 
-    // Create account
+    // Create account — v4.4 tier structure: free (0%), pro (10%), elite (20%)
     const { data: account, error } = await supabase
       .from('vendor_accounts')
       .insert({
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         password_hash: hashPassword(password),
         name: name || vendor.business_name,
         plan: plan || 'free',
-        commission_rate: plan === 'starter' ? 10 : plan === 'growth' ? 15 : plan === 'pro' ? 20 : 0,
+        commission_rate: plan === 'pro' ? 10 : plan === 'elite' ? 20 : 0,
       })
       .select()
       .single()
@@ -71,4 +71,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
-

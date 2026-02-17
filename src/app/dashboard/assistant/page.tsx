@@ -8,21 +8,21 @@ interface Message {
 }
 
 const WRITE_PROMPTS = [
-  { label: '📩 Email to a new couple', prompt: 'Write a warm email to a new engaged couple introducing the WeTwo Wedding Buyers Club registry and 25% cashback. Make the exclusivity clear.' },
-  { label: '💬 Text a past client', prompt: 'Write a text message to a past client I haven\'t spoken to in a while, sharing my exclusive WeTwo cashback link as a gift.' },
-  { label: '📧 Email my entire list', prompt: 'Write a reactivation email I can send to my entire contact list from the past 5 years, introducing the WeTwo Wedding Buyers Club and my exclusive cashback link.' },
-  { label: '📸 Instagram caption', prompt: 'Write an Instagram caption announcing that I\'m a member of the WeTwo Wedding Buyers Club and my followers can DM me for exclusive access to 25% cashback.' },
-  { label: '📱 Instagram story', prompt: 'Write short punchy text for an Instagram story about being a WeTwo Wedding Buyers Club member.' },
-  { label: '🤝 What to say when I close', prompt: 'Write the exact words I should say to a new client at the end of a meeting to introduce the 25% cashback as a gift only I can give them.' },
+  { label: '📩 Email to a new couple', prompt: 'Write a warm email to a new engaged couple explaining how I can give them a registry where their guests buy gifts at great prices and the couple gets cashback toward their honeymoon. Make them feel the honeymoon money.' },
+  { label: '💬 Text a past client', prompt: 'Write a text message to a past client I haven\'t spoken to in a while, sharing my store link as a genuine gift — real savings on thousands of products.' },
+  { label: '📧 Email my entire list', prompt: 'Write a reactivation email I can send to my entire contact list from the past 5 years, introducing my cashback program as something I set up for my clients.' },
+  { label: '📸 Instagram caption', prompt: 'Write an Instagram caption announcing that I can now give my followers access to real cashback on thousands of products. Use "DM me GIFT" as the call to action.' },
+  { label: '📱 Instagram story', prompt: 'Write short punchy text for an Instagram story about the cashback gift I can now offer my people.' },
+  { label: '🤝 What to say when I close', prompt: 'Write the exact words I should say to a new client at the end of a meeting to introduce the cashback registry as a gift. Make it feel generous, not salesy.' },
 ]
 
 const LEARN_PROMPTS = [
-  { label: '🔑 How does the Buyers Club work?', prompt: 'Explain how the WeTwo Wedding Buyers Club works in simple terms. What am I actually giving people?' },
+  { label: '🔑 How does my system work?', prompt: 'I\'m new here. Explain how my store, registry, and the whole system works in simple terms. What am I actually giving people? And how does it help my main business?' },
   { label: '📈 How does the viral effect work?', prompt: 'Explain how sharing my link creates a network effect. How does my reach grow when couples use the registry? How do more people see my name?' },
-  { label: '💰 How does commission work?', prompt: 'Explain how commission works. What are the plans, what do I earn, and what\'s the math on making it worthwhile?' },
-  { label: '🔄 What is a reactivation campaign?', prompt: 'What is a reactivation campaign and how do I do one? Give me a step-by-step plan.' },
-  { label: '💡 Give me 5 marketing ideas', prompt: 'Give me 5 specific, actionable things I can do this week to share my WeTwo link and grow my network. Keep it simple — I\'m not a marketer.' },
-  { label: '⚠️ Should I upgrade before sharing?', prompt: 'Should I upgrade to a paid plan before I start sharing my links? What happens if I don\'t?' },
+  { label: '💰 How do the tiers and earnings work?', prompt: 'Explain how the three tiers work — Free, Pro, and Elite. What do I earn on each, what\'s the math, and when does it make sense to upgrade?' },
+  { label: '🔄 What is a reactivation campaign?', prompt: 'What is a reactivation campaign and how do I do one? Give me a step-by-step plan using my store link.' },
+  { label: '💡 Give me 5 marketing ideas', prompt: 'Give me 5 specific, actionable things I can do this week to share my store link and grow my network. Keep it simple — I\'m not a marketer.' },
+  { label: '⚠️ Should I upgrade before sharing?', prompt: 'Should I upgrade to a paid plan before I start sharing my links? What happens if I don\'t? Walk me through the right sequence.' },
 ]
 
 export default function AssistantPage() {
@@ -98,8 +98,8 @@ export default function AssistantPage() {
             <div className="welcome-icon">✨</div>
             <h2>Hey {firstName} — I'm Claude.</h2>
             <p className="welcome-sub">
-              I know everything about the WeTwo Wedding Buyers Club. I can write messages for you, 
-              explain how things work, give you marketing ideas, or answer any question you have. 
+              I know your system inside and out. I can write messages in your voice, 
+              explain how everything works, give you marketing ideas, or answer any question. 
               Just ask.
             </p>
 
