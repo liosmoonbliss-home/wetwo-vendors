@@ -189,20 +189,27 @@ function CreateRegistryForm() {
   return (
     <div style={styles.wrapper}>
       <div style={styles.card}>
-        {/* Logo */}
+        {/* Vendor or WeTwo branding */}
         <div style={styles.logoRow}>
-          <span style={styles.logo}>WeTwo</span>
+          {vendor ? (
+            <div>
+              <span style={styles.logo}>{vendor.business_name}</span>
+              <div style={{ fontSize: 12, color: '#9a8d80', marginTop: 4 }}>powered by <span style={{ color: '#c9944a', fontWeight: 600 }}>WeTwo</span></div>
+            </div>
+          ) : (
+            <span style={styles.logo}>WeTwo</span>
+          )}
         </div>
 
         <h1 style={styles.heading}>
           Create Your Registry
         </h1>
         <p style={styles.subheading}>
-          Sign up for your free cashback wedding registry
-          {parseInt(cbParam) > 0 && (
-            <> — earn <strong style={{ color: '#22c55e' }}>{cbParam}% back</strong> on every gift</>
+          {parseInt(cbParam) > 0 ? (
+            <>Earn <strong style={{ color: '#22c55e' }}>{cbParam}% cash back</strong> on every wedding gift</>
+          ) : (
+            <>Create your free cashback wedding registry</>
           )}
-          .
         </p>
 
         {/* Vendor attribution */}

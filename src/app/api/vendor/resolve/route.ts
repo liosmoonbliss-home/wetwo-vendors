@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const { data: vendor, error } = await supabase
       .from('vendors')
       .select('id, ref, business_name, photo_url, boost_tier, plan, current_pool')
-      .or(`ref.eq.${slug},referral_slug.eq.${slug}`)
+      .or(`ref.eq.${slug},referral_slug.eq.${slug},ref.eq.vendor-${slug},referral_slug.eq.vendor-${slug}`)
       .single()
 
     if (error || !vendor) {
