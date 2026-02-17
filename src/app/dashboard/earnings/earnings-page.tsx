@@ -15,6 +15,11 @@ export default function EarningsPage() {
   if (!vendor) return null
 
   const isFree = vendor.plan === 'free'
+  const isPro = vendor.plan === 'pro'
+  const isElite = vendor.plan === 'elite'
+
+  const poolMap: Record<string, number> = { free: 20, pro: 30, elite: 40 }
+  const pool = poolMap[vendor.plan] || 20
 
   return (
     <div>
@@ -22,7 +27,10 @@ export default function EarningsPage() {
         <div>
           <h1 className="page-title">Commission & Earnings</h1>
           <p className="page-subtitle">
-            {isFree ? "You're on the free plan — everything works, you just don't earn commission yet" : `${vendor.plan.charAt(0).toUpperCase() + vendor.plan.slice(1)} Plan — ${vendor.commission_rate}% commission`}
+            {isFree
+              ? `Free Plan — ${pool}% pool. You decide: offer buyer discounts to drive sales, keep it as commission, or mix both.`
+              : `${vendor.plan.charAt(0).toUpperCase() + vendor.plan.slice(1)} Plan — ${pool}% pool. You control the split between buyer discounts and your commission.`
+            }
           </p>
         </div>
       </header>
@@ -30,11 +38,11 @@ export default function EarningsPage() {
       <div className="page-content">
         {/* Current Earnings */}
         <div className="earnings-hero">
-          <div className="earnings-total">{isFree ? '—' : '$0.00'}</div>
+          <div className="earnings-total">{isFree ? '$0.00' : '$0.00'}</div>
           <div className="earnings-label">Total Commission Earned</div>
-          {!isFree && (
-            <div className="rate-badge">✓ Earning {vendor.commission_rate}% on every purchase</div>
-          )}
+          <div className="rate-badge">
+            {`${pool}% pool — you control the split`}
+          </div>
         </div>
 
         {/* Payout Setup */}
@@ -44,13 +52,13 @@ export default function EarningsPage() {
 
         {/* How It Works */}
         <div className="how-it-works">
-          <h3>How commission works</h3>
+          <h3>How your pool works</h3>
           <div className="steps">
             <div className="step">
               <span className="step-num">1</span>
               <div>
                 <strong>You share your link</strong>
-                <p>Anyone who gets your link — couples, clients, friends — can shop through your store and earn cash back.</p>
+                <p>{"Anyone who gets your link — couples, clients, friends — can shop through your store."}</p>
               </div>
             </div>
             <div className="step">
@@ -63,69 +71,113 @@ export default function EarningsPage() {
             <div className="step">
               <span className="step-num">3</span>
               <div>
-                <strong>You earn a percentage</strong>
-                <p>On a paid plan, you keep a share of every cart purchase — the higher your pool, the more you keep.</p>
+                <strong>{"You control the split"}</strong>
+                <p>{`Your ${pool}% pool is yours to allocate. Offer buyers a discount (up to 20%) to incentivize purchases, and keep the rest as commission. Give it all as discount, keep it all as commission, or anywhere in between.`}</p>
               </div>
             </div>
           </div>
           <div className="clarity-note">
-            {"You don't discount your services. The earnings come from the store's margin — separate revenue that shows up in your account before you wake up in the morning."}
+            {"You don't discount your services. The pool comes from the store's margin — separate revenue on top of your core business."}
+          </div>
+        </div>
+
+        {/* Your Pool Strategy */}
+        <div className="strategy-card">
+          <h3>🎯 Your {pool}% pool — example splits</h3>
+          <p className="strategy-intro">{"On a $150 purchase, here's how different strategies play out:"}</p>
+          <div className="strategy-grid">
+            <div className="strategy-item">
+              <div className="strategy-label">Maximum generosity</div>
+              <div className="strategy-split">20% buyer discount → {pool - 20 >= 0 ? `${pool - 20}%` : '0%'} commission</div>
+              <div className="strategy-amounts">
+                <span className="buyer-gets">Buyer saves $30</span>
+                <span className="you-get">You earn ${((pool - 20) * 150 / 100)}</span>
+              </div>
+            </div>
+            {pool >= 20 && (
+              <div className="strategy-item">
+                <div className="strategy-label">Balanced</div>
+                <div className="strategy-split">{Math.floor(pool/2)}% discount → {Math.ceil(pool/2)}% commission</div>
+                <div className="strategy-amounts">
+                  <span className="buyer-gets">Buyer saves ${Math.floor(pool/2) * 150 / 100}</span>
+                  <span className="you-get">You earn ${Math.ceil(pool/2) * 150 / 100}</span>
+                </div>
+              </div>
+            )}
+            <div className="strategy-item">
+              <div className="strategy-label">Maximum commission</div>
+              <div className="strategy-split">0% discount → {pool}% commission</div>
+              <div className="strategy-amounts">
+                <span className="buyer-gets">No discount</span>
+                <span className="you-get green">You earn ${pool * 150 / 100}</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Choose Your Plan */}
         <h3 className="section-heading">Choose Your Plan</h3>
-        <p className="section-subheading">The commission is spending money. The real value is what these tools do for your main business.</p>
+        <p className="section-subheading">A bigger pool means more margin to work with — whether you use it for buyer incentives, commission, or both.</p>
         <div className="tiers-grid">
-          <div className={`tier-card ${vendor.plan === 'free' ? 'current' : ''}`}>
+          {/* FREE */}
+          <div className={`tier-card ${isFree ? 'current' : ''}`}>
             <div className="tier-name">Free</div>
             <div className="tier-rate">20%</div>
+            <div className="tier-label">pool</div>
             <div className="tier-price">$0/month</div>
             <ul className="tier-features">
               <li>✓ Premium vendor page</li>
               <li>✓ Shopping links for clients</li>
               <li>✓ Contact form & leads</li>
               <li>✓ AI assistant</li>
-              <li>✓ 20% buyer discount pool</li>
-              <li className="dim">✗ No commission on purchases</li>
+              <li className="highlight">✓ 20% pool — yours to split</li>
+              <li>✓ Up to 20% buyer discount</li>
+              <li>✓ Up to 20% commission</li>
             </ul>
-            {vendor.plan === 'free' && <div className="current-badge">Current Plan</div>}
+            {isFree && <div className="current-badge">Current Plan</div>}
           </div>
 
-          <div className={`tier-card featured ${vendor.plan === 'pro' ? 'current' : ''}`}>
+          {/* PRO */}
+          <div className={`tier-card featured ${isPro ? 'current' : ''}`}>
             <div className="tier-popular">Most Popular</div>
             <div className="tier-name">Pro</div>
             <div className="tier-rate green">30%</div>
+            <div className="tier-label">pool</div>
             <div className="tier-price">$97/month</div>
             <div className="tier-daily">{"That's $3.23/day — a cup of coffee"}</div>
             <ul className="tier-features">
               <li>✓ Everything in Free</li>
-              <li className="highlight">✓ 30% pool — up to 10% commission</li>
-              <li>✓ Branded store with your name</li>
+              <li className="highlight">✓ 30% pool — yours to split</li>
+              <li>✓ Branded Couples{"'"} Store</li>
               <li>✓ 7-day branded trial included</li>
+              <li>✓ Up to 20% buyer discount + 10% commission</li>
+              <li>✓ Or up to 30% commission (no discount)</li>
               <li>✓ ~7 sales covers your plan</li>
             </ul>
-            {vendor.plan === 'pro'
+            {isPro
               ? <div className="current-badge">Current Plan</div>
-              : <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" className="tier-btn primary">Choose Pro →</a>
+              : <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" className="tier-btn primary">Upgrade to Pro →</a>
             }
           </div>
 
-          <div className={`tier-card ${vendor.plan === 'elite' ? 'current' : ''}`}>
+          {/* ELITE */}
+          <div className={`tier-card ${isElite ? 'current' : ''}`}>
             <div className="tier-name">Elite</div>
             <div className="tier-rate green">40%</div>
+            <div className="tier-label">pool</div>
             <div className="tier-price">$197/month</div>
             <div className="tier-daily">{"That's $6.57/day — less than lunch"}</div>
             <ul className="tier-features">
               <li>✓ Everything in Pro</li>
-              <li className="highlight">✓ 40% pool — up to 20% commission</li>
-              <li>✓ Buyer contact capture on every sale</li>
-              <li>✓ Maximum earning potential</li>
+              <li className="highlight">✓ 40% pool — yours to split</li>
+              <li className="highlight">✓ Buyer contact list on every sale</li>
+              <li>✓ Up to 20% buyer discount + 20% commission</li>
+              <li>✓ Or up to 40% commission (no discount)</li>
               <li>✓ ~7 sales covers your plan</li>
             </ul>
-            {vendor.plan === 'elite'
+            {isElite
               ? <div className="current-badge">Current Plan</div>
-              : <a href="https://wetwo.love/products/wetwo-vendor-subscription-elite-tier" target="_blank" rel="noopener" className="tier-btn outline">Choose Elite →</a>
+              : <a href="https://wetwo.love/products/wetwo-vendor-subscription-elite-tier" target="_blank" rel="noopener" className="tier-btn outline">Upgrade to Elite →</a>
             }
           </div>
         </div>
@@ -159,35 +211,7 @@ export default function EarningsPage() {
           </p>
         </div>
 
-        {/* Profit Accelerator */}
-        <div className="accelerator-card">
-          <h3>🚀 Why Elite wins</h3>
-          <p className="accelerator-intro">
-            {"The break-even is the same — just"} <strong>~7 sales</strong> {"on either plan. But every sale after that, Elite earns you double — and the gap keeps growing."}
-          </p>
-
-          <div className="accelerator-label">Your next 10 sales after break-even:</div>
-          <div className="accel-grid">
-            <div className="accel-item">
-              <div className="accel-tier-name">Pro</div>
-              <div className="accel-math">10 × $15</div>
-              <div className="accel-value">$150</div>
-              <div className="accel-extra">profit</div>
-            </div>
-            <div className="accel-item featured">
-              <div className="accel-tier-name">Elite</div>
-              <div className="accel-math">10 × $30</div>
-              <div className="accel-value">$300</div>
-              <div className="accel-extra">double Pro</div>
-            </div>
-          </div>
-
-          <p className="accelerator-kicker">
-            Same effort. Same links. Same network. The only difference is which plan you chose <em>before</em> you started sharing.
-          </p>
-        </div>
-
-        {/* The Real Math */}
+        {/* The Math That Matters */}
         <div className="math-card">
           <h3>📊 The math that actually matters</h3>
 
@@ -229,20 +253,25 @@ export default function EarningsPage() {
               <span className="range-label">Full registry ▼</span>
             </div>
             <div className="commission-calc">
+              <div className="calc-row">
+                <div className="calc-tier">Free (20%)</div>
+                <div className="calc-result">$2,250 – $4,500</div>
+                <div className="calc-coverage">{"at max commission (no discount)"}</div>
+              </div>
               <div className="calc-row highlight-row">
-                <div className="calc-tier">Pro (10%)</div>
-                <div className="calc-result">$1,125 – $2,250</div>
-                <div className="calc-coverage">{"from"} <strong>{"one couple's"}</strong> {"registry"}</div>
+                <div className="calc-tier">Pro (30%)</div>
+                <div className="calc-result">$3,375 – $6,750</div>
+                <div className="calc-coverage">{"at max commission (no discount)"}</div>
               </div>
               <div className="calc-row">
-                <div className="calc-tier">Elite (20%)</div>
-                <div className="calc-result">$2,250 – $4,500</div>
-                <div className="calc-coverage">{"from"} <strong>{"one couple's"}</strong> {"registry"}</div>
+                <div className="calc-tier">Elite (40%)</div>
+                <div className="calc-result">$4,500 – $9,000</div>
+                <div className="calc-coverage">{"at max commission + buyer contacts"}</div>
               </div>
             </div>
 
             <p className="bomb-note">
-              {"That's from"} <strong>one couple</strong>{". Most wedding vendors work with 5–20+ couples per year. And this doesn't count non-wedding shoppers in your network who buy year-round."}
+              {"These are at maximum commission (0% buyer discount). Offering discounts shifts some of the pool to buyers — you choose the strategy that fits your business."}
             </p>
           </div>
 
@@ -251,34 +280,43 @@ export default function EarningsPage() {
           </div>
 
           <div className="napkin-math">
-            <h4>🧮 The napkin math (per sale)</h4>
-            <p>On individual sales alone — no registry needed:</p>
+            <h4>🧮 The napkin math (per sale at max commission)</h4>
+            <p>On individual $150 sales — no registry needed:</p>
             <div className="napkin-grid">
               <div className="napkin-item">
-                <div className="napkin-number">~7</div>
-                <div className="napkin-label">sales to cover <strong>Pro</strong> ($97/mo)</div>
+                <div className="napkin-number">$30</div>
+                <div className="napkin-label">per sale on <strong>Free</strong></div>
               </div>
               <div className="napkin-item">
-                <div className="napkin-number">~7</div>
-                <div className="napkin-label">sales to cover <strong>Elite</strong> ($197/mo)</div>
+                <div className="napkin-number">$45</div>
+                <div className="napkin-label">per sale on <strong>Pro</strong></div>
+              </div>
+              <div className="napkin-item">
+                <div className="napkin-number">$60</div>
+                <div className="napkin-label">per sale on <strong>Elite</strong></div>
+              </div>
+              <div className="napkin-item">
+                <div className="napkin-number">~4–7</div>
+                <div className="napkin-label">sales to cover <strong>Pro or Elite</strong></div>
               </div>
             </div>
-            <p className="napkin-note">{"Based on ~$150 average cart value. Pro earns $15/sale, Elite earns $30/sale. A single couple's registry blows past this many times over."}</p>
+            <p className="napkin-note">{"At max commission (0% buyer discount). Giving buyers a discount reduces your per-sale commission but can increase your total volume. A single couple's registry blows past break-even many times over."}</p>
           </div>
 
           {/* Profit Graph */}
           <div className="profit-graph">
-            <h4>📈 How the gap grows</h4>
-            <p className="graph-intro">Monthly take-home profit as your sales volume increases:</p>
+            <h4>📈 How the gap grows (at max commission)</h4>
+            <p className="graph-intro">Monthly take-home commission as your sales volume increases ($150 avg cart):</p>
             
             <div className="graph-container">
-              {/* 15 sales */}
+              {/* 10 sales */}
               <div className="graph-row">
-                <div className="graph-label">15 sales/mo</div>
+                <div className="graph-label">10 sales/mo</div>
                 <div className="graph-bars">
                   <div className="graph-bar-group">
-                    <div className="graph-bar pro-bar" style={{ width: '20%' }}><span>$128</span></div>
-                    <div className="graph-bar elite-bar" style={{ width: '39%' }}><span>$253</span></div>
+                    <div className="graph-bar free-bar" style={{ width: '17%' }}><span>$300</span></div>
+                    <div className="graph-bar pro-bar" style={{ width: '22%' }}><span>$353</span></div>
+                    <div className="graph-bar elite-bar" style={{ width: '23%' }}><span>$403</span></div>
                   </div>
                 </div>
               </div>
@@ -287,8 +325,9 @@ export default function EarningsPage() {
                 <div className="graph-label">20 sales/mo</div>
                 <div className="graph-bars">
                   <div className="graph-bar-group">
-                    <div className="graph-bar pro-bar" style={{ width: '31%' }}><span>$203</span></div>
-                    <div className="graph-bar elite-bar" style={{ width: '62%' }}><span>$403</span></div>
+                    <div className="graph-bar free-bar" style={{ width: '33%' }}><span>$600</span></div>
+                    <div className="graph-bar pro-bar" style={{ width: '44%' }}><span>$803</span></div>
+                    <div className="graph-bar elite-bar" style={{ width: '57%' }}><span>$1,003</span></div>
                   </div>
                 </div>
               </div>
@@ -297,8 +336,9 @@ export default function EarningsPage() {
                 <div className="graph-label">30 sales/mo</div>
                 <div className="graph-bars">
                   <div className="graph-bar-group">
-                    <div className="graph-bar pro-bar" style={{ width: '54%' }}><span>$353</span></div>
-                    <div className="graph-bar elite-bar" style={{ width: '100%' }}><span>$703</span></div>
+                    <div className="graph-bar free-bar" style={{ width: '50%' }}><span>$900</span></div>
+                    <div className="graph-bar pro-bar" style={{ width: '69%' }}><span>$1,253</span></div>
+                    <div className="graph-bar elite-bar" style={{ width: '90%' }}><span>$1,603</span></div>
                   </div>
                 </div>
               </div>
@@ -307,22 +347,40 @@ export default function EarningsPage() {
                 <div className="graph-label">50 sales/mo</div>
                 <div className="graph-bars">
                   <div className="graph-bar-group">
-                    <div className="graph-bar pro-bar" style={{ width: '50%' }}><span>$653</span></div>
-                    <div className="graph-bar elite-bar" style={{ width: '100%' }}><span>$1,303</span></div>
+                    <div className="graph-bar free-bar" style={{ width: '56%' }}><span>$1,500</span></div>
+                    <div className="graph-bar pro-bar" style={{ width: '78%' }}><span>$2,153</span></div>
+                    <div className="graph-bar elite-bar" style={{ width: '100%' }}><span>$2,803</span></div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="graph-legend">
-              <span className="legend-item"><span className="legend-dot pro-dot"></span>Pro (10%)</span>
-              <span className="legend-item"><span className="legend-dot elite-dot"></span>Elite (20%)</span>
+              <span className="legend-item"><span className="legend-dot free-dot"></span>Free (20%)</span>
+              <span className="legend-item"><span className="legend-dot pro-dot"></span>Pro (30%) net of $97</span>
+              <span className="legend-item"><span className="legend-dot elite-dot"></span>Elite (40%) net of $197</span>
             </div>
 
             <p className="graph-kicker">
-              {"At 30 sales/month, Elite earns"} <strong>$350 more</strong> {"than Pro — every single month. That's an extra"} <strong>$4,200/year</strong> {"for the same number of sales to break even."}
+              {"At 30 sales/month, Elite nets"} <strong>$700 more</strong> {"than Free — every single month. That's an extra"} <strong>$8,400/year</strong> {"from the same links and the same network."}
             </p>
           </div>
+
+          {/* Upgrade CTA */}
+          {!isElite && (
+            <div className="upgrade-cta">
+              <h4>{"Ready to grow your pool?"}</h4>
+              <p>{"A bigger pool means more flexibility — more room to offer buyer incentives and still keep a healthy commission."}</p>
+              <div className="upgrade-buttons">
+                {isFree && (
+                  <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" className="tier-btn primary">Upgrade to Pro — $97/mo →</a>
+                )}
+                <a href="https://wetwo.love/products/wetwo-vendor-subscription-elite-tier" target="_blank" rel="noopener" className="tier-btn outline">
+                  {isPro ? 'Upgrade to Elite — $197/mo →' : 'Go straight to Elite — $197/mo →'}
+                </a>
+              </div>
+            </div>
+          )}
 
           <div className="payback-card">
             <h4>{"A cup of coffee a day. That's the investment."}</h4>
@@ -336,7 +394,7 @@ export default function EarningsPage() {
               same deal. <strong>None of them generate a single trackable dollar back to you.</strong>
             </p>
             <p className="payback-line">
-              {"WeTwo gives you the tools for free. The paid plan adds commission — spending money that shows up while the real value is the bookings, the leads, and the network you're building."}
+              {"WeTwo gives you the tools for free — and a 20% pool from day one. Paid plans give you a bigger pool, a branded store, and buyer contacts."}
             </p>
             <p className="payback-closer">
               Name one other tool you pay for that pays you back. This is the only one.
@@ -399,6 +457,26 @@ export default function EarningsPage() {
           background: #f3efe9; border-radius: 8px; padding: 14px 16px;
           font-size: 13px; color: #6b5e52; line-height: 1.6;
         }
+
+        /* Strategy Card */
+        .strategy-card {
+          background: #fff; border: 1px solid #e4ddd4; border-radius: 14px;
+          padding: 24px; margin-bottom: 28px;
+        }
+        .strategy-card h3 { font-size: 16px; font-weight: 700; color: #2c2420; margin: 0 0 6px; }
+        .strategy-intro { font-size: 13px; color: #6b5e52; margin: 0 0 16px; }
+        .strategy-grid { display: flex; flex-direction: column; gap: 10px; }
+        .strategy-item {
+          background: #faf8f5; border: 1px solid #e4ddd4; border-radius: 10px;
+          padding: 14px 18px;
+        }
+        .strategy-label { font-size: 12px; font-weight: 700; color: #2c2420; margin-bottom: 2px; }
+        .strategy-split { font-size: 12px; color: #9a8d80; margin-bottom: 8px; }
+        .strategy-amounts { display: flex; justify-content: space-between; }
+        .buyer-gets { font-size: 13px; color: #6b5e52; }
+        .you-get { font-size: 13px; font-weight: 700; color: #c9944a; }
+        .you-get.green { color: #22c55e; }
+
         .section-heading { font-size: 15px; font-weight: 700; color: #2c2420; margin: 0 0 4px; }
         .section-subheading { font-size: 13px; color: #9a8d80; font-style: italic; margin: 0 0 14px; }
         .tiers-grid {
@@ -418,8 +496,9 @@ export default function EarningsPage() {
           font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
         }
         .tier-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #9a8d80; margin-bottom: 8px; }
-        .tier-rate { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+        .tier-rate { font-size: 32px; font-weight: 700; margin-bottom: 0; }
         .tier-rate.green { color: #22c55e; }
+        .tier-label { font-size: 12px; color: #9a8d80; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
         .tier-price { font-size: 14px; color: #6b5e52; margin-bottom: 4px; }
         .tier-daily { font-size: 11px; color: #c9944a; font-weight: 600; margin-bottom: 16px; font-style: italic; }
         .tier-features { list-style: none; padding: 0; margin: 0 0 16px; text-align: left; }
@@ -464,55 +543,6 @@ export default function EarningsPage() {
           background: #fff; border: 1px solid #e4ddd4; border-radius: 14px; padding: 28px;
         }
         .math-card h3 { font-size: 18px; font-weight: 700; color: #2c2420; margin: 0 0 16px; }
-
-        /* Profit Accelerator */
-        .accelerator-card {
-          background: linear-gradient(135deg, rgba(34,197,94,0.04), rgba(201,148,74,0.04));
-          border: 1px solid rgba(34,197,94,0.2); border-radius: 14px;
-          padding: 24px; margin-bottom: 28px;
-        }
-        .accelerator-card h3 { font-size: 17px; font-weight: 700; color: #2c2420; margin: 0 0 8px; }
-        .accelerator-intro { font-size: 14px; color: #6b5e52; line-height: 1.6; margin: 0 0 16px; }
-        .accelerator-intro strong { color: #2c2420; }
-        .accelerator-label { font-size: 12px; font-weight: 700; color: #9a8d80; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
-        .accel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
-        .accel-item {
-          background: #fff; border: 1px solid #e4ddd4; border-radius: 10px;
-          padding: 18px 14px; text-align: center; transition: all 0.2s;
-        }
-        .accel-item.featured { border-color: #22c55e; background: rgba(34,197,94,0.03); }
-        .accel-tier-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #9a8d80; margin-bottom: 4px; }
-        .accel-math { font-size: 12px; color: #9a8d80; margin-bottom: 6px; }
-        .accel-value { font-size: 28px; font-weight: 700; color: #22c55e; }
-        .accel-extra { font-size: 12px; color: #c9944a; font-weight: 600; margin-top: 4px; }
-        .accelerator-kicker { font-size: 14px; color: #2c2420; font-weight: 600; margin: 0; font-style: italic; text-align: center; }
-
-        /* Profit Graph */
-        .profit-graph {
-          background: #fff; border: 1px solid #e4ddd4; border-radius: 12px;
-          padding: 24px; margin-bottom: 24px;
-        }
-        .profit-graph h4 { font-size: 16px; font-weight: 700; color: #2c2420; margin: 0 0 4px; }
-        .graph-intro { font-size: 13px; color: #6b5e52; margin: 0 0 20px; }
-        .graph-container { display: flex; flex-direction: column; gap: 16px; }
-        .graph-row { display: flex; gap: 12px; align-items: center; }
-        .graph-label { font-size: 12px; font-weight: 600; color: #6b5e52; width: 90px; flex-shrink: 0; text-align: right; }
-        .graph-bars { flex: 1; }
-        .graph-bar-group { display: flex; flex-direction: column; gap: 4px; }
-        .graph-bar {
-          height: 22px; border-radius: 4px; display: flex; align-items: center;
-          justify-content: flex-end; padding: 0 8px; min-width: 50px; transition: width 0.4s ease;
-        }
-        .graph-bar span { font-size: 11px; font-weight: 700; color: #fff; }
-        .graph-bar.pro-bar { background: #c9944a; }
-        .graph-bar.elite-bar { background: #22c55e; }
-        .graph-legend { display: flex; gap: 20px; justify-content: center; margin: 20px 0 16px; }
-        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b5e52; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
-        .legend-dot.pro-dot { background: #c9944a; }
-        .legend-dot.elite-dot { background: #22c55e; }
-        .graph-kicker { font-size: 14px; color: #2c2420; line-height: 1.6; margin: 0; text-align: center; }
-        .graph-kicker strong { color: #22c55e; }
 
         .source-badge {
           display: flex; gap: 12px; align-items: center;
@@ -573,7 +603,7 @@ export default function EarningsPage() {
         }
         .napkin-math h4 { font-size: 15px; font-weight: 700; color: #2c2420; margin: 0 0 8px; }
         .napkin-math > p { font-size: 13px; color: #6b5e52; margin: 0 0 14px; }
-        .napkin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
+        .napkin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
         .napkin-item {
           background: #fff; border-radius: 8px; padding: 14px; text-align: center;
           border: 1px solid #e4ddd4;
@@ -582,6 +612,46 @@ export default function EarningsPage() {
         .napkin-label { font-size: 11px; color: #6b5e52; line-height: 1.4; }
         .napkin-label strong { color: #2c2420; }
         .napkin-note { font-size: 12px; color: #9a8d80; margin: 0; line-height: 1.5; }
+
+        /* Profit Graph */
+        .profit-graph {
+          background: #fff; border: 1px solid #e4ddd4; border-radius: 12px;
+          padding: 24px; margin-bottom: 24px;
+        }
+        .profit-graph h4 { font-size: 16px; font-weight: 700; color: #2c2420; margin: 0 0 4px; }
+        .graph-intro { font-size: 13px; color: #6b5e52; margin: 0 0 20px; }
+        .graph-container { display: flex; flex-direction: column; gap: 16px; }
+        .graph-row { display: flex; gap: 12px; align-items: center; }
+        .graph-label { font-size: 12px; font-weight: 600; color: #6b5e52; width: 90px; flex-shrink: 0; text-align: right; }
+        .graph-bars { flex: 1; }
+        .graph-bar-group { display: flex; flex-direction: column; gap: 4px; }
+        .graph-bar {
+          height: 22px; border-radius: 4px; display: flex; align-items: center;
+          justify-content: flex-end; padding: 0 8px; min-width: 50px; transition: width 0.4s ease;
+        }
+        .graph-bar span { font-size: 11px; font-weight: 700; color: #fff; }
+        .graph-bar.free-bar { background: #9a8d80; }
+        .graph-bar.pro-bar { background: #c9944a; }
+        .graph-bar.elite-bar { background: #22c55e; }
+        .graph-legend { display: flex; gap: 20px; justify-content: center; margin: 20px 0 16px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b5e52; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+        .legend-dot.free-dot { background: #9a8d80; }
+        .legend-dot.pro-dot { background: #c9944a; }
+        .legend-dot.elite-dot { background: #22c55e; }
+        .graph-kicker { font-size: 14px; color: #2c2420; line-height: 1.6; margin: 0; text-align: center; }
+        .graph-kicker strong { color: #22c55e; }
+
+        /* Upgrade CTA */
+        .upgrade-cta {
+          background: linear-gradient(135deg, rgba(201,148,74,0.06), rgba(34,197,94,0.04));
+          border: 2px solid rgba(201,148,74,0.3); border-radius: 14px;
+          padding: 24px; margin-bottom: 24px; text-align: center;
+        }
+        .upgrade-cta h4 { font-size: 18px; font-weight: 700; color: #2c2420; margin: 0 0 6px; }
+        .upgrade-cta p { font-size: 14px; color: #6b5e52; margin: 0 0 16px; }
+        .upgrade-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .upgrade-buttons .tier-btn { display: inline-block; min-width: 220px; padding: 12px 20px; }
 
         .payback-card {
           background: linear-gradient(135deg, rgba(44,36,32,0.04), rgba(201,148,74,0.06));
@@ -602,16 +672,17 @@ export default function EarningsPage() {
           .page-content { padding: 20px; }
           .tiers-grid { grid-template-columns: 1fr 1fr; }
           .data-grid { grid-template-columns: 1fr; }
-          .napkin-grid { grid-template-columns: 1fr; }
+          .napkin-grid { grid-template-columns: repeat(2, 1fr); }
           .calc-row { grid-template-columns: 1fr; gap: 4px; }
-          .accel-grid { grid-template-columns: 1fr; }
           .value-grid { grid-template-columns: 1fr; }
           .graph-row { flex-direction: column; gap: 4px; }
           .graph-label { text-align: left; width: auto; }
           .graph-legend { flex-direction: column; gap: 8px; align-items: flex-start; }
+          .upgrade-buttons { flex-direction: column; align-items: center; }
         }
         @media (max-width: 480px) {
           .tiers-grid { grid-template-columns: 1fr; }
+          .napkin-grid { grid-template-columns: 1fr 1fr; }
         }
       `}</style>
     </div>
