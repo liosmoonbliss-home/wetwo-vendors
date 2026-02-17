@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     const { data: vendor, error } = await supabase
       .from('vendors')
-      .select('id, ref, business_name, photo_url, boost_tier, plan, current_pool')
+      .select('id, ref, business_name, photo_url, boost_tier, current_pool')
       .eq('ref', slug)
       .maybeSingle()
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ vendor: null, debug: { slug, note: 'no match on ref' } })
     }
 
-    const tier = vendor.boost_tier || vendor.plan || 'free'
+    const tier = vendor.boost_tier || 'free'
 
     return NextResponse.json({
       vendor: {
