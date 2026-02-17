@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function GET(request: NextRequest) {
   const ref = request.nextUrl.searchParams.get('ref')
 
@@ -13,28 +8,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ vendor: null })
   }
 
-  // Strip "vendor-" prefix if present (Shopify URLs include it)
   const slug = ref.replace(/^vendor-/, '')
 
   try {
-    // Try ref first, then referral_slug
-    let { data: vendor } = await supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const { data: vendor, error } = await supabase
       .from('vendors')
       .select('id, ref, business_name, photo_url, boost_tier, plan, current_pool')
       .eq('ref', slug)
       .maybeSingle()
 
-    if (!vendor) {
-      const result = await supabase
-        .from('vendors')
-        .select('id, ref, business_name, photo_url, boost_tier, plan, current_pool')
-        .eq('referral_slug', slug)
-        .maybeSingle()
-      vendor = result.data
+    if (error) {
+      return NextResponse.json({ vendor: null, debug: { slug, error: error.message } })
     }
 
     if (!vendor) {
-      return NextResponse.json({ vendor: null, debug: { slug, ref } })
+      return NextResponse.json({ vendor: null, debug: { slug, note: 'no match on ref' } })
     }
 
     const tier = vendor.boost_tier || vendor.plan || 'free'
@@ -49,7 +42,6 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (err: any) {
-    console.error('Vendor resolve error:', err)
-    return NextResponse.json({ vendor: null, error: err.message })
+    return NextResponse.json({ vendor: null, debug: { slug, error: err.message } })
   }
 }
