@@ -165,6 +165,26 @@ export async function POST(req: NextRequest) {
 
           console.log('✅ GoAffPro affiliate created:', affiliateId, 'ref:', referralCode);
 
+          // 🎯 Set vendor commission rate (20% for free tier)
+          try {
+            const commRes = await fetch(
+              `https://api.goaffpro.com/v1/admin/affiliates/${affiliateId}`,
+              {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-goaffpro-access-token': process.env.GOAFFPRO_ACCESS_TOKEN!,
+                },
+                body: JSON.stringify({
+                  commission: { type: 'percentage', amount: '20' }
+                })
+              }
+            );
+            console.log('🎯 Vendor commission set: 20% Status:', commRes.status);
+          } catch (commErr) {
+            console.error('⚠️ Vendor commission set failed:', commErr);
+          }
+
           // Auto-generate Shopify discount codes for vendor incentives
           // (Supabase trigger already generated incentive records when goaffpro_referral_code was set)
           try {
