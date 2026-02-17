@@ -504,6 +504,31 @@ export async function POST(request: NextRequest) {
 
         console.log('✅ GoAffPro affiliate linked:', coupleAffiliateId)
 
+        // 🎯 Set couple's cashback commission rate
+        if (cashback_rate && cashback_rate > 0) {
+          try {
+            const commissionResponse = await fetch(
+              `https://api.goaffpro.com/v1/admin/affiliates/${coupleAffiliateId}`,
+              {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-goaffpro-access-token': process.env.GOAFFPRO_ACCESS_TOKEN
+                },
+                body: JSON.stringify({
+                  commission: {
+                    type: 'percentage',
+                    amount: String(cashback_rate)
+                  }
+                })
+              }
+            )
+            console.log('🎯 Commission rate set:', cashback_rate + '%', 'Status:', commissionResponse.status)
+          } catch (commErr) {
+            console.error('⚠️ Commission rate set failed (non-blocking):', commErr)
+          }
+        }
+
         // ============================================
         // MLM FIX: Assign couple to vendor's MLM network
         // ============================================
