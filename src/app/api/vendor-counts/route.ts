@@ -29,29 +29,31 @@ export async function GET(req: NextRequest) {
     const vendorId = vendor.id
     const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
 
-    // Fetch all counts in parallel
+    // All data lives in vendor_leads
+    // Shoppers = interest is 'Shop'
+    // Leads = everything else (contact form inquiries)
     const [
       { count: couples },
       { count: newCouples },
-      { count: clients },
-      { count: newClients },
+      { count: shoppers },
+      { count: newShoppers },
       { count: leads },
       { count: newLeads },
     ] = await Promise.all([
       supabase.from('couples').select('*', { count: 'exact', head: true }).eq('referred_by_vendor_id', vendorId),
       supabase.from('couples').select('*', { count: 'exact', head: true }).eq('referred_by_vendor_id', vendorId).gte('created_at', twoDaysAgo),
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('vendor_ref', ref),
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('vendor_ref', ref).gte('created_at', twoDaysAgo),
-      supabase.from('leads').select('*', { count: 'exact', head: true }).eq('vendor_ref', ref),
-      supabase.from('leads').select('*', { count: 'exact', head: true }).eq('vendor_ref', ref).gte('created_at', twoDaysAgo),
+      supabase.from('vendor_leads').select('*', { count: 'exact', head: true }).eq('vendor_ref', ref).eq('interest', 'Shop'),
+      supabase.from('vendor_leads').select('*', { count: 'exact', head: true }).eq('vendor_ref', ref).eq('interest', 'Shop').gte('created_at', twoDaysAgo),
+      supabase.from('vendor_leads').select('*', { count: 'exact', head: true }).eq('vendor_ref', ref).neq('interest', 'Shop'),
+      supabase.from('vendor_leads').select('*', { count: 'exact', head: true }).eq('vendor_ref', ref).neq('interest', 'Shop').gte('created_at', twoDaysAgo),
     ])
 
     return NextResponse.json({
       couples: couples || 0,
-      clients: clients || 0,
+      clients: shoppers || 0,
       leads: leads || 0,
       newCouples: newCouples || 0,
-      newClients: newClients || 0,
+      newClients: newShoppers || 0,
       newLeads: newLeads || 0,
     })
   } catch (err) {

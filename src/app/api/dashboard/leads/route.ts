@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET: Fetch leads for a vendor
+// GET: Fetch leads for a vendor (excludes shoppers)
 export async function GET(req: NextRequest) {
   const ref = req.nextUrl.searchParams.get('ref')
   if (!ref) return NextResponse.json({ error: 'ref required' }, { status: 400 })
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     .from('vendor_leads')
     .select('*')
     .eq('vendor_ref', ref)
+    .neq('interest', 'Shop')
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -38,4 +39,3 @@ export async function PATCH(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
-
