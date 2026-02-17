@@ -108,7 +108,7 @@ function CreateRegistryForm() {
           
           source: vendor ? `vendor-referral-${vendor.ref}` : 'create-registry',
           referred_by_vendor_id: vendor?.id || null,
-          referred_by_vendor: vendor?.business_name || null,
+          referred_by_vendor: vendor?.id || null,
           referral_bonus_percent: parseInt(cbParam) || 0,
           cashback_rate: parseInt(cbParam) || 0,
         })
