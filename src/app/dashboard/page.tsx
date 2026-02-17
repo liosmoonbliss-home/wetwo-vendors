@@ -1,340 +1,772 @@
 'use client'
-import PayPalConnect from '@/components/dashboard/PayPalConnect'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import VendorToolbox from '@/components/VendorToolbox'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
-export default function DashboardPage() {
+// ============================================================
+// WeTwo — Vendor Dashboard v4.2
+// 3-tier: Free (20%) → Pro $97 (30%) → Elite $197 (40%)
+// 7-day branded store trial for all new vendors
+// Accordion-first · Gold step-4 pill · Theme reinforcement
+// ============================================================
+
+const TIER_INFO: Record<string, {
+  pool: number; price: number; label: string; color: string;
+  branded: boolean; contacts: boolean; monthlyReport: boolean;
+}> = {
+  free: { pool: 20, price: 0, label: 'Free', color: '#6b5e52', branded: false, contacts: false, monthlyReport: false },
+  pro:  { pool: 30, price: 97, label: 'Pro', color: '#9141ac', branded: true, contacts: false, monthlyReport: true },
+  elite:{ pool: 40, price: 197, label: 'Elite', color: '#e5a50a', branded: true, contacts: true, monthlyReport: true },
+}
+
+// ============================================================
+// TRIAL HELPERS
+// ============================================================
+function getTrialInfo(vendor: any): { inTrial: boolean; daysLeft: number; trialExpired: boolean } {
+  const trialStart = vendor.trial_start || vendor.created_at
+  if (!trialStart) return { inTrial: false, daysLeft: 0, trialExpired: false }
+
+  const start = new Date(trialStart)
+  const now = new Date()
+  const daysPassed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+  const daysLeft = Math.max(0, 7 - daysPassed)
+
+  const tier = vendor.boost_tier || vendor.plan || 'free'
+  if (tier !== 'free') return { inTrial: false, daysLeft: 0, trialExpired: false }
+
+  return { inTrial: daysLeft > 0, daysLeft, trialExpired: daysLeft === 0 }
+}
+
+// ============================================================
+// REUSABLE ACCORDION CARD
+// ============================================================
+function AccordionCard({ icon, title, subtitle, children, defaultOpen = false, accentColor }: {
+  icon: string; title: string; subtitle: string | React.ReactNode; children: React.ReactNode;
+  defaultOpen?: boolean; accentColor?: string;
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div style={{
+      background: '#fff', borderRadius: '14px', border: '1px solid #e4ddd4',
+      marginBottom: '12px', overflow: 'hidden',
+    }}>
+      <button onClick={() => setOpen(!open)} style={{
+        width: '100%', padding: '16px 20px', background: open ? 'rgba(201,148,74,0.02)' : '#fff',
+        border: 'none', borderBottom: open ? '1px solid #e4ddd4' : 'none',
+        display: 'flex', alignItems: 'center', gap: '12px',
+        cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+        textAlign: 'left' as const,
+      }}>
+        <span style={{ fontSize: '20px', flexShrink: 0 }}>{icon}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: '#2c2420', lineHeight: 1.3 }}>{title}</div>
+          <div style={{ fontSize: '12px', color: accentColor || '#9a8d80', marginTop: '2px', lineHeight: 1.4 }}>{subtitle}</div>
+        </div>
+        <span style={{
+          fontSize: '18px', color: '#c9944a', transition: 'transform 0.2s',
+          transform: open ? 'rotate(180deg)' : 'rotate(0)', flexShrink: 0,
+        }}>▾</span>
+      </button>
+      {open && (
+        <div style={{ padding: '16px 20px', animation: 'slideDown 0.2s ease' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============================================================
+// EARNINGS CHART — 2 lines: Pro & Elite
+// ============================================================
+function generateEarningsData() {
+  const data = []
+  for (let sales = 0; sales <= 25; sales++) {
+    data.push({
+      sales,
+      pro: Math.max(sales * 15 - 97, -97),
+      elite: Math.max(sales * 30 - 197, -197),
+    })
+  }
+  return data
+}
+const earningsData = generateEarningsData()
+
+function EarningsChart() {
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload) return null
+    return (
+      <div style={{ background: '#2c2420', borderRadius: '10px', padding: '14px 18px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
+        <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: '#fff' }}>{label} sales/mo × $150 avg</p>
+        {payload.map((p: any, i: number) => (
+          <p key={i} style={{ margin: '2px 0', fontSize: '12px', color: p.color }}>
+            <span style={{ fontWeight: 700 }}>{p.name}:</span>{' '}
+            <span style={{ fontWeight: 800 }}>${p.value.toFixed(0)}</span>
+            {p.value > 0 ? '/mo profit' : ''}
+          </p>
+        ))}
+      </div>
+    )
+  }
+  return (
+    <div>
+      <ResponsiveContainer width="100%" height={260}>
+        <LineChart data={earningsData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0ece6" />
+          <XAxis dataKey="sales" tick={{ fontSize: 11, fill: '#9a8d80' }}
+            label={{ value: 'Sales per month', position: 'insideBottom', offset: -2, fontSize: 12, fill: '#9a8d80' }} />
+          <YAxis tick={{ fontSize: 11, fill: '#9a8d80' }} tickFormatter={(v: number) => `$${v}`}
+            label={{ value: 'Monthly profit', angle: -90, position: 'insideLeft', offset: 10, fontSize: 12, fill: '#9a8d80' }} />
+          <Tooltip content={<CustomTooltip />} />
+          <ReferenceLine y={0} stroke="#e4ddd4" strokeWidth={2} />
+          <Line type="monotone" dataKey="pro" name="Pro $97/mo" stroke="#9141ac" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
+          <Line type="monotone" dataKey="elite" name="Elite $197/mo" stroke="#e5a50a" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
+          <Legend verticalAlign="top" height={36} formatter={(v: string) => <span style={{ fontSize: '12px', color: '#6b5e52', fontWeight: 600 }}>{v}</span>} />
+        </LineChart>
+      </ResponsiveContainer>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+        {[
+          { tier: 'Pro $97/mo', profit: 20 * 15 - 97, color: '#9141ac', note: 'Branded store + 10% margin' },
+          { tier: 'Elite $197/mo', profit: 20 * 30 - 197, color: '#e5a50a', note: 'Branded + contacts + 20% margin' },
+        ].map(p => (
+          <div key={p.tier} style={{
+            textAlign: 'center' as const, padding: '14px', borderRadius: '10px',
+            background: `${p.color}08`, border: `1px solid ${p.color}20`,
+          }}>
+            <div style={{ fontSize: '10px', color: '#9a8d80', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>{p.tier}</div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: p.color, margin: '4px 0' }}>${p.profit.toFixed(0)}/mo</div>
+            <div style={{ fontSize: '11px', color: '#6b5e52' }}>at 20 sales · break-even at 7</div>
+            <div style={{ fontSize: '10px', color: '#9a8d80', marginTop: '2px' }}>{p.note}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// MAIN DASHBOARD
+// ============================================================
+export default function DashboardHome() {
   const [vendor, setVendor] = useState<any>(null)
+  const [stats, setStats] = useState({ totalCommission: 0, couples: 0, shoppers: 0 })
+  const [sidebarPage, setSidebarPage] = useState<string | null>(null)
 
   useEffect(() => {
     const stored = localStorage.getItem('wetwo_vendor_session')
-    if (stored) setVendor(JSON.parse(stored))
+    if (stored) {
+      const v = JSON.parse(stored)
+      setVendor(v)
+      fetch(`/api/dashboard/stats?ref=${v.ref}`)
+        .then(r => r.json())
+        .then(d => { if (d.stats) setStats(d.stats) })
+        .catch(() => {})
+    }
   }, [])
 
   if (!vendor) return null
 
-  const isFree = vendor.plan === 'free'
-  const isPro = vendor.plan === 'pro'
-  const isElite = vendor.plan === 'elite'
+  const firstName = (vendor.contact_name || vendor.business_name || '').split(' ')[0]
+  const tier = vendor.boost_tier || vendor.plan || 'free'
+  const t = TIER_INFO[tier] || TIER_INFO.free
+  const trial = getTrialInfo(vendor)
+  const showBranded = t.branded || trial.inTrial
 
-  const poolMap: Record<string, number> = { free: 20, pro: 30, elite: 40 }
-  const pool = poolMap[vendor.plan] || 20
+  // ============================================================
+  // SUB-PAGE ROUTING
+  // ============================================================
+  if (sidebarPage) {
+    return (
+      <div>
+        <header className="dash-header">
+          <button onClick={() => setSidebarPage(null)} className="back-btn">← Back to Dashboard</button>
+        </header>
+        <div className="page-content">
+          {sidebarPage === 'how-it-works' && <HowItWorks pool={t.pool} tier={tier} contacts={t.contacts} />}
+          {sidebarPage === 'grow' && <GrowYourBusiness tier={tier} />}
+          {sidebarPage === 'playbook' && <Playbook tier={tier} contacts={t.contacts} />}
+        </div>
+        <style jsx>{sharedStyles}</style>
+      </div>
+    )
+  }
 
+  // ============================================================
+  // MAIN DASHBOARD VIEW
+  // ============================================================
   return (
     <div>
-      <header className="page-header">
+      {/* ===== HEADER ===== */}
+      <header className="dash-header">
         <div>
-          <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle">
-            {`${vendor.plan.charAt(0).toUpperCase() + vendor.plan.slice(1)} Plan — ${pool}% pool. You control the split between buyer discounts and your commission.`}
+          <h1 className="dash-title">Welcome, {firstName}</h1>
+          <p className="dash-sub">
+            You earn <strong>{t.pool}%</strong> on every sale.
+            {stats.totalCommission > 0 && <> So far: <strong style={{ color: '#22c55e' }}>${stats.totalCommission.toFixed(0)}</strong></>}
           </p>
         </div>
+        <Link href={`/vendor/${vendor.ref}`} target="_blank" className="view-page-btn">View Store →</Link>
       </header>
 
       <div className="page-content">
-        {/* Current Earnings */}
-        <div className="earnings-hero">
-          <div className="earnings-total">$0.00</div>
-          <div className="earnings-label">Total Commission Earned</div>
-          <div className="rate-badge">
-            {`${pool}% pool — you control the split`}
-          </div>
-        </div>
 
-        {/* Payout Setup */}
-        <div style={{ marginBottom: 24 }}>
-          <PayPalConnect type="vendor" refId={vendor.ref} />
-        </div>
-
-        {/* Choose Your Plan */}
-        <h3 className="section-heading">Your Plan</h3>
-        <p className="section-subheading">A bigger pool means more margin — whether you use it for buyer incentives, commission, or both.</p>
-        <div className="tiers-grid">
-          {/* FREE */}
-          <div className={`tier-card ${isFree ? 'current' : ''}`}>
-            <div className="tier-name">Free</div>
-            <div className="tier-rate">20%</div>
-            <div className="tier-label">pool</div>
-            <div className="tier-price">$0/month</div>
-            <ul className="tier-features">
-              <li>✓ Premium vendor page</li>
-              <li>✓ Shopping links for clients</li>
-              <li>✓ Contact form & leads</li>
-              <li>✓ AI assistant</li>
-              <li className="highlight">✓ 20% pool — yours to split</li>
-              <li>✓ Up to 20% buyer discount</li>
-              <li>✓ Up to 20% commission</li>
-            </ul>
-            {isFree && <div className="current-badge">Current Plan</div>}
-          </div>
-
-          {/* PRO */}
-          <div className={`tier-card featured ${isPro ? 'current' : ''}`}>
-            <div className="tier-popular">Most Popular</div>
-            <div className="tier-name">Pro</div>
-            <div className="tier-rate green">30%</div>
-            <div className="tier-label">pool</div>
-            <div className="tier-price">$97/month</div>
-            <div className="tier-daily">{"That's $3.23/day — a cup of coffee"}</div>
-            <ul className="tier-features">
-              <li>✓ Everything in Free</li>
-              <li className="highlight">✓ 30% pool — yours to split</li>
-              <li>✓ Branded Couples{"'"} Store</li>
-              <li>✓ 7-day branded trial included</li>
-              <li>✓ Up to 20% buyer discount + 10% commission</li>
-              <li>✓ Or up to 30% commission (no discount)</li>
-              <li>✓ ~7 sales covers your plan</li>
-            </ul>
-            {isPro
-              ? <div className="current-badge">Current Plan</div>
-              : <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" className="tier-btn primary">Upgrade to Pro →</a>
-            }
-          </div>
-
-          {/* ELITE */}
-          <div className={`tier-card ${isElite ? 'current' : ''}`}>
-            <div className="tier-name">Elite</div>
-            <div className="tier-rate green">40%</div>
-            <div className="tier-label">pool</div>
-            <div className="tier-price">$197/month</div>
-            <div className="tier-daily">{"That's $6.57/day — less than lunch"}</div>
-            <ul className="tier-features">
-              <li>✓ Everything in Pro</li>
-              <li className="highlight">✓ 40% pool — yours to split</li>
-              <li className="highlight">✓ Buyer contact list on every sale</li>
-              <li>✓ Up to 20% buyer discount + 20% commission</li>
-              <li>✓ Or up to 40% commission (no discount)</li>
-              <li>✓ ~7 sales covers your plan</li>
-            </ul>
-            {isElite
-              ? <div className="current-badge">Current Plan</div>
-              : <a href="https://wetwo.love/products/wetwo-vendor-subscription-elite-tier" target="_blank" rel="noopener" className="tier-btn outline">Upgrade to Elite →</a>
-            }
-          </div>
-        </div>
-
-        {/* Quick Math */}
-        <div className="accelerator-card">
-          <h3>🚀 One wedding. 150 guests. Your earnings at max commission:</h3>
-          <p className="accelerator-intro">
-            {"At $150 average gift spend, that's $22,500 flowing through the registry. Even if only half buy registry items:"}
-          </p>
-
-          <div className="accel-grid">
-            <div className="accel-item">
-              <div className="accel-tier-name">Free (20%)</div>
-              <div className="accel-value">$2,250</div>
-              <div className="accel-extra">commission</div>
+        {/* ===== TRIAL BANNER ===== */}
+        {trial.inTrial && (
+          <div className="trial-banner">
+            <div className="trial-left">
+              <span className="trial-icon">✨</span>
+              <div>
+                <strong>Your branded store is live</strong> — {trial.daysLeft} day{trial.daysLeft !== 1 ? 's' : ''} left.
+                <span className="trial-sub"> Upgrade to keep it.</span>
+              </div>
             </div>
-            <div className="accel-item">
-              <div className="accel-tier-name">Pro (30%)</div>
-              <div className="accel-value">$3,375</div>
-              <div className="accel-extra">commission</div>
-            </div>
-            <div className="accel-item featured">
-              <div className="accel-tier-name">Elite (40%)</div>
-              <div className="accel-value">$4,500</div>
-              <div className="accel-extra">+ buyer contacts</div>
-            </div>
-          </div>
-
-          <p className="accelerator-kicker">
-            {"That's from one couple. Most wedding vendors work with 5–20+ couples per year."}
-          </p>
-
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <a href="/dashboard/earnings" className="detail-link">See full earnings breakdown & math →</a>
-          </div>
-        </div>
-
-        {/* The Real Value */}
-        <div className="real-value-card">
-          <h3>{"💎 The real ROI isn't the commission"}</h3>
-          <p className="real-value-text">
-            {"The commission is spending money — a nice bonus. But the"} <strong>real</strong> {"return is what this system does for your main business:"}
-          </p>
-          <div className="value-grid">
-            <div className="value-item">
-              <div className="value-icon">🏠</div>
-              <strong>Your landing page</strong>
-              <p>A high-converting page that turns clicks into inquiries. One booking pays for years of membership.</p>
-            </div>
-            <div className="value-item">
-              <div className="value-icon">💡</div>
-              <strong>Reactivated leads</strong>
-              <p>Every cold lead now has a reason to hear from you. One reopened conversation = one potential booking.</p>
-            </div>
-            <div className="value-item">
-              <div className="value-icon">🌐</div>
-              <strong>Network effect</strong>
-              <p>{"Every couple's registry puts your name in front of 150+ guests. That's exposure money can't buy."}</p>
-            </div>
-          </div>
-          <p className="real-value-kicker">
-            {"A single booking is worth $2,000–$10,000+ to your business. "}
-            <strong>{"That's the real math."}</strong>
-          </p>
-        </div>
-
-        {/* Upgrade CTA */}
-        {!isElite && (
-          <div className="upgrade-cta">
-            <h4>{"Ready to grow your pool?"}</h4>
-            <p>{"A bigger pool means more flexibility — more room for buyer incentives and a healthier commission."}</p>
-            <div className="upgrade-buttons">
-              {isFree && (
-                <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" className="tier-btn primary">Upgrade to Pro — $97/mo →</a>
-              )}
-              <a href="https://wetwo.love/products/wetwo-vendor-subscription-elite-tier" target="_blank" rel="noopener" className="tier-btn outline">
-                {isPro ? 'Upgrade to Elite — $197/mo →' : 'Go straight to Elite — $197/mo →'}
-              </a>
-            </div>
+            <Link href="/dashboard/upgrade" className="trial-cta">Keep My Store →</Link>
           </div>
         )}
+        {trial.trialExpired && tier === 'free' && (
+          <div className="trial-expired-banner">
+            <div className="trial-left">
+              <span className="trial-icon">🔔</span>
+              <div>
+                <strong>Your branded trial has ended.</strong>
+                <span className="trial-sub"> Upgrade to Pro to bring your name back.</span>
+              </div>
+            </div>
+            <Link href="/dashboard/upgrade" className="trial-cta-urgent">Upgrade to Pro →</Link>
+          </div>
+        )}
+
+        {/* ===== HERO WITH STEP 4 GOLD PILL ===== */}
+        <div className="hero-explainer">
+          <h2>Your marketing system is live.</h2>
+          <div className="hero-flow">
+            <div className="flow-step">
+              <span className="flow-num">1</span>
+              <span><strong>Landing page</strong> builds trust</span>
+            </div>
+            <div className="flow-arrow">→</div>
+            <div className="flow-step">
+              <span className="flow-num">2</span>
+              <span><strong>Store</strong> turns visitors into buyers</span>
+            </div>
+            <div className="flow-arrow">→</div>
+            <div className="flow-step">
+              <span className="flow-num">3</span>
+              {t.contacts
+                ? <span>You get their <strong>name + email</strong> forever</span>
+                : <span>You earn <strong style={{ color: '#22c55e' }}>{t.pool}%</strong> on every sale</span>
+              }
+            </div>
+          </div>
+          {/* ===== STEP 4 — THE AHA MOMENT — GOLD PILL ===== */}
+          <div className="hero-gold-pill">
+            <span className="gold-pill-num">4</span>
+            <span className="gold-pill-text">
+              Every other way you attract customers costs you money. <strong>This one pays you</strong> — and builds your client list while it does.
+            </span>
+          </div>
+        </div>
+
+        {/* ===== YOUR STORE LINK — ALWAYS VISIBLE ===== */}
+        {/* Option B reinforcement: competitive edge */}
+        <div className="section-card" style={{ borderLeft: '4px solid #22c55e' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <span style={{ fontSize: '20px' }}>🏪</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#2c2420' }}>
+                {showBranded ? `${vendor.business_name || 'Your'} Store` : 'Your Store'} — {t.pool}% on every sale
+              </h3>
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#6b5e52' }}>
+                A customer attraction engine that pays for itself. Share this link anywhere.
+              </p>
+            </div>
+          </div>
+          <StoreLinkRow vendorRef={vendor.ref} />
+        </div>
+
+        {/* ===== COUPLES — ACCORDION ===== */}
+        {/* Option C reinforcement: reframe */}
+        <AccordionCard
+          icon="🎁"
+          title="For Couples — Cashback Registry"
+          subtitle={t.contacts
+            ? 'Not just a registry — a marketing system that earns you money while it brings you customers.'
+            : 'Give brides honeymoon money from your pool — NOT YOUR POCKET. Plus, one wedding = up to 150 sales.'
+          }
+          accentColor="#c9944a"
+        >
+          <CouplesContent vendorRef={vendor.ref} pool={t.pool} contacts={t.contacts} tier={tier} />
+        </AccordionCard>
+
+        {/* ===== EVERYONE — CODE GENERATOR ===== */}
+        <AccordionCard
+          icon="🛒"
+          title="For Everyone — Discount Codes"
+          subtitle={t.contacts
+            ? 'Your customer magnet and loyalty engine. Every code earns you commission + their contact info.'
+            : <>Your customer magnet and loyalty engine. <span style={{ color: '#e5a50a' }}>Elite adds buyer contacts.</span></>
+          }
+          defaultOpen={true}
+        >
+          <VendorToolbox vendorRef={vendor.ref} tier={tier} showCouplesSection={false} />
+        </AccordionCard>
+
+        {/* ===== UPGRADE ===== */}
+        {/* Option D reinforcement: gut punch */}
+        {tier === 'free' && (
+          <AccordionCard
+            icon="🚀"
+            title="Stop spending money to find customers"
+            subtitle="Start getting paid to attract them. Both tiers break even at 7 sales."
+            accentColor="#e5a50a"
+          >
+            <UpgradeFreeContent trial={trial} />
+          </AccordionCard>
+        )}
+        {tier === 'pro' && (
+          <AccordionCard
+            icon="⭐"
+            title="Stop spending money to find customers"
+            subtitle="Elite gives you every buyer's name and email — marketing that pays for itself."
+            accentColor="#e5a50a"
+          >
+            <UpgradeProContent />
+          </AccordionCard>
+        )}
+
+        {/* ===== LEARN MORE PILLS ===== */}
+        <div className="learn-grid">
+          <button onClick={() => setSidebarPage('how-it-works')} className="learn-pill small">
+            <span className="pill-icon">💡</span>
+            <span className="pill-label">How it works</span>
+          </button>
+          <button onClick={() => setSidebarPage('grow')} className="learn-pill big">
+            <span className="pill-icon big-icon">📈</span>
+            <span className="pill-label big-label">Grow your business</span>
+            <span className="pill-sub">See the math. Find your break-even.</span>
+          </button>
+          <button onClick={() => setSidebarPage('playbook')} className="learn-pill small">
+            <span className="pill-icon">📋</span>
+            <span className="pill-label">Your first week</span>
+          </button>
+        </div>
+
       </div>
 
-      <style jsx>{`
-        .page-header {
-          background: #fff;
-          border-bottom: 1px solid #e4ddd4;
-          padding: 20px 32px;
-          position: sticky;
-          top: 0;
-          z-index: 50;
-        }
-        .page-title { font-size: 20px; font-weight: 700; color: #2c2420; margin: 0; }
-        .page-subtitle { font-size: 13px; color: #9a8d80; margin: 2px 0 0; }
-        .page-content { padding: 28px 32px; max-width: 900px; }
-        .earnings-hero {
-          background: linear-gradient(135deg, rgba(34,197,94,0.06), rgba(34,197,94,0.02));
-          border: 1px solid rgba(34,197,94,0.2);
-          border-radius: 16px;
-          padding: 32px;
-          text-align: center;
-          margin-bottom: 28px;
-        }
-        .earnings-total { font-size: 44px; font-weight: 700; color: #22c55e; margin-bottom: 4px; }
-        .earnings-label { font-size: 14px; color: #6b5e52; }
-        .rate-badge {
-          display: inline-block;
-          background: rgba(34,197,94,0.1);
-          border: 1px solid rgba(34,197,94,0.3);
-          color: #22c55e;
-          padding: 6px 16px;
-          border-radius: 20px;
-          font-size: 13px;
-          font-weight: 600;
-          margin-top: 12px;
-        }
-
-        .section-heading { font-size: 15px; font-weight: 700; color: #2c2420; margin: 0 0 4px; }
-        .section-subheading { font-size: 13px; color: #9a8d80; font-style: italic; margin: 0 0 14px; }
-        .tiers-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr);
-          gap: 14px; margin-bottom: 28px;
-        }
-        .tier-card {
-          background: #fff; border: 1px solid #e4ddd4; border-radius: 14px;
-          padding: 24px 20px; text-align: center; position: relative; transition: all 0.2s;
-        }
-        .tier-card:hover { transform: translateY(-2px); border-color: #c9944a; }
-        .tier-card.featured { border-color: #c9944a; border-width: 2px; }
-        .tier-card.current { background: rgba(34,197,94,0.03); border-color: rgba(34,197,94,0.3); }
-        .tier-popular {
-          position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-          background: #c9944a; color: #fff; padding: 2px 14px; border-radius: 12px;
-          font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-        }
-        .tier-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #9a8d80; margin-bottom: 8px; }
-        .tier-rate { font-size: 32px; font-weight: 700; margin-bottom: 0; }
-        .tier-rate.green { color: #22c55e; }
-        .tier-label { font-size: 12px; color: #9a8d80; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-        .tier-price { font-size: 14px; color: #6b5e52; margin-bottom: 4px; }
-        .tier-daily { font-size: 11px; color: #c9944a; font-weight: 600; margin-bottom: 16px; font-style: italic; }
-        .tier-features { list-style: none; padding: 0; margin: 0 0 16px; text-align: left; }
-        .tier-features li { font-size: 12px; color: #6b5e52; padding: 4px 0; line-height: 1.4; }
-        .tier-features li.highlight { color: #22c55e; font-weight: 600; }
-        .tier-features li.dim { color: #9a8d80; }
-        .tier-btn {
-          display: block; padding: 10px; border-radius: 8px; font-size: 13px;
-          font-weight: 700; text-decoration: none; text-align: center; transition: all 0.2s;
-        }
-        .tier-btn.primary { background: #c9944a; color: #fff; }
-        .tier-btn.primary:hover { filter: brightness(1.1); }
-        .tier-btn.outline { background: transparent; border: 1px solid #e4ddd4; color: #6b5e52; }
-        .tier-btn.outline:hover { border-color: #c9944a; color: #c9944a; }
-        .current-badge {
-          padding: 8px; background: rgba(34,197,94,0.1); color: #22c55e;
-          border-radius: 8px; font-size: 12px; font-weight: 700;
-        }
-
-        /* Accelerator */
-        .accelerator-card {
-          background: linear-gradient(135deg, rgba(34,197,94,0.04), rgba(201,148,74,0.04));
-          border: 1px solid rgba(34,197,94,0.2); border-radius: 14px;
-          padding: 24px; margin-bottom: 28px;
-        }
-        .accelerator-card h3 { font-size: 17px; font-weight: 700; color: #2c2420; margin: 0 0 8px; }
-        .accelerator-intro { font-size: 14px; color: #6b5e52; line-height: 1.6; margin: 0 0 16px; }
-        .accelerator-intro strong { color: #2c2420; }
-        .accel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-        .accel-item {
-          background: #fff; border: 1px solid #e4ddd4; border-radius: 10px;
-          padding: 18px 14px; text-align: center; transition: all 0.2s;
-        }
-        .accel-item.featured { border-color: #22c55e; background: rgba(34,197,94,0.03); }
-        .accel-tier-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #9a8d80; margin-bottom: 4px; }
-        .accel-value { font-size: 28px; font-weight: 700; color: #22c55e; }
-        .accel-extra { font-size: 12px; color: #c9944a; font-weight: 600; margin-top: 4px; }
-        .accelerator-kicker { font-size: 14px; color: #2c2420; font-weight: 600; margin: 0; font-style: italic; text-align: center; }
-
-        .detail-link {
-          font-size: 13px; color: #c9944a; font-weight: 600; text-decoration: none;
-        }
-        .detail-link:hover { text-decoration: underline; }
-
-        /* Real Value Card */
-        .real-value-card {
-          background: #fff; border: 2px solid #c9944a; border-radius: 14px;
-          padding: 28px; margin-bottom: 28px;
-        }
-        .real-value-card h3 { font-size: 18px; font-weight: 700; color: #2c2420; margin: 0 0 10px; }
-        .real-value-text { font-size: 14px; color: #6b5e52; line-height: 1.6; margin: 0 0 20px; }
-        .real-value-text strong { color: #2c2420; }
-        .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
-        .value-item {
-          background: #faf8f5; border: 1px solid #e4ddd4; border-radius: 10px; padding: 18px; text-align: center;
-        }
-        .value-icon { font-size: 24px; margin-bottom: 8px; }
-        .value-item strong { font-size: 14px; color: #2c2420; display: block; margin-bottom: 6px; }
-        .value-item p { font-size: 12px; color: #6b5e52; line-height: 1.5; margin: 0; }
-        .real-value-kicker {
-          font-size: 15px; color: #2c2420; text-align: center; margin: 0; line-height: 1.6;
-        }
-        .real-value-kicker strong { color: #c9944a; }
-
-        /* Upgrade CTA */
-        .upgrade-cta {
-          background: linear-gradient(135deg, rgba(201,148,74,0.06), rgba(34,197,94,0.04));
-          border: 2px solid rgba(201,148,74,0.3); border-radius: 14px;
-          padding: 24px; text-align: center;
-        }
-        .upgrade-cta h4 { font-size: 18px; font-weight: 700; color: #2c2420; margin: 0 0 6px; }
-        .upgrade-cta p { font-size: 14px; color: #6b5e52; margin: 0 0 16px; }
-        .upgrade-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        .upgrade-buttons .tier-btn { display: inline-block; min-width: 220px; padding: 12px 20px; }
-
-        @media (max-width: 768px) {
-          .page-content { padding: 20px; }
-          .tiers-grid { grid-template-columns: 1fr 1fr; }
-          .accel-grid { grid-template-columns: 1fr; }
-          .value-grid { grid-template-columns: 1fr; }
-          .upgrade-buttons { flex-direction: column; align-items: center; }
-        }
-        @media (max-width: 480px) {
-          .tiers-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
+      <style jsx>{sharedStyles}</style>
     </div>
   )
 }
+
+// ============================================================
+// STORE LINK ROW
+// ============================================================
+function StoreLinkRow({ vendorRef }: { vendorRef: string }) {
+  const [copied, setCopied] = useState(false)
+  const refSlug = vendorRef ? `vendor-${vendorRef}` : 'vendor-demo'
+  const storeUrl = `https://wetwo.love/?ref=${refSlug}`
+  const handleCopy = async () => {
+    try { await navigator.clipboard.writeText(storeUrl) } catch {
+      const ta = document.createElement('textarea'); ta.value = storeUrl
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta)
+    }
+    setCopied(true); setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px',
+      borderRadius: '10px', background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.2)',
+    }}>
+      <div style={{
+        width: '36px', height: '36px', borderRadius: '8px',
+        background: 'rgba(34,197,94,0.1)', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        fontSize: '14px', fontWeight: 800, color: '#22c55e',
+      }}>🔗</div>
+      <div style={{
+        flex: 1, padding: '3px 8px', background: '#f3efe9', borderRadius: '4px',
+        fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#2c2420', fontWeight: 600,
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const,
+      }}>{storeUrl}</div>
+      <button onClick={handleCopy} style={{
+        padding: '6px 14px', borderRadius: '6px',
+        border: copied ? '1.5px solid #22c55e' : '1.5px solid #22c55e40',
+        background: copied ? 'rgba(34,197,94,0.08)' : '#fff',
+        color: '#22c55e',
+        fontSize: '12px', fontWeight: 700, cursor: 'pointer', minWidth: '90px', fontFamily: 'inherit',
+      }}>{copied ? '✓ Copied' : 'Copy Link'}</button>
+    </div>
+  )
+}
+
+// ============================================================
+// COUPLES CONTENT (inside accordion)
+// ============================================================
+function CouplesContent({ vendorRef, pool, contacts, tier }: { vendorRef: string; pool: number; contacts: boolean; tier: string }) {
+  const refSlug = vendorRef ? `vendor-${vendorRef}` : 'vendor-demo'
+  const links = [
+    { pct: 10, code: `https://wetwo.love/?ref=${refSlug}&cb=10` },
+    { pct: 15, code: `https://wetwo.love/?ref=${refSlug}&cb=15` },
+    { pct: 20, code: `https://wetwo.love/?ref=${refSlug}&cb=20` },
+  ]
+
+  return (
+    <div>
+      <p style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.6, margin: '0 0 12px' }}>
+        When a bride's guests buy gifts, she gets <strong style={{ color: '#2c2420' }}>cashback</strong> from your {pool}% pool — <em style={{ color: '#c9944a' }}>not your wallet</em>.
+        You choose 10%, 15%, or 20%. {contacts
+          ? <><strong style={{ color: '#2c2420' }}>Every guest who buys = a new contact in your list.</strong></>
+          : <>{tier !== 'elite' && <span style={{ color: '#e5a50a' }}>Upgrade to Elite to capture every guest's name and email.</span>}</>
+        }
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '8px' }}>
+        {links.map((link, i) => (
+          <CopyRow key={i} pct={link.pct} code={link.code} type="cashback" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CopyRow({ pct, code, type }: { pct: number; code: string; type: 'cashback' | 'discount' }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = async () => {
+    try { await navigator.clipboard.writeText(code) } catch {
+      const ta = document.createElement('textarea'); ta.value = code
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta)
+    }
+    setCopied(true); setTimeout(() => setCopied(false), 2000)
+  }
+  const isCashback = type === 'cashback'
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px',
+      borderRadius: '8px', border: '1px solid #e4ddd4',
+    }}>
+      <div style={{
+        width: '36px', height: '36px', borderRadius: '8px',
+        background: isCashback ? 'rgba(201,148,74,0.08)' : 'rgba(59,130,246,0.08)',
+        display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <span style={{ fontSize: '13px', fontWeight: 800, color: isCashback ? '#c9944a' : '#3b82f6', lineHeight: 1 }}>{pct}%</span>
+        <span style={{ fontSize: '7px', fontWeight: 600, color: '#9a8d80' }}>{isCashback ? 'BACK' : 'OFF'}</span>
+      </div>
+      <div style={{
+        flex: 1, padding: '3px 8px', background: '#f3efe9', borderRadius: '4px',
+        fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#6b5e52',
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const,
+      }}>{code}</div>
+      <button onClick={handleCopy} style={{
+        padding: '5px 12px', borderRadius: '6px',
+        border: copied ? '1.5px solid #22c55e' : '1.5px solid #ddd',
+        background: copied ? 'rgba(34,197,94,0.08)' : '#fff',
+        color: copied ? '#22c55e' : '#6b5e52',
+        fontSize: '11px', fontWeight: 600, cursor: 'pointer', minWidth: '72px', fontFamily: 'inherit',
+      }}>{copied ? '✓ Copied' : 'Copy Link'}</button>
+    </div>
+  )
+}
+
+// ============================================================
+// UPGRADE CONTENT
+// ============================================================
+function UpgradeFreeContent({ trial }: { trial: { inTrial: boolean; daysLeft: number } }) {
+  return (
+    <div>
+      {/* Theme reinforcement: Option A echo */}
+      <p style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.6, margin: '0 0 16px' }}>
+        WeddingWire, The Knot, Instagram ads — they all cost you money with no guarantee. 
+        This system <strong style={{ color: '#2c2420' }}>pays you</strong> while it attracts customers. Upgrade to earn more on every sale and unlock premium features.
+      </p>
+
+      {/* Tier comparison */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+        {/* Pro */}
+        <div style={{
+          padding: '18px', borderRadius: '12px',
+          background: 'rgba(145,65,172,0.04)', border: '1.5px solid rgba(145,65,172,0.2)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '1px', color: '#9141ac',
+              background: 'rgba(145,65,172,0.08)', padding: '3px 8px', borderRadius: '4px' }}>PRO</span>
+            <span style={{ fontSize: '16px', fontWeight: 800, color: '#9141ac' }}>$97<span style={{ fontSize: '11px', fontWeight: 600 }}>/mo</span></span>
+          </div>
+          <div style={{ fontSize: '22px', fontWeight: 800, color: '#2c2420', marginBottom: '6px' }}>30% pool</div>
+          <div style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.7 }}>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#9141ac' }}>✓</span> Branded store permanently</div>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#9141ac' }}>✓</span> Give 20%, keep 10%</div>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#9141ac' }}>✓</span> Monthly performance report</div>
+            <div style={{ display: 'flex', gap: '6px' }}><span style={{ color: '#9141ac' }}>✓</span> Break-even at 7 sales</div>
+          </div>
+          <Link href="/dashboard/upgrade?plan=pro" style={{
+            display: 'block', textAlign: 'center' as const, marginTop: '14px',
+            padding: '10px', background: '#9141ac', color: '#fff',
+            borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+          }}>Upgrade to Pro →</Link>
+        </div>
+
+        {/* Elite */}
+        <div style={{
+          padding: '18px', borderRadius: '12px', position: 'relative' as const,
+          background: 'rgba(229,165,10,0.04)', border: '1.5px solid rgba(229,165,10,0.3)',
+        }}>
+          <div style={{
+            position: 'absolute' as const, top: '-8px', right: '14px',
+            background: '#e5a50a', color: '#fff', fontSize: '9px', fontWeight: 800,
+            padding: '3px 10px', borderRadius: '10px', textTransform: 'uppercase' as const, letterSpacing: '0.5px',
+          }}>Best Value</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '1px', color: '#e5a50a',
+              background: 'rgba(229,165,10,0.08)', padding: '3px 8px', borderRadius: '4px' }}>ELITE</span>
+            <span style={{ fontSize: '16px', fontWeight: 800, color: '#e5a50a' }}>$197<span style={{ fontSize: '11px', fontWeight: 600 }}>/mo</span></span>
+          </div>
+          <div style={{ fontSize: '22px', fontWeight: 800, color: '#2c2420', marginBottom: '6px' }}>40% pool</div>
+          <div style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.7 }}>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#e5a50a' }}>✓</span> Everything in Pro</div>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#e5a50a' }}>✓</span> Give 20%, keep <strong>20%</strong></div>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#22c55e', fontWeight: 700 }}>★</span> <strong>Buyer names + emails</strong></div>
+            <div style={{ display: 'flex', gap: '6px' }}><span style={{ color: '#e5a50a' }}>✓</span> Break-even at 7 sales</div>
+          </div>
+          <Link href="/dashboard/upgrade?plan=elite" style={{
+            display: 'block', textAlign: 'center' as const, marginTop: '14px',
+            padding: '10px', background: '#e5a50a', color: '#fff',
+            borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+          }}>Upgrade to Elite →</Link>
+        </div>
+      </div>
+
+      {/* Option C reinforcement */}
+      <div style={{
+        padding: '12px 16px', borderRadius: '10px',
+        background: 'rgba(229,165,10,0.06)', border: '1px solid rgba(229,165,10,0.15)',
+        textAlign: 'center' as const, fontSize: '13px', color: '#6b5e52',
+      }}>
+        This isn't just a store — it's the only marketing system that <strong style={{ color: '#2c2420' }}>makes you money</strong> while it <strong style={{ color: '#22c55e' }}>brings you customers</strong>.
+      </div>
+    </div>
+  )
+}
+
+function UpgradeProContent() {
+  return (
+    <div>
+      <p style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.6, margin: '0 0 12px' }}>
+        You're already getting paid to attract customers — that's what makes this different from every other platform. 
+        Elite takes it further: the <strong style={{ color: '#2c2420' }}>name and email of every buyer</strong> goes into your list. 
+        40% pool means you give 20% and still keep 20%.
+      </p>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' as const }}>
+        <Link href="/dashboard/upgrade?plan=elite" style={{
+          display: 'inline-block', padding: '10px 24px', background: '#e5a50a', color: '#fff',
+          borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+        }}>Upgrade to Elite — $197/mo →</Link>
+        <span style={{ fontSize: '12px', color: '#9a8d80' }}>Break-even at 7 sales. Double the profit.</span>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// SUB-PAGES — with theme reinforcement throughout
+// ============================================================
+function HowItWorks({ pool, tier, contacts }: { pool: number; tier: string; contacts: boolean }) {
+  return (
+    <div className="sub-page">
+      <h2>💡 How it works</h2>
+      <p>Every product in your store is priced at or below market. We power the backend — like Costco for small businesses.</p>
+      <p>You earn <strong style={{ color: '#22c55e' }}>{pool}%</strong> on everything sold. That's your pool — keep it or share it as incentives (up to 20%).</p>
+
+      {/* Option D reinforcement */}
+      <h3>Why this is different</h3>
+      <p>WeddingWire costs thousands a year. The Knot charges for leads. Instagram ads are a gamble. They all cost you money with no guaranteed return. <strong>This system pays you while it attracts customers.</strong> You now have something no competitor has: a customer attraction engine that pays for itself.</p>
+
+      {contacts ? (
+        <>
+          <h3>The real value — your contact list</h3>
+          <p>Every buyer gives you their <strong>name and email</strong>. Someone buys a toaster with your code — you email them about your core service. Now they're a prospect. Give them another discount as a thank-you. The cycle repeats. <strong>Customer for life.</strong></p>
+        </>
+      ) : (
+        <>
+          <h3>Build momentum, then unlock the full flywheel</h3>
+          <p>Every sale earns you commission — money in your pocket for doing what you already do: sharing a link. <strong style={{ color: '#e5a50a' }}>With Elite ($197/mo)</strong>, you unlock the full power: the name and email of every buyer goes into your contact list. Email them about your core business, run reactivation campaigns, build a loyalty program — all from customers who found you through a discounted toaster.</p>
+        </>
+      )}
+
+      <h3>For couples</h3>
+      <p>A bride's guests buy gifts. She gets cashback from your pool — <strong style={{ color: '#c9944a', fontStyle: 'italic' }}>not your wallet</strong>. {contacts ? 'Every guest = a new contact. One wedding = up to 150 names.' : 'One wedding = up to 150 sales through your store.'} The bride becomes your biggest fan — and you never spent a dollar to make it happen.</p>
+
+      <h3>For everyone else</h3>
+      <p>Generate codes. Share on social, text to clients, hand out at events. They save, you earn. {contacts ? 'And you get their contact info.' : ''} Every code is marketing that makes you money instead of costing it.</p>
+
+      <h3>The flywheel</h3>
+      <p>Discount → purchase → {contacts ? 'new contact → market your business → new client → reward → repeat' : 'earnings → more incentives → more purchases → repeat'}. It compounds. The store isn't just a revenue stream — it's the engine that feeds everything else you do.</p>
+    </div>
+  )
+}
+
+function GrowYourBusiness({ tier }: { tier: string }) {
+  return (
+    <div className="sub-page">
+      <h2>📈 Grow your business</h2>
+      {/* Option B reinforcement */}
+      <p>You have something no competitor has: a customer attraction engine that pays for itself. Both paid tiers break even at <strong>7 sales</strong>. After that, Elite earns double — and gives you buyer contacts.</p>
+      <EarningsChart />
+      <div style={{ marginTop: '24px' }}>
+        <h3>The math at maximum generosity (giving 20%)</h3>
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px', marginTop: '12px' }}>
+          {[
+            { name: 'Free', keep: 0, note: 'Pure generosity. Give the max — start attracting customers on day one.', color: '#6b5e52' },
+            { name: 'Pro $97/mo', keep: 10, note: '7 sales to break even. Then $15/sale profit.', color: '#9141ac' },
+            { name: 'Elite $197/mo', keep: 20, note: '7 sales to break even. Then $30/sale + buyer contacts.', color: '#e5a50a' },
+          ].map(p => (
+            <div key={p.name} style={{
+              padding: '14px 18px', borderRadius: '10px',
+              background: `${p.color}08`, border: `1px solid ${p.color}25`,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div>
+                <span style={{ fontWeight: 700, color: '#2c2420', fontSize: '14px' }}>{p.name}</span>
+                <span style={{ color: '#6b5e52', fontSize: '13px', marginLeft: '12px' }}>{p.note}</span>
+              </div>
+              <span style={{ fontWeight: 700, color: p.keep > 0 ? '#22c55e' : '#9a8d80', fontSize: '14px' }}>
+                {p.keep > 0 ? `Keep ${p.keep}%` : 'Keep $0'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{
+        marginTop: '24px', padding: '20px', borderRadius: '12px',
+        background: 'rgba(229,165,10,0.06)', border: '1px solid rgba(229,165,10,0.2)',
+        textAlign: 'center' as const,
+      }}>
+        <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#2c2420', fontFamily: "'Playfair Display', Georgia, serif" }}>
+          One wedding. 150 guests. Elite tier giving 20%:<br/>
+          <span style={{ fontSize: '28px', color: '#22c55e' }}>$4,500 profit</span>
+          <span style={{ fontSize: '16px', color: '#e5a50a' }}> + 150 contacts</span>
+        </p>
+        {/* Option A echo */}
+        <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#9a8d80', fontStyle: 'italic' }}>
+          Name one other marketing channel that pays you $4,500 while delivering 150 new leads.
+        </p>
+      </div>
+      {tier !== 'elite' && (
+        <div style={{ marginTop: '24px', textAlign: 'center' as const }}>
+          <Link href="/dashboard/upgrade" style={{
+            display: 'inline-block', padding: '12px 28px', background: '#e5a50a', color: '#fff',
+            borderRadius: '10px', fontSize: '15px', fontWeight: 700, textDecoration: 'none',
+          }}>Upgrade Now →</Link>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Playbook({ tier, contacts }: { tier: string; contacts: boolean }) {
+  return (
+    <div className="sub-page">
+      <h2>📋 Your first week</h2>
+      {/* Option D reinforcement */}
+      <p style={{ marginBottom: '20px' }}>Stop spending money to find customers. Start getting paid to attract them. Here's how to get your first sales this week:</p>
+      {[
+        { num: '1', title: 'Shop your own store', desc: 'Buy something. Feel the experience. See how the discount, the checkout, and the follow-up actually work.' },
+        { num: '2', title: 'Text 5 past clients', desc: `"I have something for you — exclusive savings on thousands of products." Every one who buys = ${contacts ? 'a contact you can market to again' : 'a sale that earns you commission'}.` },
+        { num: '3', title: 'Generate your first code', desc: `Pick 10% or 15%, send it to your best contacts. Every order earns you money${contacts ? ' and a name + email for your list' : ''} — marketing that pays you.` },
+        { num: '4', title: 'Post on Instagram', desc: `"I have a gift for you 🎁 DM me GIFT for exclusive access." Every DM = a warm lead. Every purchase = ${contacts ? 'a customer for life' : 'income from a new customer'}.` },
+        { num: '5', title: 'Set up one registry', desc: `One bride. 150 guests. That's 150 ${contacts ? 'new contacts' : 'sales'} — and you're putting honeymoon money in her bridal purse without taking a dollar from your pocket. She's your biggest fan. You're ours.` },
+      ].map((step, i) => (
+        <div key={i} style={{ display: 'flex', gap: '14px', padding: '14px 0', borderBottom: i < 4 ? '1px solid #e4ddd4' : 'none' }}>
+          <div style={{
+            width: '28px', height: '28px', background: '#c9944a', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontSize: '13px', fontWeight: 700, flexShrink: 0,
+          }}>{step.num}</div>
+          <div>
+            <h4 style={{ margin: '0 0 3px', fontSize: '14px', fontWeight: 700, color: '#2c2420' }}>{step.title}</h4>
+            <p style={{ margin: 0, fontSize: '13px', color: '#6b5e52', lineHeight: 1.5 }}>{step.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ============================================================
+// STYLES
+// ============================================================
+const sharedStyles = `
+  .dash-header { background: #fff; border-bottom: 1px solid #e4ddd4; padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+  .dash-title { font-size: 18px; font-weight: 700; color: #2c2420; margin: 0; }
+  .dash-sub { font-size: 13px; color: #6b5e52; margin: 3px 0 0; }
+  .dash-sub strong { color: #2c2420; }
+  .view-page-btn { padding: 7px 14px; border: 1px solid #e4ddd4; border-radius: 8px; color: #6b5e52; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .view-page-btn:hover { border-color: #c9944a; color: #c9944a; }
+  .back-btn { background: none; border: none; color: #c9944a; font-weight: 600; font-size: 14px; cursor: pointer; padding: 0; font-family: inherit; }
+  .back-btn:hover { text-decoration: underline; }
+  .page-content { padding: 24px 28px; max-width: 800px; }
+
+  /* Trial banners */
+  .trial-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; margin-bottom: 16px; border-radius: 12px; background: linear-gradient(135deg, rgba(145,65,172,0.06), rgba(229,165,10,0.06)); border: 1.5px solid rgba(145,65,172,0.2); }
+  .trial-expired-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; margin-bottom: 16px; border-radius: 12px; background: rgba(220,38,38,0.04); border: 1.5px solid rgba(220,38,38,0.2); }
+  .trial-left { display: flex; align-items: flex-start; gap: 10px; flex: 1; }
+  .trial-icon { font-size: 20px; flex-shrink: 0; }
+  .trial-left div { font-size: 13px; color: #2c2420; line-height: 1.5; }
+  .trial-sub { color: #6b5e52; }
+  .trial-cta { flex-shrink: 0; padding: 8px 18px; background: #9141ac; color: #fff; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .trial-cta:hover { opacity: 0.9; }
+  .trial-cta-urgent { flex-shrink: 0; padding: 8px 18px; background: #e5a50a; color: #fff; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .trial-cta-urgent:hover { opacity: 0.9; }
+
+  /* Hero */
+  .hero-explainer { background: linear-gradient(135deg, #2c2420, #1a1614); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; color: #fff; }
+  .hero-explainer h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 600; margin: 0 0 12px; line-height: 1.3; color: #fff; }
+  .hero-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .flow-step { flex: 1; min-width: 130px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.4; display: flex; align-items: flex-start; gap: 8px; }
+  .flow-step strong { color: #fff; }
+  .flow-num { background: #c9944a; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+  .flow-arrow { color: #c9944a; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+
+  /* Step 4 — Gold Pill */
+  .hero-gold-pill { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; background: linear-gradient(135deg, rgba(201,148,74,0.15), rgba(229,165,10,0.1)); border: 1px solid rgba(201,148,74,0.3); }
+  .gold-pill-num { background: #c9944a; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+  .gold-pill-text { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5; }
+  .gold-pill-text strong { color: #e5a50a; }
+
+  /* Section cards */
+  .section-card { background: #fff; border-radius: 14px; border: 1px solid #e4ddd4; padding: 16px 20px; margin-bottom: 12px; }
+
+  /* Learn more grid */
+  .learn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto; gap: 10px; margin-top: 16px; }
+  .learn-pill { background: #fff; border: 1px solid #e4ddd4; border-radius: 12px; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .learn-pill:hover { border-color: #c9944a; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(201,148,74,0.1); }
+  .learn-pill.small { padding: 20px 14px; grid-row: span 1; }
+  .learn-pill.big { padding: 24px 20px; grid-row: span 2; grid-column: 2; background: linear-gradient(135deg, rgba(34,197,94,0.04), rgba(229,165,10,0.04)); border-color: rgba(34,197,94,0.25); }
+  .learn-pill.big:hover { border-color: #22c55e; background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(229,165,10,0.08)); }
+  .pill-icon { font-size: 24px; margin-bottom: 6px; }
+  .pill-icon.big-icon { font-size: 36px; margin-bottom: 10px; }
+  .pill-label { font-size: 13px; font-weight: 600; color: #6b5e52; }
+  .pill-label.big-label { font-size: 16px; font-weight: 800; color: #22c55e; }
+  .pill-sub { font-size: 12px; color: #9a8d80; margin-top: 6px; line-height: 1.4; max-width: 180px; }
+
+  @keyframes slideDown { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 800px; } }
+
+  /* Sub pages */
+  .sub-page { max-width: 700px; }
+  .sub-page h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; color: #2c2420; margin: 0 0 16px; }
+  .sub-page h3 { font-size: 16px; font-weight: 700; color: #2c2420; margin: 24px 0 8px; }
+  .sub-page p { font-size: 15px; color: #6b5e52; line-height: 1.7; margin: 0 0 12px; }
+  .sub-page p strong { color: #2c2420; }
+
+  @media (max-width: 768px) {
+    .dash-header { padding: 14px 20px; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .page-content { padding: 20px; }
+    .hero-flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+    .hero-gold-pill { margin-top: 4px; }
+    .learn-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .learn-pill.big { grid-row: span 1; grid-column: 1; }
+    .trial-banner, .trial-expired-banner { flex-direction: column; align-items: flex-start; }
+  }
+`
