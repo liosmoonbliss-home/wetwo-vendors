@@ -128,18 +128,19 @@ function EarningsChart() {
       </ResponsiveContainer>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
         {[
-          { tier: 'Pro $97/mo', profit: 20 * 15 - 97, color: '#9141ac', note: 'Branded store + 10% margin' },
-          { tier: 'Elite $197/mo', profit: 20 * 30 - 197, color: '#e5a50a', note: 'Branded + contacts + 20% margin' },
+          { tier: 'Pro $97/mo', profit: 20 * 15 - 97, color: '#9141ac', note: 'Branded store + 10% margin', url: 'https://wetwo.love/products/wetwo-vendor-subscription-pro-tier' },
+          { tier: 'Elite $197/mo', profit: 20 * 30 - 197, color: '#e5a50a', note: 'Branded + contacts + 20% margin', url: 'https://wetwo.love/products/wetwo-vendor-subscription-elite-tier' },
         ].map(p => (
-          <div key={p.tier} style={{
+          <a key={p.tier} href={p.url} target="_blank" rel="noopener" style={{
             textAlign: 'center' as const, padding: '14px', borderRadius: '10px',
             background: `${p.color}08`, border: `1px solid ${p.color}20`,
+            textDecoration: 'none', display: 'block', transition: 'all 0.2s',
           }}>
             <div style={{ fontSize: '10px', color: '#9a8d80', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>{p.tier}</div>
             <div style={{ fontSize: '22px', fontWeight: 800, color: p.color, margin: '4px 0' }}>${p.profit.toFixed(0)}/mo</div>
             <div style={{ fontSize: '11px', color: '#6b5e52' }}>at 20 sales · break-even at 7</div>
             <div style={{ fontSize: '10px', color: '#9a8d80', marginTop: '2px' }}>{p.note}</div>
-          </div>
+          </a>
         ))}
       </div>
     </div>
@@ -203,7 +204,7 @@ export default function DashboardHome() {
         <div>
           <h1 className="dash-title">Welcome, {firstName}</h1>
           <p className="dash-sub">
-            You earn <strong>{t.pool}%</strong> on every sale.
+            You have a <strong>{t.pool}% pool</strong> — you control the split.
             {stats.totalCommission > 0 && <> So far: <strong style={{ color: '#22c55e' }}>${stats.totalCommission.toFixed(0)}</strong></>}
           </p>
         </div>
@@ -222,7 +223,7 @@ export default function DashboardHome() {
                 <span className="trial-sub"> Upgrade to keep it.</span>
               </div>
             </div>
-            <Link href="/dashboard/upgrade" className="trial-cta">Keep My Store →</Link>
+            <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" className="trial-cta">Keep My Store →</a>
           </div>
         )}
         {trial.trialExpired && tier === 'free' && (
@@ -234,7 +235,7 @@ export default function DashboardHome() {
                 <span className="trial-sub"> Upgrade to Pro to bring your name back.</span>
               </div>
             </div>
-            <Link href="/dashboard/upgrade" className="trial-cta-urgent">Upgrade to Pro →</Link>
+            <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" className="trial-cta-urgent">Upgrade to Pro →</a>
           </div>
         )}
 
@@ -256,7 +257,7 @@ export default function DashboardHome() {
               <span className="flow-num">3</span>
               {t.contacts
                 ? <span>You get their <strong>name + email</strong> forever</span>
-                : <span>You earn <strong style={{ color: '#22c55e' }}>{t.pool}%</strong> on every sale</span>
+                : <span>You control a <strong style={{ color: '#22c55e' }}>{t.pool}% pool</strong> on every sale</span>
               }
             </div>
           </div>
@@ -276,7 +277,7 @@ export default function DashboardHome() {
             <span style={{ fontSize: '20px' }}>🏪</span>
             <div>
               <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#2c2420' }}>
-                {showBranded ? `${vendor.business_name || 'Your'} Store` : 'Your Store'} — {t.pool}% on every sale
+                {showBranded ? `${vendor.business_name || 'Your'} Store` : 'Your Store'} — {t.pool}% pool
               </h3>
               <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#6b5e52' }}>
                 A customer attraction engine that pays for itself. Share this link anywhere.
@@ -496,15 +497,15 @@ function UpgradeFreeContent({ trial }: { trial: { inTrial: boolean; daysLeft: nu
           <div style={{ fontSize: '22px', fontWeight: 800, color: '#2c2420', marginBottom: '6px' }}>30% pool</div>
           <div style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.7 }}>
             <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#9141ac' }}>✓</span> Branded store permanently</div>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#9141ac' }}>✓</span> Give 20%, keep 10%</div>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#9141ac' }}>✓</span> Monthly performance report</div>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#9141ac' }}>✓</span> 30% pool — give 20%, keep 10%</div>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#9141ac' }}>✓</span> Or keep up to 30% (no discount)</div>
             <div style={{ display: 'flex', gap: '6px' }}><span style={{ color: '#9141ac' }}>✓</span> Break-even at 7 sales</div>
           </div>
-          <Link href="/dashboard/upgrade?plan=pro" style={{
+          <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" style={{
             display: 'block', textAlign: 'center' as const, marginTop: '14px',
             padding: '10px', background: '#9141ac', color: '#fff',
             borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
-          }}>Upgrade to Pro →</Link>
+          }}>Upgrade to Pro →</a>
         </div>
 
         {/* Elite */}
@@ -525,15 +526,15 @@ function UpgradeFreeContent({ trial }: { trial: { inTrial: boolean; daysLeft: nu
           <div style={{ fontSize: '22px', fontWeight: 800, color: '#2c2420', marginBottom: '6px' }}>40% pool</div>
           <div style={{ fontSize: '13px', color: '#6b5e52', lineHeight: 1.7 }}>
             <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#e5a50a' }}>✓</span> Everything in Pro</div>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#e5a50a' }}>✓</span> Give 20%, keep <strong>20%</strong></div>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#e5a50a' }}>✓</span> 40% pool — give 20%, keep <strong>20%</strong></div>
             <div style={{ display: 'flex', gap: '6px', marginBottom: '3px' }}><span style={{ color: '#22c55e', fontWeight: 700 }}>★</span> <strong>Buyer names + emails</strong></div>
             <div style={{ display: 'flex', gap: '6px' }}><span style={{ color: '#e5a50a' }}>✓</span> Break-even at 7 sales</div>
           </div>
-          <Link href="/dashboard/upgrade?plan=elite" style={{
+          <a href="https://wetwo.love/products/wetwo-vendor-subscription-elite-tier" target="_blank" rel="noopener" style={{
             display: 'block', textAlign: 'center' as const, marginTop: '14px',
             padding: '10px', background: '#e5a50a', color: '#fff',
             borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
-          }}>Upgrade to Elite →</Link>
+          }}>Upgrade to Elite →</a>
         </div>
       </div>
 
@@ -558,10 +559,10 @@ function UpgradeProContent() {
         40% pool means you give 20% and still keep 20%.
       </p>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' as const }}>
-        <Link href="/dashboard/upgrade?plan=elite" style={{
+        <a href="https://wetwo.love/products/wetwo-vendor-subscription-elite-tier" target="_blank" rel="noopener" style={{
           display: 'inline-block', padding: '10px 24px', background: '#e5a50a', color: '#fff',
           borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
-        }}>Upgrade to Elite — $197/mo →</Link>
+        }}>Upgrade to Elite — $197/mo →</a>
         <span style={{ fontSize: '12px', color: '#9a8d80' }}>Break-even at 7 sales. Double the profit.</span>
       </div>
     </div>
@@ -576,7 +577,7 @@ function HowItWorks({ pool, tier, contacts }: { pool: number; tier: string; cont
     <div className="sub-page">
       <h2>💡 How it works</h2>
       <p>Every product in your store is priced at or below market. We power the backend — like Costco for small businesses.</p>
-      <p>You earn <strong style={{ color: '#22c55e' }}>{pool}%</strong> on everything sold. That's your pool — keep it or share it as incentives (up to 20%).</p>
+      <p>You earn <strong style={{ color: '#22c55e' }}>{pool}%</strong> on everything sold. That's your pool — split it between buyer discounts (up to 20%) and your commission however you like.</p>
 
       {/* Option D reinforcement */}
       <h3>Why this is different</h3>
@@ -617,9 +618,9 @@ function GrowYourBusiness({ tier }: { tier: string }) {
         <h3>The math at maximum generosity (giving 20%)</h3>
         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px', marginTop: '12px' }}>
           {[
-            { name: 'Free', keep: 0, note: 'Pure generosity. Give the max — start attracting customers on day one.', color: '#6b5e52' },
-            { name: 'Pro $97/mo', keep: 10, note: '7 sales to break even. Then $15/sale profit.', color: '#9141ac' },
-            { name: 'Elite $197/mo', keep: 20, note: '7 sales to break even. Then $30/sale + buyer contacts.', color: '#e5a50a' },
+            { name: 'Free', keep: '20% pool — all to buyers', note: 'Pure generosity. Give the max — start attracting customers on day one.', color: '#6b5e52', keepColor: '#6b5e52' },
+            { name: 'Pro $97/mo', keep: 'Keep 10%', note: '7 sales to break even. Then $15/sale profit.', color: '#9141ac', keepColor: '#22c55e' },
+            { name: 'Elite $197/mo', keep: 'Keep 20%', note: '7 sales to break even. Then $30/sale + buyer contacts.', color: '#e5a50a', keepColor: '#22c55e' },
           ].map(p => (
             <div key={p.name} style={{
               padding: '14px 18px', borderRadius: '10px',
@@ -630,8 +631,8 @@ function GrowYourBusiness({ tier }: { tier: string }) {
                 <span style={{ fontWeight: 700, color: '#2c2420', fontSize: '14px' }}>{p.name}</span>
                 <span style={{ color: '#6b5e52', fontSize: '13px', marginLeft: '12px' }}>{p.note}</span>
               </div>
-              <span style={{ fontWeight: 700, color: p.keep > 0 ? '#22c55e' : '#9a8d80', fontSize: '14px' }}>
-                {p.keep > 0 ? `Keep ${p.keep}%` : 'Keep $0'}
+              <span style={{ fontWeight: 700, color: p.keepColor, fontSize: '14px' }}>
+                {p.keep}
               </span>
             </div>
           ))}
@@ -653,11 +654,17 @@ function GrowYourBusiness({ tier }: { tier: string }) {
         </p>
       </div>
       {tier !== 'elite' && (
-        <div style={{ marginTop: '24px', textAlign: 'center' as const }}>
-          <Link href="/dashboard/upgrade" style={{
+        <div style={{ marginTop: '24px', textAlign: 'center' as const, display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' as const }}>
+          {tier === 'free' && (
+            <a href="https://wetwo.love/products/wetwo-vendor-subscription-pro-tier" target="_blank" rel="noopener" style={{
+              display: 'inline-block', padding: '12px 28px', background: '#9141ac', color: '#fff',
+              borderRadius: '10px', fontSize: '15px', fontWeight: 700, textDecoration: 'none',
+            }}>Upgrade to Pro →</a>
+          )}
+          <a href="https://wetwo.love/products/wetwo-vendor-subscription-elite-tier" target="_blank" rel="noopener" style={{
             display: 'inline-block', padding: '12px 28px', background: '#e5a50a', color: '#fff',
             borderRadius: '10px', fontSize: '15px', fontWeight: 700, textDecoration: 'none',
-          }}>Upgrade Now →</Link>
+          }}>{tier === 'pro' ? 'Upgrade to Elite →' : 'Go Elite →'}</a>
         </div>
       )}
     </div>
