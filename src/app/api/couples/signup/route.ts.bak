@@ -255,7 +255,6 @@ export async function POST(request: NextRequest) {
       wedding_date,
       wedding_location,
       phone
-      cashback_rate,
     } = body
 
     // Accept either 'state' or 'address_state' from form
