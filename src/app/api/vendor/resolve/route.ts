@@ -6,8 +6,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Lightweight vendor lookup for the create-registry form
-// Returns just enough to show "Referred by [Vendor]" + resolve vendor_id
 export async function GET(request: NextRequest) {
   const ref = request.nextUrl.searchParams.get('ref')
 
@@ -19,14 +17,24 @@ export async function GET(request: NextRequest) {
   const slug = ref.replace(/^vendor-/, '')
 
   try {
-    const { data: vendor, error } = await supabase
+    // Try ref first, then referral_slug
+    let { data: vendor } = await supabase
       .from('vendors')
       .select('id, ref, business_name, photo_url, boost_tier, plan, current_pool')
-      .or(`ref.eq.${slug},referral_slug.eq.${slug},ref.eq.vendor-${slug},referral_slug.eq.vendor-${slug}`)
-      .single()
+      .eq('ref', slug)
+      .maybeSingle()
 
-    if (error || !vendor) {
-      return NextResponse.json({ vendor: null })
+    if (!vendor) {
+      const result = await supabase
+        .from('vendors')
+        .select('id, ref, business_name, photo_url, boost_tier, plan, current_pool')
+        .eq('referral_slug', slug)
+        .maybeSingle()
+      vendor = result.data
+    }
+
+    if (!vendor) {
+      return NextResponse.json({ vendor: null, debug: { slug, ref } })
     }
 
     const tier = vendor.boost_tier || vendor.plan || 'free'
@@ -40,8 +48,8 @@ export async function GET(request: NextRequest) {
         tier,
       }
     })
-  } catch (err) {
+  } catch (err: any) {
     console.error('Vendor resolve error:', err)
-    return NextResponse.json({ vendor: null })
+    return NextResponse.json({ vendor: null, error: err.message })
   }
 }
