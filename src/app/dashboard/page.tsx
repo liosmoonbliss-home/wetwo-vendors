@@ -208,7 +208,10 @@ export default function DashboardHome() {
             {stats.totalCommission > 0 && <> So far: <strong style={{ color: '#22c55e' }}>${stats.totalCommission.toFixed(0)}</strong></>}
           </p>
         </div>
-        <Link href={`/vendor/${vendor.ref}`} target="_blank" className="view-page-btn">View Store →</Link>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Link href={`/vendor/${vendor.ref}`} target="_blank" className="view-page-btn">View Page →</Link>
+          <a href={`https://wetwo.love/?ref=vendor-${vendor.ref}`} target="_blank" rel="noopener" className="view-store-btn">View Store →</a>
+        </div>
       </header>
 
       <div className="page-content">
@@ -710,6 +713,8 @@ const sharedStyles = `
   .dash-sub strong { color: #2c2420; }
   .view-page-btn { padding: 7px 14px; border: 1px solid #e4ddd4; border-radius: 8px; color: #6b5e52; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s; }
   .view-page-btn:hover { border-color: #c9944a; color: #c9944a; }
+  .view-store-btn { padding: 7px 14px; border: 1px solid #22c55e40; border-radius: 8px; color: #22c55e; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s; background: rgba(34,197,94,0.04); }
+  .view-store-btn:hover { border-color: #22c55e; background: rgba(34,197,94,0.08); }
   .back-btn { background: none; border: none; color: #c9944a; font-weight: 600; font-size: 14px; cursor: pointer; padding: 0; font-family: inherit; }
   .back-btn:hover { text-decoration: underline; }
   .page-content { padding: 24px 28px; max-width: 800px; }

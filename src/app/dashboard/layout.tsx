@@ -30,7 +30,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Your Network',
     items: [
       { label: 'Couples', icon: '💍', href: '/dashboard/clients?type=couple', countKey: 'couples' },
-      { label: 'Clients', icon: '🛒', href: '/dashboard/clients?type=shopper', countKey: 'clients' },
+      { label: 'Shoppers', icon: '🛒', href: '/dashboard/clients?type=shopper', countKey: 'clients' },
       { label: 'Leads', icon: '📬', href: '/dashboard/leads', countKey: 'leads' },
     ]
   },
