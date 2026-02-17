@@ -513,7 +513,7 @@ export async function POST(request: NextRequest) {
                 method: 'PATCH',
                 headers: {
                   'Content-Type': 'application/json',
-                  'x-goaffpro-access-token': process.env.GOAFFPRO_ACCESS_TOKEN
+                  'x-goaffpro-access-token': process.env.GOAFFPRO_ACCESS_TOKEN!
                 },
                 body: JSON.stringify({
                   commission: {
