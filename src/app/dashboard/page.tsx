@@ -21,6 +21,18 @@ const TIER_INFO: Record<string, {
   elite:{ pool: 40, price: 197, label: 'Elite', color: '#e5a50a', branded: true, contacts: true, monthlyReport: true },
 }
 
+// Source of truth: current_pool from Supabase, fallback to tier lookup
+function getPoolPercent(v: any): number {
+  if (v?.current_pool) {
+    const n = parseFloat(v.current_pool)
+    return n < 1 ? Math.round(n * 100) : Math.round(n)
+  }
+  const t = v?.boost_tier || v?.plan || 'free'
+  const defaults: Record<string, number> = { free: 20, pro: 30, elite: 40 }
+  return defaults[t] || 20
+
+}
+
 // ============================================================
 // TRIAL HELPERS
 // ============================================================
@@ -160,6 +172,17 @@ export default function DashboardHome() {
     if (stored) {
       const v = JSON.parse(stored)
       setVendor(v)
+      // Refresh from Supabase to pick up tier/pool changes
+      fetch(`/api/vendor/refresh-session?ref=${v.ref}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.vendor) {
+            const merged = { ...v, ...data.vendor }
+            localStorage.setItem('wetwo_vendor_session', JSON.stringify(merged))
+            setVendor(merged)
+          }
+        })
+        .catch(() => {})
       fetch(`/api/dashboard/stats?ref=${v.ref}`)
         .then(r => r.json())
         .then(d => { if (d.stats) setStats(d.stats) })
@@ -185,7 +208,7 @@ export default function DashboardHome() {
           <button onClick={() => setSidebarPage(null)} className="back-btn">← Back to Dashboard</button>
         </header>
         <div className="page-content">
-          {sidebarPage === 'how-it-works' && <HowItWorks pool={t.pool} tier={tier} contacts={t.contacts} />}
+          {sidebarPage === 'how-it-works' && <HowItWorks pool={getPoolPercent(vendor)} tier={tier} contacts={t.contacts} />}
           {sidebarPage === 'grow' && <GrowYourBusiness tier={tier} />}
           {sidebarPage === 'playbook' && <Playbook tier={tier} contacts={t.contacts} />}
         </div>
@@ -204,7 +227,7 @@ export default function DashboardHome() {
         <div>
           <h1 className="dash-title">Welcome, {firstName}</h1>
           <p className="dash-sub">
-            You have a <strong>{t.pool}% pool</strong> — you control the split.
+            You have a <strong>{getPoolPercent(vendor)}% pool</strong> — you control the split.
             {stats.totalCommission > 0 && <> So far: <strong style={{ color: '#22c55e' }}>${stats.totalCommission.toFixed(0)}</strong></>}
           </p>
         </div>
@@ -260,7 +283,7 @@ export default function DashboardHome() {
               <span className="flow-num">3</span>
               {t.contacts
                 ? <span>You get their <strong>name + email</strong> forever</span>
-                : <span>You control a <strong style={{ color: '#22c55e' }}>{t.pool}% pool</strong> on every sale</span>
+                : <span>You control a <strong style={{ color: '#22c55e' }}>{getPoolPercent(vendor)}% pool</strong> on every sale</span>
               }
             </div>
           </div>
@@ -280,7 +303,7 @@ export default function DashboardHome() {
             <span style={{ fontSize: '20px' }}>🏪</span>
             <div>
               <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#2c2420' }}>
-                {showBranded ? `${vendor.business_name || 'Your'} Store` : 'Your Store'} — {t.pool}% pool
+                {showBranded ? `${vendor.business_name || 'Your'} Store` : 'Your Store'} — {getPoolPercent(vendor)}% pool
               </h3>
               <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#6b5e52' }}>
                 A customer attraction engine that pays for itself. Share this link anywhere.
@@ -301,7 +324,7 @@ export default function DashboardHome() {
           }
           accentColor="#c9944a"
         >
-          <CouplesContent vendorRef={vendor.ref} pool={t.pool} contacts={t.contacts} tier={tier} />
+          <CouplesContent vendorRef={vendor.ref} pool={getPoolPercent(vendor)} contacts={t.contacts} tier={tier} />
         </AccordionCard>
 
         {/* ===== EVERYONE — CODE GENERATOR ===== */}

@@ -13,7 +13,7 @@ export default function EarningsPage() {
 
   if (!vendor) return null
 
-  const isFree = vendor.plan === 'free'
+  const isFree = ( vendor.boost_tier || vendor.plan || 'free') === 'free'
 
   return (
     <div>
@@ -75,7 +75,7 @@ export default function EarningsPage() {
         {/* Choose Your Plan */}
         <h3 className="section-heading">Choose Your Plan</h3>
         <div className="tiers-grid">
-          <div className={`tier-card ${vendor.plan === 'free' ? 'current' : ''}`}>
+          <div className={`tier-card ${( vendor.boost_tier || vendor.plan || 'free') === 'free' ? 'current' : ''}`}>
             <div className="tier-name">Free</div>
             <div className="tier-rate">20%</div>
             <div className="tier-price">$0/month</div>
@@ -87,7 +87,7 @@ export default function EarningsPage() {
               <li>✓ 20% buyer discount pool</li>
               <li className="dim">✗ No commission on purchases</li>
             </ul>
-            {vendor.plan === 'free' && <div className="current-badge">Current Plan</div>}
+            {( vendor.boost_tier || vendor.plan || 'free') === 'free' && <div className="current-badge">Current Plan</div>}
           </div>
 
           <div className={`tier-card featured ${vendor.plan === 'pro' ? 'current' : ''}`}>
