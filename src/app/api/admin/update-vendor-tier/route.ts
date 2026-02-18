@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 //
 // POST /api/admin/update-vendor-tier
 // Body: { vendor_id: string, tier: 'free' | 'pro' | 'elite' }
-// Header: x-admin-key: <ADMIN_API_KEY env var>
+// Header: x-admin-key: <ADMIN_PASSWORD env var>
 //
 // Cascade:
 //   1. Update vendors table (boost_tier, current_pool, subscription_active)
@@ -24,9 +24,9 @@ const TIER_CONFIG: Record<string, { pool: string; commission: number; subscripti
 export async function POST(req: NextRequest) {
   // --- Auth check ---
   const adminKey = req.headers.get('x-admin-key')
-  const expectedKey = process.env.ADMIN_API_KEY
+  const expectedKey = process.env.ADMIN_PASSWORD
 
-  // If ADMIN_API_KEY is set, enforce it. If not set, allow (dev mode).
+  // If ADMIN_PASSWORD is set, enforce it. If not set, allow (dev mode).
   if (expectedKey && adminKey !== expectedKey) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
 // GET handler — list all vendors with their current tiers (for admin panel)
 export async function GET(req: NextRequest) {
   const adminKey = req.headers.get('x-admin-key')
-  const expectedKey = process.env.ADMIN_API_KEY
+  const expectedKey = process.env.ADMIN_PASSWORD
 
   if (expectedKey && adminKey !== expectedKey) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
