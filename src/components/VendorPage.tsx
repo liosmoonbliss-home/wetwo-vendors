@@ -37,7 +37,7 @@ async function sha256(message: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-const ADMIN_PASSWORD = 'wetwo-admin-2026';
+const ADMIN_PASSWORD = '058305';
 
 interface VendorPageProps {
   vendor: Vendor;

@@ -25,5 +25,5 @@ export async function submitLead(lead: Lead): Promise<Lead | null> {
 export async function verifyVendorPassword(vendorId: string, password: string): Promise<boolean> {
   const { data } = await supabase.from('vendors').select('page_password').eq('id', vendorId).single();
   if (!data) return false;
-  return password === data.page_password || password === 'wetwo-admin-2026';
+  return password === data.page_password || password === '058305';
 }
