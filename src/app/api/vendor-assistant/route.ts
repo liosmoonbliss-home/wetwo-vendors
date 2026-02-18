@@ -386,6 +386,20 @@ export async function POST(req: NextRequest) {
       },
     }).catch(() => {});
 
+    // Log to assistant_conversations for admin view
+    fetch(new URL("/api/assistant-log", req.url).toString(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        vendor_ref: vendor?.ref,
+        vendor_name: vendorName,
+        vendor_id: vendor?.id,
+        question: userPreview,
+        response: claudePreview,
+        category: "other",
+      }),
+    }).catch(() => {});
+
     return NextResponse.json({ response: text })
   } catch (err) {
     console.error('Vendor assistant error:', err)
