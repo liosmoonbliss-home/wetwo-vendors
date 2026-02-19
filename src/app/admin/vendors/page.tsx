@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 import { useState, useEffect } from 'react'
 
 // ═══════════════════════════════════════════════════════════════
@@ -340,7 +342,8 @@ export default function AdminVendorsPage() {
                 const pool = poolPercent(vendor.current_pool)
 
                 return (
-                  <tr key={vendor.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <React.Fragment key={vendor.id}>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     {/* Vendor name + ref */}
                     <td style={{ ...td, cursor: 'pointer' }} onClick={() => setExpandedId(expandedId === vendor.id ? null : vendor.id)}>
                       <div style={{ fontWeight: 500, color: expandedId === vendor.id ? '#c9944a' : '#fff', transition: 'color 0.15s' }}>
@@ -447,6 +450,7 @@ export default function AdminVendorsPage() {
                       </td>
                     </tr>
                   )}
+                  </React.Fragment>
                 )
               })}
             </tbody>
