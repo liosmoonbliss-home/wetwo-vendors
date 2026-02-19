@@ -41,6 +41,7 @@ export default function AdminVendorsPage() {
   const [lastResult, setLastResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   // Check if admin key is stored in sessionStorage
   useEffect(() => {
@@ -341,9 +342,12 @@ export default function AdminVendorsPage() {
                 return (
                   <tr key={vendor.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     {/* Vendor name + ref */}
-                    <td style={td}>
-                      <div style={{ fontWeight: 500 }}>{vendor.business_name}</div>
-                      <div style={{ color: '#555', fontSize: '12px', fontFamily: 'monospace' }}>{vendor.ref}</div>
+                    <td style={{ ...td, cursor: 'pointer' }} onClick={() => setExpandedId(expandedId === vendor.id ? null : vendor.id)}>
+                      <div style={{ fontWeight: 500, color: expandedId === vendor.id ? '#c9944a' : '#fff', transition: 'color 0.15s' }}>
+                        <span style={{ marginRight: 6, fontSize: 10, opacity: 0.4 }}>{expandedId === vendor.id ? '▼' : '▶'}</span>
+                        {vendor.business_name}
+                      </div>
+                      <div style={{ color: '#555', fontSize: '12px', fontFamily: 'monospace', marginLeft: 16 }}>{vendor.ref}</div>
                     </td>
 
                     {/* Contact */}
@@ -420,6 +424,29 @@ export default function AdminVendorsPage() {
                       </div>
                     </td>
                   </tr>
+                  {expandedId === vendor.id && (
+                    <tr style={{ background: 'rgba(201,148,74,0.04)' }}>
+                      <td colSpan={6} style={{ padding: '16px 24px 20px' }}>
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <a href={`https://wetwo-vendors.vercel.app/vendor/${vendor.ref}`} target="_blank" rel="noopener"
+                            style={{ padding: '8px 16px', background: 'rgba(201,148,74,0.12)', border: '1px solid rgba(201,148,74,0.3)', borderRadius: 8, color: '#c9944a', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                            🌐 Landing Page
+                          </a>
+                          <a href={`https://wetwo.love?ref=vendor-${vendor.ref}`} target="_blank" rel="noopener"
+                            style={{ padding: '8px 16px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 8, color: '#4ade80', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                            🛍️ Branded Store
+                          </a>
+                          <a href={`https://wetwo-vendors.vercel.app/dashboard?ref=${vendor.ref}`} target="_blank" rel="noopener"
+                            style={{ padding: '8px 16px', background: 'rgba(147,130,220,0.1)', border: '1px solid rgba(147,130,220,0.25)', borderRadius: 8, color: '#9382dc', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                            📊 Dashboard
+                          </a>
+                          <span style={{ color: '#555', fontSize: 12, marginLeft: 8 }}>
+                            {vendor.email}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 )
               })}
             </tbody>
